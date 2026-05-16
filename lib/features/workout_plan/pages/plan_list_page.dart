@@ -1,5 +1,6 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/data/models/workout_plan_model.dart';
+import 'package:fit_forge/features/workout_plan/pages/plan_detail_page.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -70,14 +71,15 @@ class PlanListPage extends ConsumerWidget {
   }
 }
 
-class _PlanList extends StatelessWidget {
+class _PlanList extends ConsumerWidget {
   const _PlanList({required this.plans, required this.days});
 
   final List<WorkoutPlanModel> plans;
   final List<String> days;
 
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(14, 0, 14, 80),
       itemCount: plans.length,
@@ -108,13 +110,59 @@ class _PlanList extends StatelessWidget {
                     fontWeight: FontWeight.w600, color: AppColors.text1)),
             subtitle: Text(days[plan.dayOfWeek],
                 style: const TextStyle(color: AppColors.text2, fontSize: 12)),
-            trailing: const Icon(Icons.chevron_right, color: AppColors.text3),
-            onTap: () {
-              // navigacija na plan detail
-            },
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.delete_outline,
+                      color: AppColors.red, size: 20),
+                  onPressed: () => _confirmDeletePlan(context, ref, plan),
+                ),
+                const Icon(Icons.chevron_right, color: AppColors.text3),
+              ],
+            ),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PlanDetailPage(
+                  planId: plan.id,
+                  planName: plan.name,
+                ),
+              ),
+            ),
           ),
         );
       },
+    );
+  }
+
+  void _confirmDeletePlan(
+      BuildContext context, WidgetRef ref, WorkoutPlanModel plan) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.bg2,
+        title:
+        const Text('Obriši plan', style: TextStyle(color: AppColors.text1)),
+        content: Text('Jesi siguran da želiš obrisati "${plan.name}"?',
+            style: const TextStyle(color: AppColors.text2)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Odustani',
+                style: TextStyle(color: AppColors.text2)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await ref
+                  .read(workoutPlanNotifierProvider.notifier)
+                  .deletePlan(plan.id);
+            },
+            child: const Text('Obriši', style: TextStyle(color: AppColors.red)),
+          ),
+        ],
+      ),
     );
   }
 }

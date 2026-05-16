@@ -4,21 +4,24 @@ import 'package:fit_forge/data/repositories/exercise_repository.dart';
 import 'package:fit_forge/data/repositories/workout_plan_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final _planRepo = WorkoutPlanRepository();
 final _exerciseRepo = ExerciseRepository();
 
 final workoutPlansProvider = FutureProvider<List<WorkoutPlanModel>>((ref) {
-  return _planRepo.getAll();
+  return ref.watch(workoutPlanNotifierProvider.future);
 });
 
 final planByDayProvider =
     FutureProvider.family<WorkoutPlanModel?, int>((ref, dayOfWeek) {
-  return _planRepo.getByDay(dayOfWeek);
+  return ref.watch(workoutPlanNotifierProvider.future).then(
+        (plans) => plans.where((p) => p.dayOfWeek == dayOfWeek).firstOrNull,
+      );
 });
 
 final todayPlanProvider = FutureProvider<WorkoutPlanModel?>((ref) {
-  final today = DateTime.now().weekday; // 1=Pon, 7=Ned
-  return _planRepo.getByDay(today);
+  final today = DateTime.now().weekday;
+  return ref.watch(workoutPlanNotifierProvider.future).then(
+        (plans) => plans.where((p) => p.dayOfWeek == today).firstOrNull,
+      );
 });
 
 final exercisesProvider =
