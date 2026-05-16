@@ -1,4 +1,6 @@
 import 'package:fit_forge/data/local/database_helper.dart';
+import 'package:fit_forge/data/models/exercise_model.dart';
+import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:fit_forge/data/models/workout_plan_model.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -53,10 +55,38 @@ class WorkoutPlanDao {
   }
 
   Future<void> delete(String id) async {
-    await _db.delete(
-      WorkoutPlanModel.tableName,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await _db.transaction((txn) async {
+      // 1. Dohvati sve exercise ID-ove u planu
+      final exerciseRows = await txn.query(
+        ExerciseModel.tableName,
+        columns: ['id'],
+        where: 'plan_id = ?',
+        whereArgs: [id],
+      );
+      final exerciseIds = exerciseRows.map((r) => r['id'] as String).toList();
+
+      // 2. Obrisi workout_logs za te vjezbe (cascade obrise i workout_sets)
+      if (exerciseIds.isNotEmpty) {
+        final placeholders = exerciseIds.map((_) => '?').join(',');
+        await txn.rawDelete(
+          'DELETE FROM ${WorkoutLogModel.tableName} WHERE exercise_id IN ($placeholders)',
+          exerciseIds,
+        );
+      }
+
+      // 3. Obrisi vjezbe (cascade obrise i default_sets)
+      await txn.delete(
+        ExerciseModel.tableName,
+        where: 'plan_id = ?',
+        whereArgs: [id],
+      );
+
+      // 4. Obrisi plan
+      await txn.delete(
+        WorkoutPlanModel.tableName,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    });
   }
 }

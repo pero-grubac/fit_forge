@@ -1,5 +1,7 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
+import 'package:fit_forge/features/workout_log/pages/log_session_page.dart';
+import 'package:fit_forge/features/workout_log/providers/workout_log_provider.dart';
 import 'package:fit_forge/features/workout_log/widgets/exercise_hero_card.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
 import 'package:flutter/material.dart';
@@ -104,28 +106,51 @@ class _PlanContent extends ConsumerWidget {
               child: Center(child: CircularProgressIndicator())),
           error: (e, _) =>
               SliverToBoxAdapter(child: Center(child: Text('Greska: $e'))),
-          data: (list) => SliverPadding(
-            padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, i) => ExerciseHeroCard(
-                  exercise: list[i],
-                  completedSets: 0,
-                  totalSets: list[i].defaultSets.length,
-                  isActive: i == 0,
-                  onTap: () => _openLogSession(context, list[i]),
+          data: (list) {
+            final exerciseIds = list.map((e) => e.id).toList();
+            final joined = exerciseIds.join(',');
+            final completedAsync = ref.watch(completedSetsTodayProvider(joined));
+
+            return completedAsync.when(
+              loading: () => const SliverToBoxAdapter(
+                  child: Center(child: CircularProgressIndicator())),
+              error: (e, _) =>
+                  SliverToBoxAdapter(child: Center(child: Text('Greska: $e'))),
+              data: (completed) => SliverPadding(
+                padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, i) {
+                      final ex = list[i];
+                      final completedSets = completed[ex.id] ?? 0;
+                      final totalSets = ex.defaultSets.length;
+                      return ExerciseHeroCard(
+                        exercise: ex,
+                        completedSets: completedSets,
+                        totalSets: totalSets,
+                        isActive:
+                            completedSets > 0 && completedSets < totalSets,
+                        onTap: () => _openLogSession(context, ex),
+                      );
+                    },
+                    childCount: list.length,
+                  ),
                 ),
-                childCount: list.length,
               ),
-            ),
-          ),
+            );
+          },
         ),
       ],
     );
   }
 
   void _openLogSession(BuildContext context, ExerciseModel exercise) {
-    // navigacija ce biti dodana kad postavimo GoRouter log rutu
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LogSessionPage(exerciseId: exercise.id),
+      ),
+    );
   }
 
   Widget _greeting() {

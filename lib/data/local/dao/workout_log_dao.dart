@@ -127,4 +127,28 @@ class WorkoutLogDao {
       );
     }).toList();
   }
+
+  Future<Map<String, int>> getCompletedSetsToday(
+      List<String> exerciseIds) async {
+    if (exerciseIds.isEmpty) return {};
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final placeholders = exerciseIds.map((_) => '?').join(',');
+    final rows = await _db.rawQuery(
+      '''
+        SELECT l.exercise_id, COUNT(s.id) as completed
+        FROM ${WorkoutLogModel.tableName} l
+        JOIN ${WorkoutSetModel.tableName} s ON s.log_id = l.id
+        WHERE l.log_date = ?
+          AND l.exercise_id IN ($placeholders)
+          AND s.is_completed = 1
+        GROUP BY l.exercise_id
+      ''',
+      [today, ...exerciseIds],
+    );
+
+    return {
+      for (final row in rows)
+        row['exercise_id'] as String: (row['completed'] as int)
+    };
+  }
 }

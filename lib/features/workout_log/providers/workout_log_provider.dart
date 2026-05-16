@@ -9,6 +9,14 @@ final exerciseLogsProvider =
   return _logRepo.getByExercise(exerciseId);
 });
 
+final completedSetsTodayProvider =
+FutureProvider.family<Map<String, int>, String>((ref, exerciseIdsJoined) {
+  final ids = exerciseIdsJoined.isEmpty
+      ? <String>[]
+      : exerciseIdsJoined.split(',');
+  return WorkoutLogRepository().getCompletedSetsToday(ids);
+});
+
 class WorkoutLogNotifier extends AsyncNotifier<void> {
   final _repo = WorkoutLogRepository();
 

@@ -59,4 +59,7 @@ class WorkoutLogRepository {
   }
 
   Future<void> delete(String id) => _logDao.delete(id);
+
+  Future<Map<String, int>> getCompletedSetsToday(List<String> exerciseIds) =>
+      _logDao.getCompletedSetsToday(exerciseIds);
 }
