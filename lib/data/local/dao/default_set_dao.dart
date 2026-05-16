@@ -2,7 +2,6 @@ import 'package:fit_forge/data/local/database_helper.dart';
 import 'package:fit_forge/data/models/default_set_model.dart';
 import 'package:sqflite/sqflite.dart';
 
-
 class DefaultSetDao {
   Database get _db => DatabaseHelper.instance.database;
 

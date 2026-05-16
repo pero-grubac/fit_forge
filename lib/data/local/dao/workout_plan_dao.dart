@@ -2,8 +2,6 @@ import 'package:fit_forge/data/local/database_helper.dart';
 import 'package:fit_forge/data/models/workout_plan_model.dart';
 import 'package:sqflite/sqflite.dart';
 
-
-
 class WorkoutPlanDao {
   Database get _db => DatabaseHelper.instance.database;
 

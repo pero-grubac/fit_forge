@@ -1,7 +1,6 @@
+import 'package:fit_forge/data/local/dao/workout_plan_dao.dart';
+import 'package:fit_forge/data/models/workout_plan_model.dart';
 import 'package:uuid/uuid.dart';
-
-import '../local/dao/workout_plan_dao.dart';
-import '../models/workout_plan_model.dart';
 
 class WorkoutPlanRepository {
   final _planDao = WorkoutPlanDao();

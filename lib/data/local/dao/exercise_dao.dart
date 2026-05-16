@@ -4,8 +4,6 @@ import 'package:fit_forge/data/models/default_set_model.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:sqflite/sqflite.dart';
 
-
-
 class ExerciseDao {
   Database get _db => DatabaseHelper.instance.database;
   final _defaultSetDao = DefaultSetDao();

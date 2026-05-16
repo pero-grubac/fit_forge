@@ -1,8 +1,7 @@
+import 'package:fit_forge/data/local/dao/exercise_dao.dart';
+import 'package:fit_forge/data/models/default_set_model.dart';
+import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:uuid/uuid.dart';
-
-import '../local/dao/exercise_dao.dart';
-import '../models/default_set_model.dart';
-import '../models/exercise_model.dart';
 
 class ExerciseRepository {
   final _exerciseDao = ExerciseDao();

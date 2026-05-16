@@ -1,5 +1,3 @@
-
-
 import 'package:fit_forge/data/local/database_helper.dart';
 import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:fit_forge/data/models/workout_set_model.dart';

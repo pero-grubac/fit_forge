@@ -1,8 +1,7 @@
+import 'package:fit_forge/data/local/dao/workout_log_dao.dart';
+import 'package:fit_forge/data/models/workout_log_model.dart';
+import 'package:fit_forge/data/models/workout_set_model.dart';
 import 'package:uuid/uuid.dart';
-
-import '../local/dao/workout_log_dao.dart';
-import '../models/workout_log_model.dart';
-import '../models/workout_set_model.dart';
 
 class WorkoutLogRepository {
   final _logDao = WorkoutLogDao();

@@ -1,7 +1,6 @@
+import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/data/models/default_set_model.dart';
 import 'package:flutter/material.dart';
-
-import '../../core/theme/app_colors.dart';
 
 class ExerciseModel {
   final String id;
