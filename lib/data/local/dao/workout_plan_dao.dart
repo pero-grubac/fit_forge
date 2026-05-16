@@ -1,0 +1,64 @@
+import 'package:fit_forge/data/local/database_helper.dart';
+import 'package:fit_forge/data/models/workout_plan_model.dart';
+import 'package:sqflite/sqflite.dart';
+
+
+
+class WorkoutPlanDao {
+  Database get _db => DatabaseHelper.instance.database;
+
+  Future<List<WorkoutPlanModel>> getAll() async {
+    final rows = await _db.query(
+      WorkoutPlanModel.tableName,
+      orderBy: 'day_of_week ASC',
+    );
+    return rows.map(WorkoutPlanModel.fromMap).toList();
+  }
+
+  Future<WorkoutPlanModel?> getByDay(int dayOfWeek) async {
+    final rows = await _db.query(
+      WorkoutPlanModel.tableName,
+      where: 'day_of_week = ? AND is_active = 1',
+      whereArgs: [dayOfWeek],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return WorkoutPlanModel.fromMap(rows.first);
+  }
+
+  Future<WorkoutPlanModel?> getById(String id) async {
+    final rows = await _db.query(
+      WorkoutPlanModel.tableName,
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return WorkoutPlanModel.fromMap(rows.first);
+  }
+
+  Future<void> insert(WorkoutPlanModel plan) async {
+    await _db.insert(
+      WorkoutPlanModel.tableName,
+      plan.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> update(WorkoutPlanModel plan) async {
+    await _db.update(
+      WorkoutPlanModel.tableName,
+      plan.toMap(),
+      where: 'id = ?',
+      whereArgs: [plan.id],
+    );
+  }
+
+  Future<void> delete(String id) async {
+    await _db.delete(
+      WorkoutPlanModel.tableName,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+}
