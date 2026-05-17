@@ -1,3 +1,4 @@
+import 'package:fit_forge/data/repositories/workout_log_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -37,6 +38,9 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
       _exercise = ex;
       _loadingExercise = false;
     });
+    if (_sets.isEmpty) {
+      await _loadLastLog();
+    }
   }
 
   @override
@@ -51,7 +55,11 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
 
   void _initSetsFromSuggestion(ProgressionSuggestion suggestion) {
     if (_sets.isNotEmpty) return;
-    if (suggestion.hasData) {
+    if (!suggestion.hasData) return; // _loadExercise vec ucitao setove
+
+    // Ima progression data — override sa prijedlogom
+    setState(() {
+      _sets.clear();
       for (int i = 0; i < suggestion.suggestedWeights.length; i++) {
         _sets.add(_SetRow(
           setNumber: i + 1,
@@ -59,17 +67,41 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
           plannedReps: suggestion.suggestedReps[i],
         ));
       }
-    } else if (_exercise != null) {
-      for (int i = 0; i < _exercise!.defaultSets.length; i++) {
-        final ds = _exercise!.defaultSets[i];
-        _sets.add(_SetRow(
-          setNumber: i + 1,
-          plannedWeight: ds.weight,
-          plannedReps: ds.reps,
-        ));
-      }
+    });
+  }
+
+  Future<void> _loadLastLog() async {
+    final logs =
+        await WorkoutLogRepository().getByExercise(widget.exerciseId, limit: 1);
+
+    if (!mounted) return;
+
+    if (logs.isNotEmpty && logs.first.sets.isNotEmpty) {
+      final lastSets = logs.first.sets;
+      setState(() {
+        _sets.clear();
+        for (final s in lastSets) {
+          _sets.add(_SetRow(
+            setNumber: s.setNumber,
+            plannedWeight: s.actualWeight,
+            plannedReps: s.actualReps, // stvarni repovi, ne planirani
+            isDone: s.isCompleted, // postavi checkmark
+          ));
+        }
+      });
+    } else if (_exercise != null && _exercise!.defaultSets.isNotEmpty) {
+      setState(() {
+        for (int i = 0; i < _exercise!.defaultSets.length; i++) {
+          final ds = _exercise!.defaultSets[i];
+          _sets.add(_SetRow(
+            setNumber: i + 1,
+            plannedWeight: ds.weight,
+            plannedReps: ds.reps,
+            isDone: false,
+          ));
+        }
+      });
     }
-    setState(() {});
   }
 
   @override
@@ -251,8 +283,7 @@ class _SetRow {
   final int setNumber;
   final double plannedWeight;
   final int plannedReps;
-  bool isDone = false;
-
+  bool isDone;
   late final TextEditingController weightCtrl;
   late final TextEditingController repsCtrl;
 
@@ -260,6 +291,7 @@ class _SetRow {
     required this.setNumber,
     required this.plannedWeight,
     required this.plannedReps,
+    this.isDone = false,
   }) {
     weightCtrl = TextEditingController(text: plannedWeight.toString());
     repsCtrl = TextEditingController(text: plannedReps.toString());

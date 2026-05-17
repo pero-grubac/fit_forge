@@ -56,7 +56,6 @@ class WorkoutPlanDao {
 
   Future<void> delete(String id) async {
     await _db.transaction((txn) async {
-      // 1. Dohvati sve exercise ID-ove u planu
       final exerciseRows = await txn.query(
         ExerciseModel.tableName,
         columns: ['id'],
@@ -65,7 +64,6 @@ class WorkoutPlanDao {
       );
       final exerciseIds = exerciseRows.map((r) => r['id'] as String).toList();
 
-      // 2. Obrisi workout_logs za te vjezbe (cascade obrise i workout_sets)
       if (exerciseIds.isNotEmpty) {
         final placeholders = exerciseIds.map((_) => '?').join(',');
         await txn.rawDelete(
@@ -74,14 +72,12 @@ class WorkoutPlanDao {
         );
       }
 
-      // 3. Obrisi vjezbe (cascade obrise i default_sets)
       await txn.delete(
         ExerciseModel.tableName,
         where: 'plan_id = ?',
         whereArgs: [id],
       );
 
-      // 4. Obrisi plan
       await txn.delete(
         WorkoutPlanModel.tableName,
         where: 'id = ?',

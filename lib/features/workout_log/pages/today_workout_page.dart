@@ -109,7 +109,8 @@ class _PlanContent extends ConsumerWidget {
           data: (list) {
             final exerciseIds = list.map((e) => e.id).toList();
             final joined = exerciseIds.join(',');
-            final completedAsync = ref.watch(completedSetsTodayProvider(joined));
+            final completedAsync =
+                ref.watch(completedSetsTodayProvider(joined));
 
             return completedAsync.when(
               loading: () => const SliverToBoxAdapter(
@@ -124,13 +125,16 @@ class _PlanContent extends ConsumerWidget {
                       final ex = list[i];
                       final completedSets = completed[ex.id] ?? 0;
                       final totalSets = ex.defaultSets.length;
+                      final isDone =
+                          completedSets >= totalSets && completedSets > 0;
+                      final isActive = completedSets > 0 && !isDone;
+
                       return ExerciseHeroCard(
                         exercise: ex,
                         completedSets: completedSets,
                         totalSets: totalSets,
-                        isActive:
-                            completedSets > 0 && completedSets < totalSets,
-                        onTap: () => _openLogSession(context, ex),
+                        isActive: isActive,
+                        onTap: () => _openLogSession(context, ref, ex, joined),
                       );
                     },
                     childCount: list.length,
@@ -144,13 +148,16 @@ class _PlanContent extends ConsumerWidget {
     );
   }
 
-  void _openLogSession(BuildContext context, ExerciseModel exercise) {
+  void _openLogSession(BuildContext context, WidgetRef ref,
+      ExerciseModel exercise, String joined) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => LogSessionPage(exerciseId: exercise.id),
       ),
-    );
+    ).then((_) {
+      ref.invalidate(completedSetsTodayProvider(joined));
+    });
   }
 
   Widget _greeting() {

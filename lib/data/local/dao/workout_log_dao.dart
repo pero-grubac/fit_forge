@@ -7,26 +7,50 @@ class WorkoutLogDao {
   Database get _db => DatabaseHelper.instance.database;
 
   Future<List<WorkoutLogModel>> getByExercise(
-    String exerciseId, {
-    int limit = 10,
-  }) async {
-    final rows = await _db.rawQuery('''
-      SELECT l.*,
-             s.id        AS s_id,
-             s.set_number,
-             s.planned_reps,
-             s.actual_reps,
-             s.planned_weight,
-             s.actual_weight,
-             s.is_completed
-      FROM ${WorkoutLogModel.tableName} l
-      LEFT JOIN workout_sets s ON s.log_id = l.id
-      WHERE l.exercise_id = ?
-      ORDER BY l.log_date DESC, s.set_number ASC
-      LIMIT ?
-    ''', [exerciseId, limit]);
+      String exerciseId, {
+        int limit = 10,
+      }) async {
+    // Prvo dohvati log IDs
+    final logRows = await _db.query(
+      WorkoutLogModel.tableName,
+      where: 'exercise_id = ?',
+      whereArgs: [exerciseId],
+      orderBy: 'log_date DESC',
+      limit: limit,
+    );
 
-    return _groupRows(rows);
+    if (logRows.isEmpty) return [];
+
+    final logIds = logRows.map((r) => r['id'] as String).toList();
+    final placeholders = logIds.map((_) => '?').join(',');
+
+    // Onda dohvati sve setove za te logove
+    final setRows = await _db.rawQuery('''
+    SELECT * FROM ${WorkoutSetModel.tableName}
+    WHERE log_id IN ($placeholders)
+    ORDER BY log_id, set_number ASC
+  ''', logIds);
+
+    // Grupiraj
+    final Map<String, List<WorkoutSetModel>> setsMap = {};
+    for (final row in setRows) {
+      final logId = row['log_id'] as String;
+      setsMap.putIfAbsent(logId, () => []);
+      setsMap[logId]!.add(WorkoutSetModel.fromMap(row));
+    }
+
+    return logRows.map((row) {
+      final log = WorkoutLogModel.fromMap(row);
+      return WorkoutLogModel(
+        id:          log.id,
+        exerciseId:  log.exerciseId,
+        logDate:     log.logDate,
+        notes:       log.notes,
+        totalVolume: log.totalVolume,
+        createdAt:   log.createdAt,
+        sets:        setsMap[log.id] ?? [],
+      );
+    }).toList();
   }
 
   Future<WorkoutLogModel?> getById(String id) async {
@@ -150,5 +174,34 @@ class WorkoutLogDao {
       for (final row in rows)
         row['exercise_id'] as String: (row['completed'] as int)
     };
+  }
+
+  Future<WorkoutLogModel?> getByExerciseAndDate(
+      String exerciseId, String date) async {
+    final logRows = await _db.query(
+      WorkoutLogModel.tableName,
+      where: 'exercise_id = ? AND log_date = ?',
+      whereArgs: [exerciseId, date],
+      limit: 1,
+    );
+    if (logRows.isEmpty) return null;
+
+    final log = WorkoutLogModel.fromMap(logRows.first);
+    final setRows = await _db.query(
+      WorkoutSetModel.tableName,
+      where: 'log_id = ?',
+      whereArgs: [log.id],
+      orderBy: 'set_number ASC',
+    );
+
+    return WorkoutLogModel(
+      id:          log.id,
+      exerciseId:  log.exerciseId,
+      logDate:     log.logDate,
+      notes:       log.notes,
+      totalVolume: log.totalVolume,
+      createdAt:   log.createdAt,
+      sets:        setRows.map(WorkoutSetModel.fromMap).toList(),
+    );
   }
 }

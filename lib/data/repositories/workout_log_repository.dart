@@ -62,4 +62,34 @@ class WorkoutLogRepository {
 
   Future<Map<String, int>> getCompletedSetsToday(List<String> exerciseIds) =>
       _logDao.getCompletedSetsToday(exerciseIds);
+
+  Future<WorkoutLogModel> createOrReplace({
+    required String exerciseId,
+    required DateTime logDate,
+    String? notes,
+    required List<({
+    int plannedReps,
+    int actualReps,
+    double plannedWeight,
+    double actualWeight,
+    bool isCompleted,
+    })> sets,
+  }) async {
+    // Provjeri postoji li log za danas
+    final today = logDate.toIso8601String().substring(0, 10);
+    final existing = await _logDao.getByExerciseAndDate(exerciseId, today);
+
+    // Ako postoji, obrisi ga
+    if (existing != null) {
+      await _logDao.delete(existing.id);
+    }
+
+    // Kreiraj novi
+    return create(
+      exerciseId: exerciseId,
+      logDate:    logDate,
+      notes:      notes,
+      sets:       sets,
+    );
+  }
 }

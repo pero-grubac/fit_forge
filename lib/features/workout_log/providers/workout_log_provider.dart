@@ -10,10 +10,9 @@ final exerciseLogsProvider =
 });
 
 final completedSetsTodayProvider =
-FutureProvider.family<Map<String, int>, String>((ref, exerciseIdsJoined) {
-  final ids = exerciseIdsJoined.isEmpty
-      ? <String>[]
-      : exerciseIdsJoined.split(',');
+    FutureProvider.family<Map<String, int>, String>((ref, exerciseIdsJoined) {
+  final ids =
+      exerciseIdsJoined.isEmpty ? <String>[] : exerciseIdsJoined.split(',');
   return WorkoutLogRepository().getCompletedSetsToday(ids);
 });
 
@@ -38,7 +37,7 @@ class WorkoutLogNotifier extends AsyncNotifier<void> {
         sets,
   }) async {
     state = const AsyncLoading();
-    final log = await AsyncValue.guard(() => _repo.create(
+    final log = await AsyncValue.guard(() => _repo.createOrReplace(
           exerciseId: exerciseId,
           logDate: logDate,
           notes: notes,
