@@ -7,9 +7,9 @@ class WorkoutLogDao {
   Database get _db => DatabaseHelper.instance.database;
 
   Future<List<WorkoutLogModel>> getByExercise(
-      String exerciseId, {
-        int limit = 10,
-      }) async {
+    String exerciseId, {
+    int limit = 10,
+  }) async {
     // Prvo dohvati log IDs
     final logRows = await _db.query(
       WorkoutLogModel.tableName,
@@ -42,13 +42,13 @@ class WorkoutLogDao {
     return logRows.map((row) {
       final log = WorkoutLogModel.fromMap(row);
       return WorkoutLogModel(
-        id:          log.id,
-        exerciseId:  log.exerciseId,
-        logDate:     log.logDate,
-        notes:       log.notes,
+        id: log.id,
+        exerciseId: log.exerciseId,
+        logDate: log.logDate,
+        notes: log.notes,
         totalVolume: log.totalVolume,
-        createdAt:   log.createdAt,
-        sets:        setsMap[log.id] ?? [],
+        createdAt: log.createdAt,
+        sets: setsMap[log.id] ?? [],
       );
     }).toList();
   }
@@ -195,13 +195,13 @@ class WorkoutLogDao {
     );
 
     return WorkoutLogModel(
-      id:          log.id,
-      exerciseId:  log.exerciseId,
-      logDate:     log.logDate,
-      notes:       log.notes,
+      id: log.id,
+      exerciseId: log.exerciseId,
+      logDate: log.logDate,
+      notes: log.notes,
       totalVolume: log.totalVolume,
-      createdAt:   log.createdAt,
-      sets:        setRows.map(WorkoutSetModel.fromMap).toList(),
+      createdAt: log.createdAt,
+      sets: setRows.map(WorkoutSetModel.fromMap).toList(),
     );
   }
 }

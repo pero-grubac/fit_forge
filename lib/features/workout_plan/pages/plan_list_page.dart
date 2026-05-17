@@ -77,7 +77,6 @@ class _PlanList extends ConsumerWidget {
   final List<WorkoutPlanModel> plans;
   final List<String> days;
 
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ListView.builder(
@@ -143,7 +142,7 @@ class _PlanList extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.bg2,
         title:
-        const Text('Obriši plan', style: TextStyle(color: AppColors.text1)),
+            const Text('Obriši plan', style: TextStyle(color: AppColors.text1)),
         content: Text('Jesi siguran da želiš obrisati "${plan.name}"?',
             style: const TextStyle(color: AppColors.text2)),
         actions: [

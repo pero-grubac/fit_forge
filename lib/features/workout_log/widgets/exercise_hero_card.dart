@@ -20,6 +20,7 @@ class ExerciseHeroCard extends StatelessWidget {
   final bool isActive;
 
   bool get _isDone => completedSets >= totalSets && completedSets > 0;
+
   double get _progress => totalSets == 0 ? 0 : completedSets / totalSets;
 
   @override

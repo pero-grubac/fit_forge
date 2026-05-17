@@ -97,4 +97,9 @@ class DatabaseHelper {
     await db.execute(
         'CREATE INDEX idx_exercises_plan ON exercises(plan_id, sort_order)');
   }
+
+  Future<void> close() async {
+    await _db?.close();
+    _db = null;
+  }
 }

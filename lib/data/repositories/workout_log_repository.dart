@@ -67,13 +67,15 @@ class WorkoutLogRepository {
     required String exerciseId,
     required DateTime logDate,
     String? notes,
-    required List<({
-    int plannedReps,
-    int actualReps,
-    double plannedWeight,
-    double actualWeight,
-    bool isCompleted,
-    })> sets,
+    required List<
+            ({
+              int plannedReps,
+              int actualReps,
+              double plannedWeight,
+              double actualWeight,
+              bool isCompleted,
+            })>
+        sets,
   }) async {
     // Provjeri postoji li log za danas
     final today = logDate.toIso8601String().substring(0, 10);
@@ -87,9 +89,9 @@ class WorkoutLogRepository {
     // Kreiraj novi
     return create(
       exerciseId: exerciseId,
-      logDate:    logDate,
-      notes:      notes,
-      sets:       sets,
+      logDate: logDate,
+      notes: notes,
+      sets: sets,
     );
   }
 }
