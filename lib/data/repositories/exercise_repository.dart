@@ -65,16 +65,17 @@ class ExerciseRepository {
 
   Future<String?> pickAndSaveImage(String exerciseId) async {
     final picked = await _picker.pickImage(
-      source:       ImageSource.gallery,
-      maxWidth:     800,
-      maxHeight:    800,
+      source: ImageSource.gallery,
+      maxWidth: 800,
+      maxHeight: 800,
       imageQuality: 85,
     );
     if (picked == null) return null;
 
-    final appDir   = await getApplicationDocumentsDirectory();
-    final fileName = 'exercise_${exerciseId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-    final saved    = await File(picked.path).copy('${appDir.path}/$fileName');
+    final appDir = await getApplicationDocumentsDirectory();
+    final fileName =
+        'exercise_${exerciseId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final saved = await File(picked.path).copy('${appDir.path}/$fileName');
 
     await _exerciseDao.updateImagePath(exerciseId, saved.path);
     return saved.path;

@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:fit_forge/data/repositories/exercise_repository.dart';
@@ -15,8 +16,8 @@ class ExerciseImageWidget extends ConsumerWidget {
   });
 
   final ExerciseModel exercise;
-  final double        height;
-  final bool          editable;
+  final double height;
+  final bool editable;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,13 +28,14 @@ class ExerciseImageWidget extends ConsumerWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: SizedBox(
-          width:  double.infinity,
+          width: double.infinity,
           height: height,
-          child:  exercise.hasCustomImage
-              ? _RealImage(path: exercise.imagePath!, onRemove: editable
-              ? () => _removeImage(ref)
-              : null)
-              : _PlaceholderImage(exercise: exercise, color: color, editable: editable),
+          child: exercise.hasCustomImage
+              ? _RealImage(
+                  path: exercise.imagePath!,
+                  onRemove: editable ? () => _removeImage(ref) : null)
+              : _PlaceholderImage(
+                  exercise: exercise, color: color, editable: editable),
         ),
       ),
     );
@@ -52,7 +54,8 @@ class ExerciseImageWidget extends ConsumerWidget {
 
 class _RealImage extends StatelessWidget {
   const _RealImage({required this.path, this.onRemove});
-  final String       path;
+
+  final String path;
   final VoidCallback? onRemove;
 
   @override
@@ -63,7 +66,9 @@ class _RealImage extends StatelessWidget {
         Image.file(File(path), fit: BoxFit.cover),
         if (onRemove != null)
           Positioned(
-            bottom: 0, left: 0, right: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
             child: Container(
               color: Colors.black54,
               padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
@@ -92,9 +97,10 @@ class _PlaceholderImage extends StatelessWidget {
     required this.color,
     required this.editable,
   });
+
   final ExerciseModel exercise;
-  final Color         color;
-  final bool          editable;
+  final Color color;
+  final bool editable;
 
   @override
   Widget build(BuildContext context) {
@@ -115,13 +121,13 @@ class _PlaceholderImage extends StatelessWidget {
   }
 
   IconData _muscleIcon() => switch (exercise.muscleGroup) {
-    'Chest'     => Icons.fitness_center,
-    'Back'      => Icons.accessibility_new,
-    'Shoulders' => Icons.sports_handball,
-    'Biceps'    => Icons.sports_gymnastics,
-    'Triceps'   => Icons.sports_martial_arts,
-    'Legs'      => Icons.directions_run,
-    'Core'      => Icons.circle_outlined,
-    _           => Icons.fitness_center,
-  };
+        'Chest' => Icons.fitness_center,
+        'Back' => Icons.accessibility_new,
+        'Shoulders' => Icons.sports_handball,
+        'Biceps' => Icons.sports_gymnastics,
+        'Triceps' => Icons.sports_martial_arts,
+        'Legs' => Icons.directions_run,
+        'Core' => Icons.circle_outlined,
+        _ => Icons.fitness_center,
+      };
 }
