@@ -2,6 +2,7 @@ import 'package:fit_forge/data/local/dao/default_set_dao.dart';
 import 'package:fit_forge/data/local/database_helper.dart';
 import 'package:fit_forge/data/models/default_set_model.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
+import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:sqflite/sqflite.dart';
 
 class ExerciseDao {
@@ -97,10 +98,17 @@ class ExerciseDao {
   }
 
   Future<void> delete(String id) async {
-    await _db.delete(
-      ExerciseModel.tableName,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await _db.transaction((txn) async {
+      await txn.delete(
+        WorkoutLogModel.tableName,
+        where: 'exercise_id = ?',
+        whereArgs: [id],
+      );
+      await txn.delete(
+        ExerciseModel.tableName,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    });
   }
 }

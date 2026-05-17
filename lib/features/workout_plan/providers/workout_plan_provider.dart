@@ -51,6 +51,18 @@ class WorkoutPlanNotifier extends AsyncNotifier<List<WorkoutPlanModel>> {
   }
 }
 
+final allExercisesProvider = FutureProvider<List<ExerciseModel>>((ref) async {
+  final plans = await ref.watch(workoutPlanNotifierProvider.future);
+  final all = <ExerciseModel>[];
+  for (final plan in plans) {
+    final exercises = await ExerciseRepository().getByPlan(plan.id);
+    all.addAll(exercises);
+  }
+  // Uzmi samo jednu vjezbu po nazivu (case insensitive)
+  final seen = <String>{};
+  return all.where((ex) => seen.add(ex.name.toLowerCase())).toList();
+});
+
 final workoutPlanNotifierProvider =
     AsyncNotifierProvider<WorkoutPlanNotifier, List<WorkoutPlanModel>>(
         WorkoutPlanNotifier.new);
