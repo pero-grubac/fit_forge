@@ -1,6 +1,7 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/data/local/database_helper.dart';
 import 'package:fit_forge/features/settings/providers/settings_provider.dart';
+import 'package:fit_forge/shared/widgets/error_state.dart';
 import 'package:fit_forge/shared/widgets/stepper_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +19,9 @@ class SettingsPage extends ConsumerWidget {
       body: SafeArea(
         child: settings.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Greska: $e')),
+          error: (e, _) => ErrorState(
+            onRetry: () => ref.invalidate(settingsProvider),
+          ),
           data: (s) => _SettingsContent(settings: s),
         ),
       ),

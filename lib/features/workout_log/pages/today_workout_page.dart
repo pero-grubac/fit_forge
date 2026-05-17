@@ -4,6 +4,7 @@ import 'package:fit_forge/features/workout_log/pages/log_session_page.dart';
 import 'package:fit_forge/features/workout_log/providers/workout_log_provider.dart';
 import 'package:fit_forge/features/workout_log/widgets/exercise_hero_card.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
+import 'package:fit_forge/shared/widgets/error_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,7 +19,9 @@ class TodayWorkoutPage extends ConsumerWidget {
       body: SafeArea(
         child: todayPlan.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Greska: $e')),
+          error: (e, _) => ErrorState(
+            onRetry: () => ref.invalidate(todayPlanProvider),
+          ),
           data: (plan) => plan == null
               ? _EmptyState()
               : _PlanContent(planId: plan.id, planName: plan.name),
@@ -104,8 +107,9 @@ class _PlanContent extends ConsumerWidget {
         exercises.when(
           loading: () => const SliverToBoxAdapter(
               child: Center(child: CircularProgressIndicator())),
-          error: (e, _) =>
-              SliverToBoxAdapter(child: Center(child: Text('Greska: $e'))),
+          error: (e, _) => ErrorState(
+            onRetry: () => ref.invalidate(exercisesProvider),
+          ),
           data: (list) {
             final exerciseIds = list.map((e) => e.id).toList();
             final joined = exerciseIds.join(',');
@@ -115,8 +119,9 @@ class _PlanContent extends ConsumerWidget {
             return completedAsync.when(
               loading: () => const SliverToBoxAdapter(
                   child: Center(child: CircularProgressIndicator())),
-              error: (e, _) =>
-                  SliverToBoxAdapter(child: Center(child: Text('Greska: $e'))),
+              error: (e, _) => ErrorState(
+                onRetry: () => ref.invalidate(exercisesProvider),
+              ),
               data: (completed) => SliverPadding(
                 padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
                 sliver: SliverList(

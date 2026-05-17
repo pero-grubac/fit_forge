@@ -9,6 +9,7 @@ import 'package:fit_forge/features/progress/widgets/stat_cards.dart';
 import 'package:fit_forge/features/progress/widgets/volume_bar_chart.dart';
 import 'package:fit_forge/features/progress/widgets/weight_line_chart.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
+import 'package:fit_forge/shared/widgets/error_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -47,7 +48,9 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
             SliverToBoxAdapter(
               child: allExercises.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => const SizedBox.shrink(),
+    error: (e, _) => ErrorState(
+    onRetry: () => ref.invalidate(allExercisesProvider),
+    ),
                 data: (list) => list.isEmpty
                     ? _EmptyState()
                     : ExerciseDropdown(
@@ -99,8 +102,9 @@ class _ProgressContent extends ConsumerWidget {
     return logs.when(
       loading: () => const SliverToBoxAdapter(
           child: Center(child: CircularProgressIndicator())),
-      error: (e, _) =>
-          SliverToBoxAdapter(child: Center(child: Text('Greska: $e'))),
+      error: (e, _) => ErrorState(
+        onRetry: () => ref.invalidate(exerciseLogsByNameProvider),
+      ),
       data: (allLogs) {
         final cutoff = DateTime.now().subtract(Duration(days: periodDays));
         final filtered = periodDays == 9999

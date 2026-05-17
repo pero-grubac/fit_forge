@@ -2,6 +2,7 @@ import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/data/models/workout_plan_model.dart';
 import 'package:fit_forge/features/workout_plan/pages/plan_detail_page.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
+import 'package:fit_forge/shared/widgets/error_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -39,7 +40,9 @@ class PlanListPage extends ConsumerWidget {
             Expanded(
               child: plans.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text('Greska: $e')),
+                error: (e, _) => ErrorState(
+                  onRetry: () => ref.invalidate(workoutPlansProvider),
+                ),
                 data: (list) => list.isEmpty
                     ? _EmptyState(onAdd: () => _showCreateDialog(context, ref))
                     : _PlanList(plans: list, days: _days),
