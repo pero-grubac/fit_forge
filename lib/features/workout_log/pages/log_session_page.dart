@@ -1,4 +1,5 @@
 import 'package:fit_forge/data/repositories/workout_log_repository.dart';
+import 'package:fit_forge/features/workout_plan/widgets/exercise_image_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -138,10 +139,17 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: Row(
                 children: [
+                  // Slika vjezbe
                   if (_exercise != null)
-                    _Chip(
-                      label: _exercise!.muscleGroup,
-                      color: AppColors.muscleGroupColor(_exercise!.muscleGroup),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                        child: ExerciseImageWidget(
+                          exercise: _exercise!,
+                          height:   130,
+                          editable: false,
+                        ),
+                      ),
                     ),
                 ],
               ),

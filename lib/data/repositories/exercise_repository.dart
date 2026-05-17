@@ -1,10 +1,15 @@
+import 'dart:io';
+
 import 'package:fit_forge/data/local/dao/exercise_dao.dart';
 import 'package:fit_forge/data/models/default_set_model.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 class ExerciseRepository {
   final _exerciseDao = ExerciseDao();
+  final _picker = ImagePicker();
 
   Future<List<ExerciseModel>> getByPlan(String planId) =>
       _exerciseDao.getByPlan(planId);
@@ -57,4 +62,27 @@ class ExerciseRepository {
       _exerciseDao.updateSortOrder(id, sortOrder);
 
   Future<void> delete(String id) => _exerciseDao.delete(id);
+
+  Future<String?> pickAndSaveImage(String exerciseId) async {
+    final picked = await _picker.pickImage(
+      source:       ImageSource.gallery,
+      maxWidth:     800,
+      maxHeight:    800,
+      imageQuality: 85,
+    );
+    if (picked == null) return null;
+
+    final appDir   = await getApplicationDocumentsDirectory();
+    final fileName = 'exercise_${exerciseId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final saved    = await File(picked.path).copy('${appDir.path}/$fileName');
+
+    await _exerciseDao.updateImagePath(exerciseId, saved.path);
+    return saved.path;
+  }
+
+  Future<void> removeImage(String exerciseId, String imagePath) async {
+    final file = File(imagePath);
+    if (await file.exists()) await file.delete();
+    await _exerciseDao.updateImagePath(exerciseId, null);
+  }
 }

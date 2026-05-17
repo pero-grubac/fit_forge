@@ -3,6 +3,7 @@ import 'package:fit_forge/data/models/default_set_model.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:fit_forge/data/repositories/exercise_repository.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
+import 'package:fit_forge/features/workout_plan/widgets/exercise_image_widget.dart';
 import 'package:fit_forge/shared/widgets/muscle_group_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -122,6 +123,11 @@ class _ExerciseList extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+              ExerciseImageWidget(
+                exercise: ex,
+                height: 90,
+                editable: true,
               ),
               // Default setovi info
               if (ex.defaultSets.isNotEmpty)
