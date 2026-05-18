@@ -1,5 +1,6 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/data/local/database_helper.dart';
+import 'package:fit_forge/features/settings/providers/quote_provider.dart';
 import 'package:fit_forge/features/settings/providers/settings_provider.dart';
 import 'package:fit_forge/shared/widgets/error_state.dart';
 import 'package:fit_forge/shared/widgets/stepper_field.dart';
@@ -92,6 +93,88 @@ class _SettingsContent extends ConsumerWidget {
             onTap: () => _confirmReset(context, ref),
           ),
         ]),
+
+        const SizedBox(height: 20),
+
+        _SectionLabel('MOTIVACIONE PORUKE'),
+        _SettingsCard(children: [
+          _ActionRow(
+            label:    'Dodaj poruku',
+            subtitle: 'Kreiraj vlastitu motivacionu poruku',
+            icon:     Icons.add_circle_outline,
+            color:    AppColors.accent,
+            onTap:    () => _showAddQuoteDialog(context, ref),
+          ),
+        ]),
+        const SizedBox(height: 10),
+
+// Lista poruka
+        ref.watch(quoteNotifierProvider).when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error:   (e, _) => const ErrorState(),
+          data:    (quotes) => quotes.isEmpty
+              ? Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color:        AppColors.card,
+              borderRadius: BorderRadius.circular(14),
+              border:       Border.all(color: AppColors.border),
+            ),
+            child: const Text(
+              'Nema korisnickih poruka — koriste se ugradjene.',
+              style: TextStyle(fontSize: 13, color: AppColors.text3),
+              textAlign: TextAlign.center,
+            ),
+          )
+              : _SettingsCard(
+            children: quotes.asMap().entries.map((e) {
+              final i     = e.key;
+              final quote = e.value;
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: Row(
+                      children: [
+                        // Toggle aktivnosti
+                        Switch(
+                          value:           quote.isActive,
+                          activeColor:     AppColors.accent,
+                          onChanged: (v) => ref
+                              .read(quoteNotifierProvider.notifier)
+                              .toggleActive(quote.id, v),
+                        ),
+                        const SizedBox(width: 8),
+                        // Tekst poruke
+                        Expanded(
+                          child: Text(
+                            quote.text,
+                            style: TextStyle(
+                              fontSize:  13,
+                              color:     quote.isActive
+                                  ? AppColors.text1
+                                  : AppColors.text3,
+                            ),
+                          ),
+                        ),
+                        // Delete
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline,
+                              color: AppColors.red, size: 18),
+                          onPressed: () => ref
+                              .read(quoteNotifierProvider.notifier)
+                              .delete(quote.id),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (i < quotes.length - 1)
+                    const Divider(height: 1, color: AppColors.border),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
       ],
     );
   }
@@ -137,6 +220,66 @@ class _SettingsContent extends ConsumerWidget {
 
     // Invalidaj sve providere
     ref.invalidate(settingsProvider);
+  }
+
+  void _showAddQuoteDialog(BuildContext context, WidgetRef ref) {
+    final ctrl = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.bg2,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+            16, 16, 16, MediaQuery.of(ctx).viewInsets.bottom + 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36, height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.bg4,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('Nova poruka',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.text1)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              maxLines:   3,
+              style: const TextStyle(color: AppColors.text1),
+              decoration: const InputDecoration(
+                hintText: 'Upiši svoju motivacionu poruku...',
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (ctrl.text.trim().isEmpty) return;
+                  await ref
+                      .read(quoteNotifierProvider.notifier)
+                      .create(ctrl.text.trim());
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: const Text('Dodaj poruku'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

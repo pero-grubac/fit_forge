@@ -63,12 +63,13 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
             ),
 
             // Period filter
-            SliverToBoxAdapter(
-              child: PeriodFilter(
-                selected: _periodDays,
-                onChanged: (d) => setState(() => _periodDays = d),
+            if (allExercises.value?.isNotEmpty == true)
+              SliverToBoxAdapter(
+                child: PeriodFilter(
+                  selected: _periodDays,
+                  onChanged: (d) => setState(() => _periodDays = d),
+                ),
               ),
-            ),
 
             // Grafovi i statistike
             if (_selectedExercise != null ||
@@ -102,8 +103,10 @@ class _ProgressContent extends ConsumerWidget {
     return logs.when(
       loading: () => const SliverToBoxAdapter(
           child: Center(child: CircularProgressIndicator())),
-      error: (e, _) => ErrorState(
-        onRetry: () => ref.invalidate(exerciseLogsByNameProvider),
+      error: (e, _) => SliverToBoxAdapter(
+        child: ErrorState(
+          onRetry: () => ref.invalidate(exerciseLogsByNameProvider(exercise.name)),
+        ),
       ),
       data: (allLogs) {
         final cutoff = DateTime.now().subtract(Duration(days: periodDays));
@@ -159,21 +162,20 @@ class _ProgressContent extends ConsumerWidget {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const SliverToBoxAdapter(
-      child: Padding(
-        padding: EdgeInsets.all(60),
-        child: Center(
-          child: Column(
-            children: [
-              Icon(Icons.bar_chart_rounded, size: 64, color: AppColors.text3),
-              SizedBox(height: 16),
-              Text('Nemas jos nikakav trening',
-                  style: TextStyle(fontSize: 16, color: AppColors.text2)),
-              SizedBox(height: 8),
-              Text('Pokreni trening na Home ekranu',
-                  style: TextStyle(fontSize: 13, color: AppColors.text3)),
-            ],
-          ),
+    return const Padding(
+      padding: EdgeInsets.all(60),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.bar_chart_rounded, size: 64, color: AppColors.text3),
+            SizedBox(height: 16),
+            Text('Nemas jos nikakav trening',
+                style: TextStyle(fontSize: 16, color: AppColors.text2)),
+            SizedBox(height: 8),
+            Text('Pokreni trening na Home ekranu',
+                style: TextStyle(fontSize: 13, color: AppColors.text3)),
+          ],
         ),
       ),
     );

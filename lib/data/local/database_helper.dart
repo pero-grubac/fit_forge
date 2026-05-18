@@ -85,6 +85,14 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE motivational_quotes (
+        id         TEXT PRIMARY KEY,
+        text       TEXT NOT NULL,
+        is_active  INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL
+      )
+    ''');
     await _createIndexes(db);
   }
 

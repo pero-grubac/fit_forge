@@ -1,5 +1,6 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
+import 'package:fit_forge/features/settings/widgets/motivational_banner.dart';
 import 'package:fit_forge/features/workout_log/pages/log_session_page.dart';
 import 'package:fit_forge/features/workout_log/providers/workout_log_provider.dart';
 import 'package:fit_forge/features/workout_log/widgets/exercise_hero_card.dart';
@@ -71,36 +72,7 @@ class _PlanContent extends ConsumerWidget {
 
         // Motivaciona poruka
         SliverToBoxAdapter(
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [
-                AppColors.accent.withOpacity(0.1),
-                AppColors.green.withOpacity(0.06),
-              ]),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.accent.withOpacity(0.18)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Motivacija dana',
-                    style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.accent)),
-                const SizedBox(height: 4),
-                Text(
-                  _motivationMessage(),
-                  style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.text2,
-                      fontStyle: FontStyle.italic),
-                ),
-              ],
-            ),
-          ),
+          child: MotivationBanner(planName: planName),
         ),
 
         // Lista vjezbi
