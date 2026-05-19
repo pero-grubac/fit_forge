@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/local/database_helper.dart';
 import 'package:fit_forge/features/settings/providers/quote_provider.dart';
 import 'package:fit_forge/features/settings/providers/settings_provider.dart';
@@ -40,19 +41,28 @@ class _SettingsContent extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(14, 16, 14, 40),
       children: [
-        const Text('Settings',
-            style: TextStyle(
+        // Jezik
+        _SectionLabel(context.l10n.settings_language_section),
+        _SettingsCard(children: [
+          _LanguageRow(
+            selected: settings.locale,
+            onChanged: (v) => ref.read(settingsProvider.notifier).setLocale(v),
+          ),
+        ]),
+        const SizedBox(height: 20),
+        Text(context.l10n.settings_title,
+            style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
                 color: AppColors.text1)),
         const SizedBox(height: 20),
 
         // Progression pravila
-        const _SectionLabel('PROGRESSION PRAVILA'),
+        _SectionLabel(context.l10n.settings_progression_section),
         _SettingsCard(children: [
           _IncrementRow(
-            label: 'Mali inkrement',
-            subtitle: 'Za tezine do 100 kg',
+            label: context.l10n.settings_small_increment,
+            subtitle: context.l10n.settings_small_increment_sub,
             value: settings.smallIncrement,
             min: 0.5,
             max: 10.0,
@@ -62,8 +72,8 @@ class _SettingsContent extends ConsumerWidget {
           ),
           const _Divider(),
           _IncrementRow(
-            label: 'Veliki inkrement',
-            subtitle: 'Za tezine iznad 100 kg',
+            label: context.l10n.settings_large_increment,
+            subtitle: context.l10n.settings_large_increment_sub,
             value: settings.largeIncrement,
             min: 1.0,
             max: 20.0,
@@ -73,8 +83,8 @@ class _SettingsContent extends ConsumerWidget {
           ),
           const _Divider(),
           _SliderRow(
-            label: 'Prag napretka',
-            subtitle: 'Min. completion rate za povecanje tezine',
+            label: context.l10n.settings_threshold,
+            subtitle: context.l10n.settings_threshold_sub,
             value: settings.progressionThreshold,
             onChanged: (v) =>
                 ref.read(settingsProvider.notifier).setProgressionThreshold(v),
@@ -83,11 +93,11 @@ class _SettingsContent extends ConsumerWidget {
         const SizedBox(height: 20),
 
         // Opste
-        const _SectionLabel('OPSTE'),
+        _SectionLabel(context.l10n.settings_general_section),
         _SettingsCard(children: [
           _ActionRow(
-            label: 'Resetuj sve podatke',
-            subtitle: 'Brise sve planove, vjezbe i treninge',
+            label: context.l10n.settings_reset,
+            subtitle: context.l10n.settings_reset_sub,
             icon: Icons.delete_outline,
             color: AppColors.red,
             onTap: () => _confirmReset(context, ref),
@@ -96,85 +106,87 @@ class _SettingsContent extends ConsumerWidget {
 
         const SizedBox(height: 20),
 
-        _SectionLabel('MOTIVACIONE PORUKE'),
+        _SectionLabel(context.l10n.settings_quotes_section),
         _SettingsCard(children: [
           _ActionRow(
-            label:    'Dodaj poruku',
-            subtitle: 'Kreiraj vlastitu motivacionu poruku',
-            icon:     Icons.add_circle_outline,
-            color:    AppColors.accent,
-            onTap:    () => _showAddQuoteDialog(context, ref),
+            label: context.l10n.settings_quotes_add,
+            subtitle: context.l10n.settings_quotes_add_sub,
+            icon: Icons.add_circle_outline,
+            color: AppColors.accent,
+            onTap: () => _showAddQuoteDialog(context, ref),
           ),
         ]),
         const SizedBox(height: 10),
 
 // Lista poruka
         ref.watch(quoteNotifierProvider).when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error:   (e, _) => const ErrorState(),
-          data:    (quotes) => quotes.isEmpty
-              ? Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color:        AppColors.card,
-              borderRadius: BorderRadius.circular(14),
-              border:       Border.all(color: AppColors.border),
-            ),
-            child: const Text(
-              'Nema korisnickih poruka — koriste se ugradjene.',
-              style: TextStyle(fontSize: 13, color: AppColors.text3),
-              textAlign: TextAlign.center,
-            ),
-          )
-              : _SettingsCard(
-            children: quotes.asMap().entries.map((e) {
-              final i     = e.key;
-              final quote = e.value;
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: Row(
-                      children: [
-                        // Toggle aktivnosti
-                        Switch(
-                          value:           quote.isActive,
-                          activeColor:     AppColors.accent,
-                          onChanged: (v) => ref
-                              .read(quoteNotifierProvider.notifier)
-                              .toggleActive(quote.id, v),
-                        ),
-                        const SizedBox(width: 8),
-                        // Tekst poruke
-                        Expanded(
-                          child: Text(
-                            quote.text,
-                            style: TextStyle(
-                              fontSize:  13,
-                              color:     quote.isActive
-                                  ? AppColors.text1
-                                  : AppColors.text3,
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => const ErrorState(),
+              data: (quotes) => quotes.isEmpty
+                  ? Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.card,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Text(
+                        context.l10n.settings_quotes_empty,
+                        style: const TextStyle(
+                            fontSize: 13, color: AppColors.text3),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : _SettingsCard(
+                      children: quotes.asMap().entries.map((e) {
+                        final i = e.key;
+                        final quote = e.value;
+                        return Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              child: Row(
+                                children: [
+                                  // Toggle aktivnosti
+                                  Switch(
+                                    value: quote.isActive,
+                                    activeColor: AppColors.accent,
+                                    onChanged: (v) => ref
+                                        .read(quoteNotifierProvider.notifier)
+                                        .toggleActive(quote.id, v),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Tekst poruke
+                                  Expanded(
+                                    child: Text(
+                                      quote.text,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: quote.isActive
+                                            ? AppColors.text1
+                                            : AppColors.text3,
+                                      ),
+                                    ),
+                                  ),
+                                  // Delete
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline,
+                                        color: AppColors.red, size: 18),
+                                    onPressed: () => ref
+                                        .read(quoteNotifierProvider.notifier)
+                                        .delete(quote.id),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ),
-                        // Delete
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline,
-                              color: AppColors.red, size: 18),
-                          onPressed: () => ref
-                              .read(quoteNotifierProvider.notifier)
-                              .delete(quote.id),
-                        ),
-                      ],
+                            if (i < quotes.length - 1)
+                              const Divider(height: 1, color: AppColors.border),
+                          ],
+                        );
+                      }).toList(),
                     ),
-                  ),
-                  if (i < quotes.length - 1)
-                    const Divider(height: 1, color: AppColors.border),
-                ],
-              );
-            }).toList(),
-          ),
-        ),
+            ),
       ],
     );
   }
@@ -184,24 +196,25 @@ class _SettingsContent extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.bg2,
-        title: const Text('Resetuj sve podatke',
-            style: TextStyle(color: AppColors.text1)),
-        content: const Text(
-            'Ovo ce obrisati sve planove, vjezbe i istoriju treninga. Ova akcija se ne moze ponistiti.',
-            style: TextStyle(color: AppColors.text2)),
+        title: Text(context.l10n.settings_reset_title,
+            style: const TextStyle(color: AppColors.text1)),
+        content: Text(context.l10n.settings_reset_confirm,
+            style: const TextStyle(color: AppColors.text2)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Odustani',
-                style: TextStyle(color: AppColors.text2)),
+            child: Text(context.l10n.btn_cancel,
+                style: const TextStyle(color: AppColors.text2)),
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
               await _resetAllData(ref);
             },
-            child:
-                const Text('Resetuj', style: TextStyle(color: AppColors.red)),
+            child: Text(
+              context.l10n.settings_reset,
+              style: const TextStyle(color: AppColors.red),
+            ),
           ),
         ],
       ),
@@ -240,7 +253,8 @@ class _SettingsContent extends ConsumerWidget {
           children: [
             Center(
               child: Container(
-                width: 36, height: 4,
+                width: 36,
+                height: 4,
                 decoration: BoxDecoration(
                   color: AppColors.bg4,
                   borderRadius: BorderRadius.circular(2),
@@ -248,33 +262,32 @@ class _SettingsContent extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Nova poruka',
-                style: TextStyle(
+            Text(context.l10n.settings_quote_new,
+                style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: AppColors.text1)),
             const SizedBox(height: 12),
             TextField(
               controller: ctrl,
-              maxLines:   3,
+              maxLines: 3,
               style: const TextStyle(color: AppColors.text1),
-              decoration: const InputDecoration(
-                hintText: 'Upiši svoju motivacionu poruku...',
+              decoration: InputDecoration(
+                hintText: context.l10n.settings_quote_hint,
               ),
             ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () async {
-                  if (ctrl.text.trim().isEmpty) return;
-                  await ref
-                      .read(quoteNotifierProvider.notifier)
-                      .create(ctrl.text.trim());
-                  if (ctx.mounted) Navigator.pop(ctx);
-                },
-                child: const Text('Dodaj poruku'),
-              ),
+                  onPressed: () async {
+                    if (ctrl.text.trim().isEmpty) return;
+                    await ref
+                        .read(quoteNotifierProvider.notifier)
+                        .create(ctrl.text.trim());
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                  child: Text(context.l10n.settings_quote_add_btn)),
             ),
           ],
         ),
@@ -486,6 +499,44 @@ class _ActionRow extends StatelessWidget {
             ),
             Icon(Icons.chevron_right, color: color.withOpacity(0.5), size: 20),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LanguageRow extends StatelessWidget {
+  const _LanguageRow({required this.selected, required this.onChanged});
+
+  final String selected;
+  final ValueChanged<String> onChanged;
+
+  static const _options = [
+    (label: 'English', value: 'en'),
+    (label: 'Srpski (lat)', value: 'sr'),
+    (label: 'Srpski (ćir)', value: 'sr_Cyrl'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selected,
+          isExpanded: true,
+          dropdownColor: AppColors.bg2,
+          style: const TextStyle(color: AppColors.text1, fontSize: 14),
+          icon: const Icon(Icons.expand_more, color: AppColors.text2),
+          items: _options
+              .map((opt) => DropdownMenuItem(
+                    value: opt.value,
+                    child: Text(opt.label),
+                  ))
+              .toList(),
+          onChanged: (v) {
+            if (v != null) onChanged(v);
+          },
         ),
       ),
     );

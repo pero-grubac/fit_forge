@@ -1,9 +1,11 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:fit_forge/data/repositories/exercise_repository.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
 import 'package:fit_forge/features/workout_plan/widgets/add_exercise_sheet.dart';
 import 'package:fit_forge/features/workout_plan/widgets/exercise_image_widget.dart';
+import 'package:fit_forge/shared/widgets/error_state.dart';
 import 'package:fit_forge/shared/widgets/muscle_group_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +28,9 @@ class PlanDetailPage extends ConsumerWidget {
       ),
       body: exercises.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Greska: $e')),
+        error: (e, _) => ErrorState(
+          onRetry: () => ref.invalidate(exercisesProvider(planId)),
+        ),
         data: (list) => list.isEmpty
             ? _EmptyState()
             : _ExerciseList(exercises: list, planId: planId, ref: ref),
@@ -35,8 +39,13 @@ class PlanDetailPage extends ConsumerWidget {
         onPressed: () => _showAddExercise(context, ref),
         backgroundColor: AppColors.accent,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Dodaj vjezbu',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        label: Text(
+          context.l10n.exercise_add,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
@@ -108,7 +117,7 @@ class _ExerciseList extends StatelessWidget {
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.text1)),
                           Text(
-                            '${ex.muscleGroup}  ·  ${ex.defaultSets.length} seta',
+                            '${ex.muscleGroup}  ·  ${ex.defaultSets.length}  ${context.l10n.exercise_sets_label.toLowerCase()}',
                             style: const TextStyle(
                                 fontSize: 12, color: AppColors.text2),
                           ),
@@ -135,11 +144,13 @@ class _ExerciseList extends StatelessWidget {
                   child: Row(
                     children: [
                       _InfoChip(
-                          label: '${ex.defaultSets.length} seta',
+                          label:
+                              '${ex.defaultSets.length}  ${context.l10n.exercise_sets_label.toLowerCase()}',
                           icon: Icons.repeat),
                       const SizedBox(width: 8),
                       _InfoChip(
-                          label: '${ex.defaultSets.first.reps} reps',
+                          label:
+                              '${ex.defaultSets.first.reps}  ${context.l10n.exercise_reps_label.toLowerCase()}',
                           icon: Icons.fitness_center),
                       const SizedBox(width: 8),
                       _InfoChip(
@@ -160,15 +171,27 @@ class _ExerciseList extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.bg2,
-        title: const Text('Obriši vježbu',
-            style: TextStyle(color: AppColors.text1)),
-        content: Text('Jesi siguran da želiš obrisati "${ex.name}"?',
-            style: const TextStyle(color: AppColors.text2)),
+        title: Text(
+          context.l10n.exercise_delete_title,
+          style: const TextStyle(
+            color: AppColors.text1,
+          ),
+        ),
+        content: Text(
+          context.l10n.exercise_delete_confirm(ex.name),
+          style: const TextStyle(
+            color: AppColors.text2,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Odustani',
-                style: TextStyle(color: AppColors.text2)),
+            child: Text(
+              context.l10n.btn_cancel,
+              style: const TextStyle(
+                color: AppColors.text2,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () async {
@@ -176,7 +199,8 @@ class _ExerciseList extends StatelessWidget {
               await ExerciseRepository().delete(ex.id);
               ref.invalidate(exercisesProvider(planId));
             },
-            child: const Text('Obriši', style: TextStyle(color: AppColors.red)),
+            child: Text(context.l10n.btn_delete,
+                style: const TextStyle(color: AppColors.red)),
           ),
         ],
       ),
@@ -215,20 +239,20 @@ class _InfoChip extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.fitness_center, size: 64, color: AppColors.text3),
-          SizedBox(height: 16),
-          Text('Nema vježbi u planu',
-              style: TextStyle(
+          const Icon(Icons.fitness_center, size: 64, color: AppColors.text3),
+          const SizedBox(height: 16),
+          Text(context.l10n.exercise_no_exercises,
+              style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: AppColors.text2)),
-          SizedBox(height: 8),
-          Text('Dodaj prvu vježbu',
-              style: TextStyle(fontSize: 14, color: AppColors.text3)),
+          const SizedBox(height: 8),
+          Text(context.l10n.exercise_no_exercises_sub,
+              style: const TextStyle(fontSize: 14, color: AppColors.text3)),
         ],
       ),
     );

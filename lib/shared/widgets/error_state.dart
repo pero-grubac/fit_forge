@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:flutter/material.dart';
 
 class ErrorState extends StatelessWidget {
@@ -8,7 +9,7 @@ class ErrorState extends StatelessWidget {
     super.key,
   });
 
-  final String  message;
+  final String message;
   final VoidCallback? onRetry;
 
   @override
@@ -22,7 +23,7 @@ class ErrorState extends StatelessWidget {
             const Icon(Icons.error_outline, size: 48, color: AppColors.text3),
             const SizedBox(height: 16),
             Text(
-              message,
+              context.l10n.error_generic,
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 14, color: AppColors.text2),
             ),
@@ -34,7 +35,7 @@ class ErrorState extends StatelessWidget {
                   foregroundColor: AppColors.accent,
                   side: const BorderSide(color: AppColors.accent),
                 ),
-                child: const Text('Pokušaj ponovo'),
+                child: Text(context.l10n.error_generic),
               ),
             ]
           ],

@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:fit_forge/features/settings/widgets/motivational_banner.dart';
 import 'package:fit_forge/features/workout_log/pages/log_session_page.dart';
@@ -51,7 +52,7 @@ class _PlanContent extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _greeting(),
+                _greeting(context),
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -59,7 +60,7 @@ class _PlanContent extends ConsumerWidget {
                         size: 13, color: AppColors.text2),
                     const SizedBox(width: 5),
                     Text(
-                      '${_dayName()}  ·  $planName',
+                      '${_dayName(context)}  ·  $planName',
                       style:
                           const TextStyle(fontSize: 13, color: AppColors.text2),
                     ),
@@ -137,13 +138,13 @@ class _PlanContent extends ConsumerWidget {
     });
   }
 
-  Widget _greeting() {
+  Widget _greeting(BuildContext context) {
     final hour = DateTime.now().hour;
     final greet = hour < 12
-        ? 'Dobro jutro'
+        ? context.l10n.greeting_morning
         : hour < 18
-            ? 'Dobar dan'
-            : 'Dobro vece';
+            ? context.l10n.greeting_afternoon
+            : context.l10n.greeting_evening;
     return Text(
       greet,
       style: const TextStyle(
@@ -151,53 +152,45 @@ class _PlanContent extends ConsumerWidget {
     );
   }
 
-  String _dayName() {
-    const days = [
+  String _dayName(BuildContext context) {
+    final days = [
       '',
-      'Ponedjeljak',
-      'Utorak',
-      'Srijeda',
-      'Cetvrtak',
-      'Petak',
-      'Subota',
-      'Nedjelja'
+      context.l10n.days_monday,
+      context.l10n.days_tuesday,
+      context.l10n.days_wednesday,
+      context.l10n.days_thursday,
+      context.l10n.days_friday,
+      context.l10n.days_saturday,
+      context.l10n.days_sunday,
     ];
     return days[DateTime.now().weekday];
-  }
-
-  String _motivationMessage() {
-    const messages = [
-      'Svaki kilogram koji dignes je dokaz tvoje snage.',
-      'Ne pitaj se kako ces — pitaj se zasto neces.',
-      'Snaga se ne gradi za jedan dan. Gradi se trening po trening.',
-      'Tezina ne laze. Niti ti.',
-      'Svaki trening je investicija u sebe.',
-    ];
-    final index = DateTime.now().day % messages.length;
-    return '"${messages[index]}"';
   }
 }
 
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.fitness_center, size: 64, color: AppColors.text3),
-          SizedBox(height: 16),
+          const Icon(Icons.fitness_center, size: 64, color: AppColors.text3),
+          const SizedBox(height: 16),
           Text(
-            'Nemas plan za danas',
-            style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.text2),
+            context.l10n.home_noplan,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.text2,
+            ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
-            'Kreiraj plan u Plan editoru',
-            style: TextStyle(fontSize: 14, color: AppColors.text3),
+            context.l10n.home_noplan_sub,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.text3,
+            ),
           ),
         ],
       ),

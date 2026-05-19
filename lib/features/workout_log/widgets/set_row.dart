@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:flutter/material.dart';
 
 class SetRow {
@@ -164,22 +165,32 @@ class SetsTable extends StatelessWidget {
       child: Column(
         children: [
           // Header
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
               children: [
-                SizedBox(width: 30),
+                const SizedBox(width: 30),
                 Expanded(
-                    child: Text('Tezina (kg)',
-                        textAlign: TextAlign.center,
-                        style:
-                            TextStyle(fontSize: 11, color: AppColors.text3))),
+                  child: Text(
+                    context.l10n.exercise_weight_label,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.text3,
+                    ),
+                  ),
+                ),
                 Expanded(
-                    child: Text('Repovi',
-                        textAlign: TextAlign.center,
-                        style:
-                            TextStyle(fontSize: 11, color: AppColors.text3))),
-                SizedBox(width: 36),
+                  child: Text(
+                    context.l10n.exercise_reps_label,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.text3,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 36),
               ],
             ),
           ),

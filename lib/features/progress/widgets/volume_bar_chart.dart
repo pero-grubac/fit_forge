@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -44,8 +45,8 @@ class VolumeBarChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Volumen po treningu',
-              style: TextStyle(
+          Text(context.l10n.progress_chart_volume,
+              style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: AppColors.text2)),
@@ -55,7 +56,7 @@ class VolumeBarChart extends StatelessWidget {
             child: BarChart(
               BarChartData(
                 maxY: maxVol * 1.2,
-                gridData: FlGridData(show: false),
+                gridData: const FlGridData(show: false),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
                   bottomTitles: AxisTitles(

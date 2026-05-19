@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:fit_forge/shared/widgets/muscle_group_badge.dart';
 import 'package:flutter/material.dart';
@@ -101,7 +102,7 @@ class ExerciseHeroCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    '$completedSets/$totalSets seta',
+                    context.l10n.home_sets(completedSets, totalSets),
                     style:
                         const TextStyle(fontSize: 11, color: AppColors.text3),
                   ),
@@ -124,12 +125,14 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isDone) {
-      return _badge(AppColors.green, Icons.check, 'Gotovo');
+      return _badge(AppColors.green, Icons.check, context.l10n.status_done);
     }
     if (isActive) {
-      return _badge(AppColors.accent, Icons.radio_button_checked, 'Aktivno');
+      return _badge(AppColors.accent, Icons.radio_button_checked,
+          context.l10n.status_active);
     }
-    return _badge(AppColors.text3, Icons.radio_button_unchecked, 'Ceka');
+    return _badge(AppColors.text3, Icons.radio_button_unchecked,
+        context.l10n.status_waiting);
   }
 
   Widget _badge(Color color, IconData icon, String label) {

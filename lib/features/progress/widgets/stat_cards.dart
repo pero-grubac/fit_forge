@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:flutter/material.dart';
 
@@ -25,15 +26,17 @@ class StatCards extends StatelessWidget {
           Expanded(
               child: _StatCard(
                   value: '${maxWeight.toStringAsFixed(1)} kg',
-                  label: 'Max tezina')),
+                  label: context.l10n.progress_max_weight)),
           const SizedBox(width: 8),
           Expanded(
-              child: _StatCard(value: '$totalSessions', label: 'Treninga')),
+              child: _StatCard(
+                  value: '$totalSessions',
+                  label: context.l10n.progress_sessions)),
           const SizedBox(width: 8),
           Expanded(
               child: _StatCard(
             value: growth == null ? '-' : '${growth.toStringAsFixed(0)}%',
-            label: 'Rast snage',
+            label: context.l10n.progress_growth,
             valueColor: growth != null && growth > 0 ? AppColors.green : null,
           )),
         ],

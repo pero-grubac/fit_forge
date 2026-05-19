@@ -1,17 +1,32 @@
+import 'package:fit_forge/core/router/route_names.dart';
+import 'package:fit_forge/features/onboarding/pages/onboarding_page.dart';
+import 'package:fit_forge/features/progress/pages/progress_page.dart';
+import 'package:fit_forge/features/settings/pages/settings_page.dart';
+import 'package:fit_forge/features/settings/providers/settings_provider.dart';
 import 'package:fit_forge/features/workout_log/pages/today_workout_page.dart';
+import 'package:fit_forge/features/workout_plan/pages/plan_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/progress/pages/progress_page.dart';
-import '../../features/settings/pages/settings_page.dart';
-import '../../features/workout_plan/pages/plan_list_page.dart';
-import 'route_names.dart';
-
 final routerProvider = Provider<GoRouter>((ref) {
+  final notifier = _RouterNotifier(ref);
+
   return GoRouter(
     initialLocation: RouteNames.home,
+    refreshListenable: notifier,
+    redirect: (context, state) {
+      final isSetupDone = notifier.isSetupDone;
+      if (!isSetupDone && state.matchedLocation != RouteNames.onboarding) {
+        return RouteNames.onboarding;
+      }
+      return null;
+    },
     routes: [
+      GoRoute(
+        path: RouteNames.onboarding,
+        builder: (context, state) => const OnboardingPage(),
+      ),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
@@ -36,6 +51,19 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+class _RouterNotifier extends ChangeNotifier {
+  _RouterNotifier(this._ref) {
+    _ref.listen(settingsProvider, (_, __) => notifyListeners());
+  }
+
+  final Ref _ref;
+
+  bool get isSetupDone => _ref.read(settingsProvider).maybeWhen(
+        data: (s) => s.isSetupDone,
+        orElse: () => true,
+      );
+}
 
 class MainShell extends StatelessWidget {
   const MainShell({required this.child, super.key});

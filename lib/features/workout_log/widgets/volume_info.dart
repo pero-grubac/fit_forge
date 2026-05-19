@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/features/workout_log/widgets/set_row.dart';
 import 'package:flutter/material.dart';
 
@@ -24,13 +25,21 @@ class VolumeInfo extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text('Ukupni volumen',
-              style: TextStyle(fontSize: 13, color: AppColors.text2)),
-          Text('${volume.toStringAsFixed(1)} kg',
-              style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.text1)),
+          Text(
+            context.l10n.log_volume,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.text2,
+            ),
+          ),
+          Text(
+            '${volume.toStringAsFixed(1)} kg',
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppColors.text1,
+            ),
+          ),
         ],
       ),
     );

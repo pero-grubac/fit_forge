@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:flutter/material.dart';
 
@@ -49,8 +50,9 @@ class PersonalRecords extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Osobni rekord',
-                    style: TextStyle(fontSize: 12, color: AppColors.text2)),
+                Text(context.l10n.progress_personal_record,
+                    style:
+                        const TextStyle(fontSize: 12, color: AppColors.text2)),
                 const SizedBox(height: 2),
                 Text('${bestWeight.toStringAsFixed(1)} kg',
                     style: const TextStyle(

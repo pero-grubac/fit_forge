@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:flutter/material.dart';
 
 class PeriodFilter extends StatelessWidget {
@@ -8,19 +9,18 @@ class PeriodFilter extends StatelessWidget {
   final int selected;
   final ValueChanged<int> onChanged;
 
-  static const _options = [
-    (label: '1 mj', days: 30),
-    (label: '3 mj', days: 90),
-    (label: '6 mj', days: 180),
-    (label: 'Sve', days: 9999),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final options = [
+      (label: '1 mj', days: 30),
+      (label: '3 mj', days: 90),
+      (label: '6 mj', days: 180),
+      (label: context.l10n.progress_period_all, days: 9999),
+    ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 0, 14, 16),
       child: Row(
-        children: _options.map((opt) {
+        children: options.map((opt) {
           final active = selected == opt.days;
           return Padding(
             padding: const EdgeInsets.only(right: 8),

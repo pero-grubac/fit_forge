@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/workout_plan_model.dart';
 import 'package:fit_forge/features/workout_plan/pages/plan_detail_page.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
@@ -9,33 +10,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class PlanListPage extends ConsumerWidget {
   const PlanListPage({super.key});
 
-  static const _days = [
-    '',
-    'Ponedjeljak',
-    'Utorak',
-    'Srijeda',
-    'Cetvrtak',
-    'Petak',
-    'Subota',
-    'Nedjelja'
-  ];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final plans = ref.watch(workoutPlansProvider);
-
+    final days = [
+      '',
+      context.l10n.days_monday,
+      context.l10n.days_tuesday,
+      context.l10n.days_wednesday,
+      context.l10n.days_thursday,
+      context.l10n.days_friday,
+      context.l10n.days_saturday,
+      context.l10n.days_sunday,
+    ];
     return Scaffold(
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(18, 16, 18, 16),
-              child: Text('Plan editor',
-                  style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.text1)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+              child: Text(
+                context.l10n.plan_editor_title,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.text1,
+                ),
+              ),
             ),
             Expanded(
               child: plans.when(
@@ -45,7 +47,7 @@ class PlanListPage extends ConsumerWidget {
                 ),
                 data: (list) => list.isEmpty
                     ? _EmptyState(onAdd: () => _showCreateDialog(context, ref))
-                    : _PlanList(plans: list, days: _days),
+                    : _PlanList(plans: list, days: days),
               ),
             ),
           ],
@@ -55,8 +57,13 @@ class PlanListPage extends ConsumerWidget {
         onPressed: () => _showCreateDialog(context, ref),
         backgroundColor: AppColors.accent,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Novi plan',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        label: Text(
+          context.l10n.plan_new,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
@@ -144,15 +151,23 @@ class _PlanList extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.bg2,
-        title:
-            const Text('Obriši plan', style: TextStyle(color: AppColors.text1)),
-        content: Text('Jesi siguran da želiš obrisati "${plan.name}"?',
+        title: Text(
+          context.l10n.plan_delete_title,
+          style: const TextStyle(
+            color: AppColors.text1,
+          ),
+        ),
+        content: Text(context.l10n.plan_delete_confirm(plan.name),
             style: const TextStyle(color: AppColors.text2)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Odustani',
-                style: TextStyle(color: AppColors.text2)),
+            child: Text(
+              context.l10n.btn_cancel,
+              style: const TextStyle(
+                color: AppColors.text2,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () async {
@@ -161,7 +176,12 @@ class _PlanList extends ConsumerWidget {
                   .read(workoutPlanNotifierProvider.notifier)
                   .deletePlan(plan.id);
             },
-            child: const Text('Obriši', style: TextStyle(color: AppColors.red)),
+            child: Text(
+              context.l10n.btn_delete,
+              style: const TextStyle(
+                color: AppColors.red,
+              ),
+            ),
           ),
         ],
       ),
@@ -183,17 +203,6 @@ class _CreatePlanSheetState extends State<_CreatePlanSheet> {
   int _selectedDay = 1;
   bool _loading = false;
 
-  static const _days = [
-    '',
-    'Ponedjeljak',
-    'Utorak',
-    'Srijeda',
-    'Cetvrtak',
-    'Petak',
-    'Subota',
-    'Nedjelja'
-  ];
-
   @override
   void dispose() {
     _nameController.dispose();
@@ -202,6 +211,16 @@ class _CreatePlanSheetState extends State<_CreatePlanSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final days = [
+      '',
+      context.l10n.days_monday,
+      context.l10n.days_tuesday,
+      context.l10n.days_wednesday,
+      context.l10n.days_thursday,
+      context.l10n.days_friday,
+      context.l10n.days_saturday,
+      context.l10n.days_sunday,
+    ];
     return Padding(
       padding: EdgeInsets.fromLTRB(
           16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 24),
@@ -221,29 +240,42 @@ class _CreatePlanSheetState extends State<_CreatePlanSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text('Novi plan',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.text1)),
+          Text(
+            context.l10n.plan_new,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text1,
+            ),
+          ),
           const SizedBox(height: 16),
 
           // Naziv
-          const Text('Naziv plana',
-              style: TextStyle(fontSize: 12, color: AppColors.text2)),
+          Text(
+            context.l10n.plan_name_label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.text2,
+            ),
+          ),
           const SizedBox(height: 6),
           TextField(
             controller: _nameController,
             style: const TextStyle(color: AppColors.text1),
-            decoration: const InputDecoration(
-              hintText: 'npr. Push Day A',
+            decoration: InputDecoration(
+              hintText: context.l10n.plan_name_hint,
             ),
           ),
           const SizedBox(height: 16),
 
           // Dan sedmice
-          const Text('Dan sedmice',
-              style: TextStyle(fontSize: 12, color: AppColors.text2)),
+          Text(
+            context.l10n.plan_day_label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.text2,
+            ),
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -263,7 +295,7 @@ class _CreatePlanSheetState extends State<_CreatePlanSheet> {
                     ),
                   ),
                   child: Text(
-                    _days[day].substring(0, 3),
+                    days[day].substring(0, 3),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -286,8 +318,13 @@ class _CreatePlanSheetState extends State<_CreatePlanSheet> {
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
-                  : const Text('Kreiraj plan'),
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      context.l10n.plan_create,
+                    ),
             ),
           ),
         ],
@@ -318,19 +355,29 @@ class _EmptyState extends StatelessWidget {
         children: [
           const Icon(Icons.calendar_month, size: 64, color: AppColors.text3),
           const SizedBox(height: 16),
-          const Text('Nemas nijedan plan',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.text2)),
+          Text(
+            context.l10n.plan_no_plans,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.text2,
+            ),
+          ),
           const SizedBox(height: 8),
-          const Text('Kreiraj prvi workout plan',
-              style: TextStyle(fontSize: 14, color: AppColors.text3)),
+          Text(
+            context.l10n.plan_no_plans_sub,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.text3,
+            ),
+          ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: onAdd,
             icon: const Icon(Icons.add),
-            label: const Text('Kreiraj plan'),
+            label: Text(
+              context.l10n.plan_create,
+            ),
           ),
         ],
       ),

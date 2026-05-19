@@ -25,7 +25,7 @@ class QuoteNotifier extends AsyncNotifier<List<QuoteModel>> {
 }
 
 final quoteNotifierProvider =
-AsyncNotifierProvider<QuoteNotifier, List<QuoteModel>>(QuoteNotifier.new);
+    AsyncNotifierProvider<QuoteNotifier, List<QuoteModel>>(QuoteNotifier.new);
 
 final activeQuotesProvider = FutureProvider<List<QuoteModel>>((ref) {
   return QuoteRepository().getActive();

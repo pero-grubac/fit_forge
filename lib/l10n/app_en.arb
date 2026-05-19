@@ -1,0 +1,158 @@
+{
+  "@@locale": "en",
+
+  "appName": "Fit Forge",
+  "appSlogan": "Why not you?",
+
+  "navHome": "Home",
+  "navProgress": "Progress",
+  "navPlan": "Plan",
+  "navSettings": "Settings",
+
+  "greeting_morning": "Good morning",
+  "greeting_afternoon": "Good afternoon",
+  "greeting_evening": "Good evening",
+
+  "motivationTitle": "Motivation of the day",
+
+  "days_monday": "Monday",
+  "days_tuesday": "Tuesday",
+  "days_wednesday": "Wednesday",
+  "days_thursday": "Thursday",
+  "days_friday": "Friday",
+  "days_saturday": "Saturday",
+  "days_sunday": "Sunday",
+
+  "home_noplan": "No plan for today",
+  "home_noplan_sub": "Create a plan in Plan editor",
+  "home_sets": "{completed}/{total} sets",
+  "@home_sets": {
+    "placeholders": {
+      "completed": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "status_done": "Done",
+  "status_active": "Active",
+  "status_waiting": "Waiting",
+
+  "plan_editor_title": "Plan editor",
+  "plan_new": "New plan",
+  "plan_no_plans": "You have no plans",
+  "plan_no_plans_sub": "Create your first workout plan",
+  "plan_create": "Create plan",
+  "plan_name_hint": "e.g. Push Day A",
+  "plan_name_label": "Plan name",
+  "plan_day_label": "Day of week",
+  "plan_delete_title": "Delete plan",
+  "plan_delete_confirm": "Are you sure you want to delete \"{name}\"?",
+  "@plan_delete_confirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "exercise_add": "Add exercise",
+  "exercise_new": "New exercise",
+  "exercise_name_hint": "e.g. Bench Press",
+  "exercise_name_label": "Exercise name",
+  "exercise_muscle_label": "Muscle group",
+  "exercise_sets_label": "Sets",
+  "exercise_reps_label": "Reps",
+  "exercise_weight_label": "Starting weight (kg)",
+  "exercise_increment_label": "Increment (kg)",
+  "exercise_save": "Save exercise",
+  "exercise_delete_title": "Delete exercise",
+  "exercise_delete_confirm": "Are you sure you want to delete \"{name}\"?",
+  "@exercise_delete_confirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "exercise_no_exercises": "No exercises in plan",
+  "exercise_no_exercises_sub": "Add your first exercise",
+  "exercise_tap_image": "Tap to add image",
+  "exercise_change_image": "Change image",
+
+  "log_save": "Save workout",
+  "log_add_set": "Add set",
+  "log_notes_hint": "e.g. good pump, increase next time...",
+  "log_notes_label": "Note (optional)",
+  "log_volume": "Total volume",
+  "log_progression_title": "Progression suggestion",
+
+  "progress_title": "Progress",
+  "progress_no_data": "No data for selected period",
+  "progress_no_workouts": "You have no workouts yet",
+  "progress_no_workouts_sub": "Start a workout on the Home screen",
+  "progress_max_weight": "Max weight",
+  "progress_sessions": "Sessions",
+  "progress_growth": "Strength growth",
+  "progress_chart_weight": "Max weight per session",
+  "progress_chart_volume": "Volume per session",
+  "progress_personal_record": "Personal record",
+  "progress_period_all":"All",
+
+  "settings_title": "Settings",
+  "settings_progression_section": "PROGRESSION RULES",
+  "settings_small_increment": "Small increment",
+  "settings_small_increment_sub": "For weights up to 100 kg",
+  "settings_large_increment": "Large increment",
+  "settings_large_increment_sub": "For weights above 100 kg",
+  "settings_threshold": "Progress threshold",
+  "settings_threshold_sub": "Min. completion rate to increase weight",
+  "settings_general_section": "GENERAL",
+  "settings_reset": "Reset all data",
+  "settings_reset_sub": "Deletes all plans, exercises and workouts",
+  "settings_reset_title": "Reset all data",
+  "settings_reset_confirm": "This will delete all plans, exercises and workout history. This action cannot be undone.",
+  "settings_quotes_section": "MOTIVATIONAL QUOTES",
+  "settings_quotes_add": "Add quote",
+  "settings_quotes_add_sub": "Create your own motivational quote",
+  "settings_quotes_empty": "No custom quotes — using built-in ones.",
+  "settings_quote_new": "New quote",
+  "settings_quote_hint": "Write your motivational quote...",
+  "settings_quote_add_btn": "Add quote",
+  "settings_language_section": "Language",
+
+  "onboarding_welcome_title": "Welcome to\nFit Forge",
+  "onboarding_welcome_sub": "Your personal fitness trainer in your pocket.\nTrack progress, conquer goals.",
+  "onboarding_how_title": "How it works?",
+  "onboarding_step1_title": "Create a plan",
+  "onboarding_step1_sub": "Add exercises, sets and weights for each day",
+  "onboarding_step2_title": "Do your workout",
+  "onboarding_step2_sub": "Log sets in real time",
+  "onboarding_step3_title": "Track progress",
+  "onboarding_step3_sub": "Weight and volume graphs over time",
+  "onboarding_getstarted_title": "You're ready!",
+  "onboarding_getstarted_sub": "Create your first training plan\nand start building strength today.",
+  "onboarding_tip": "Tip: Start with lighter weights and focus on technique.",
+  "onboarding_skip": "Skip",
+  "onboarding_next": "Next",
+  "onboarding_start": "Start",
+
+  "btn_cancel": "Cancel",
+  "btn_delete": "Delete",
+  "btn_save": "Save",
+  "btn_confirm": "Confirm",
+  "btn_retry": "Try again",
+
+  "error_generic": "Something went wrong. Please try again.",
+
+  "muscle_chest": "Chest",
+  "muscle_back": "Back",
+  "muscle_shoulders": "Shoulders",
+  "muscle_biceps": "Biceps",
+  "muscle_triceps": "Triceps",
+  "muscle_legs": "Legs",
+  "muscle_core": "Core",
+
+  "motivation_1": "Every kilogram you lift is proof of your strength.",
+  "motivation_2": "Don't ask yourself how — ask yourself why not.",
+  "motivation_3": "Strength isn't built in one day. It's built workout by workout.",
+  "motivation_4": "The weight doesn't lie. Neither do you.",
+  "motivation_5": "Every workout is an investment in yourself.",
+
+  "log_session_title": "Workout"
+}

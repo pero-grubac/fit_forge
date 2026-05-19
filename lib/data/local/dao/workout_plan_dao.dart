@@ -1,4 +1,3 @@
-import 'package:fit_forge/core/errors/app_exception.dart';
 import 'package:fit_forge/data/local/database_helper.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:fit_forge/data/models/workout_log_model.dart';

@@ -1,5 +1,8 @@
+import 'package:fit_forge/features/settings/providers/settings_provider.dart';
+import 'package:fit_forge/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,7 +12,7 @@ import 'core/utils/error_handler.dart';
 import 'data/local/database_helper.dart';
 
 void main() async {
-  final binding =WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: binding);
 
   FlutterError.onError = (details) {
@@ -34,11 +37,11 @@ void main() async {
 class AppProviderObserver extends ProviderObserver {
   @override
   void providerDidFail(
-      ProviderBase provider,
-      Object error,
-      StackTrace stackTrace,
-      ProviderContainer container,
-      ) {
+    ProviderBase provider,
+    Object error,
+    StackTrace stackTrace,
+    ProviderContainer container,
+  ) {
     ErrorHandler.handle(error, stackTrace);
   }
 }
@@ -49,12 +52,27 @@ class FitForgeApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final locale = ref.watch(localeProvider);
+
     FlutterNativeSplash.remove();
+
     return MaterialApp.router(
-      title: 'FitForge',
+      title: 'Fit Forge',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       routerConfig: router,
+      locale: locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('sr'),
+        Locale.fromSubtags(languageCode: 'sr', scriptCode: 'Cyrl'),
+      ],
     );
   }
 }

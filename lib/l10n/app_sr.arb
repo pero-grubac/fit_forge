@@ -1,0 +1,158 @@
+{
+  "@@locale": "sr",
+
+  "appName": "Fit Forge",
+  "appSlogan": "Zašto ne ti?",
+
+  "navHome": "Početna",
+  "navProgress": "Napredak",
+  "navPlan": "Plan",
+  "navSettings": "Podešavanja",
+
+  "greeting_morning": "Dobro jutro",
+  "greeting_afternoon": "Dobar dan",
+  "greeting_evening": "Dobro veče",
+
+  "motivationTitle": "Motivacija dana",
+
+  "days_monday": "Ponedjeljak",
+  "days_tuesday": "Utorak",
+  "days_wednesday": "Srijeda",
+  "days_thursday": "Četvrtak",
+  "days_friday": "Petak",
+  "days_saturday": "Subota",
+  "days_sunday": "Nedjelja",
+
+  "home_noplan": "Nemaš plan za danas",
+  "home_noplan_sub": "Kreiraj plan u Plan editoru",
+  "home_sets": "{completed}/{total} seta",
+  "@home_sets": {
+    "placeholders": {
+      "completed": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "status_done": "Gotovo",
+  "status_active": "Aktivno",
+  "status_waiting": "Čeka",
+
+  "plan_editor_title": "Plan editor",
+  "plan_new": "Novi plan",
+  "plan_no_plans": "Nemaš nijedan plan",
+  "plan_no_plans_sub": "Kreiraj prvi workout plan",
+  "plan_create": "Kreiraj plan",
+  "plan_name_hint": "npr. Push Day A",
+  "plan_name_label": "Naziv plana",
+  "plan_day_label": "Dan sedmice",
+  "plan_delete_title": "Obriši plan",
+  "plan_delete_confirm": "Jesi siguran da želiš obrisati \"{name}\"?",
+  "@plan_delete_confirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "exercise_add": "Dodaj vježbu",
+  "exercise_new": "Nova vježba",
+  "exercise_name_hint": "npr. Bench Press",
+  "exercise_name_label": "Naziv vježbe",
+  "exercise_muscle_label": "Mišićna grupa",
+  "exercise_sets_label": "Setovi",
+  "exercise_reps_label": "Repovi",
+  "exercise_weight_label": "Početna težina (kg)",
+  "exercise_increment_label": "Inkrement (kg)",
+  "exercise_save": "Spremi vježbu",
+  "exercise_delete_title": "Obriši vježbu",
+  "exercise_delete_confirm": "Jesi siguran da želiš obrisati \"{name}\"?",
+  "@exercise_delete_confirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "exercise_no_exercises": "Nema vježbi u planu",
+  "exercise_no_exercises_sub": "Dodaj prvu vježbu",
+  "exercise_tap_image": "Tapni za dodavanje slike",
+  "exercise_change_image": "Promijeni sliku",
+
+  "log_save": "Spremi trening",
+  "log_add_set": "Dodaj set",
+  "log_notes_hint": "Npr. dobra pumpa, povećaj sljedeći put...",
+  "log_notes_label": "Bilješka (opciono)",
+  "log_volume": "Ukupni volumen",
+  "log_progression_title": "Prijedlog progresije",
+
+  "progress_title": "Napredak",
+  "progress_no_data": "Nema podataka za odabrani period",
+  "progress_no_workouts": "Nemaš još nijedan trening",
+  "progress_no_workouts_sub": "Pokreni trening na početnoj stranici",
+  "progress_max_weight": "Max težina",
+  "progress_sessions": "Treninga",
+  "progress_growth": "Rast snage",
+  "progress_chart_weight": "Max težina po treningu",
+  "progress_chart_volume": "Volumen po treningu",
+  "progress_personal_record": "Osobni rekord",
+  "progress_period_all":"Sve",
+
+  "settings_title": "Podešavanja",
+  "settings_progression_section": "PRAVILA PROGRESIJE",
+  "settings_small_increment": "Mali inkrement",
+  "settings_small_increment_sub": "Za težine do 100 kg",
+  "settings_large_increment": "Veliki inkrement",
+  "settings_large_increment_sub": "Za težine iznad 100 kg",
+  "settings_threshold": "Prag napretka",
+  "settings_threshold_sub": "Min. completion rate za povećanje težine",
+  "settings_general_section": "OPŠTE",
+  "settings_reset": "Resetuj sve podatke",
+  "settings_reset_sub": "Briše sve planove, vježbe i treninge",
+  "settings_reset_title": "Resetuj sve podatke",
+  "settings_reset_confirm": "Ovo će obrisati sve planove, vježbe i istoriju treninga. Ova akcija se ne može poništiti.",
+  "settings_quotes_section": "MOTIVACIONE PORUKE",
+  "settings_quotes_add": "Dodaj poruku",
+  "settings_quotes_add_sub": "Kreiraj vlastitu motivacionu poruku",
+  "settings_quotes_empty": "Nema korisničkih poruka — koriste se ugrađene.",
+  "settings_quote_new": "Nova poruka",
+  "settings_quote_hint": "Upiši svoju motivacionu poruku...",
+  "settings_quote_add_btn": "Dodaj poruku",
+  "settings_language_section": "Jezik",
+
+  "onboarding_welcome_title": "Dobrodošao u\nFit Forge",
+  "onboarding_welcome_sub": "Tvoj osobni fitness trener u džepu.\nPrati napredak, osvajaj ciljeve.",
+  "onboarding_how_title": "Kako radi?",
+  "onboarding_step1_title": "Kreiraj plan",
+  "onboarding_step1_sub": "Dodaj vježbe, setove i težine za svaki dan",
+  "onboarding_step2_title": "Odradite trening",
+  "onboarding_step2_sub": "Loguj setove u realnom vremenu",
+  "onboarding_step3_title": "Prati napredak",
+  "onboarding_step3_sub": "Grafovi težine i volumena kroz vrijeme",
+  "onboarding_getstarted_title": "Spreman si!",
+  "onboarding_getstarted_sub": "Kreiraj svoj prvi plan treninga\ni počni graditi snagu danas.",
+  "onboarding_tip": "Savjet: Počni s manjim težinama i fokusiraj se na tehniku.",
+  "onboarding_skip": "Preskoči",
+  "onboarding_next": "Dalje",
+  "onboarding_start": "Počni",
+
+  "btn_cancel": "Odustani",
+  "btn_delete": "Obriši",
+  "btn_save": "Spremi",
+  "btn_confirm": "Potvrdi",
+  "btn_retry": "Pokušaj ponovo",
+
+  "error_generic": "Došlo je do greške. Pokušaj ponovo.",
+
+  "muscle_chest": "Prsa",
+  "muscle_back": "Leđa",
+  "muscle_shoulders": "Ramena",
+  "muscle_biceps": "Bicepsi",
+  "muscle_triceps": "Tricepsi",
+  "muscle_legs": "Noge",
+  "muscle_core": "Trbuh",
+
+  "motivation_1": "Svaki kilogram koji digneš je dokaz tvoje snage.",
+  "motivation_2": "Ne pitaj se kako ćeš — pitaj se zašto nećeš.",
+  "motivation_3": "Snaga se ne gradi za jedan dan. Gradi se trening po trening.",
+  "motivation_4": "Težina ne laže. Niti ti.",
+  "motivation_5": "Svaki trening je investicija u sebe.",
+
+  "log_session_title": "Trening"
+}

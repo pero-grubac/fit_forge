@@ -1,10 +1,12 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/features/settings/providers/quote_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MotivationBanner extends ConsumerWidget {
   const MotivationBanner({super.key, required this.planName});
+
   final String planName;
 
   @override
@@ -12,8 +14,8 @@ class MotivationBanner extends ConsumerWidget {
     final quoteAsync = ref.watch(randomActiveQuoteProvider);
 
     final message = quoteAsync.maybeWhen(
-      data: (q) => q ?? _defaultMessage(),
-      orElse: _defaultMessage,
+      data: (q) => q ?? _defaultMessage(context),
+      orElse: () => _defaultMessage(context),
     );
 
     return Container(
@@ -30,31 +32,35 @@ class MotivationBanner extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Motivacija dana',
-              style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.accent)),
+          Text(
+            context.l10n.motivationTitle,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.accent,
+            ),
+          ),
           const SizedBox(height: 4),
           Text(
             '"$message"',
             style: const TextStyle(
-                fontSize: 13,
-                color: AppColors.text2,
-                fontStyle: FontStyle.italic),
+              fontSize: 13,
+              color: AppColors.text2,
+              fontStyle: FontStyle.italic,
+            ),
           ),
         ],
       ),
     );
   }
 
-  String _defaultMessage() {
-    const messages = [
-      'Svaki kilogram koji digneš je dokaz tvoje snage.',
-      'Ne pitaj se kako ćeš — pitaj se zašto nećeš.',
-      'Snaga se ne gradi za jedan dan. Gradi se trening po trening.',
-      'Težina ne laže. Niti ti.',
-      'Svaki trening je investicija u sebe.',
+  String _defaultMessage(BuildContext context) {
+    final messages = [
+      context.l10n.motivation_1,
+      context.l10n.motivation_2,
+      context.l10n.motivation_3,
+      context.l10n.motivation_4,
+      context.l10n.motivation_5,
     ];
     return messages[DateTime.now().day % messages.length];
   }

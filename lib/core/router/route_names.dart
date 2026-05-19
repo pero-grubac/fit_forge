@@ -6,4 +6,5 @@ class RouteNames {
   static const progress = '/progress';
   static const plans = '/plans';
   static const settings = '/settings';
+  static const onboarding = '/onboarding';
 }

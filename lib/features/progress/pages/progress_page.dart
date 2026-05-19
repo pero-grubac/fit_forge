@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:fit_forge/features/progress/providers/progress_provider.dart';
@@ -33,14 +34,16 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
         child: CustomScrollView(
           slivers: [
             // Header
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(18, 16, 18, 16),
-                child: Text('Progres',
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.text1)),
+                padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+                child: Text(
+                  context.l10n.progress_title,
+                  style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.text1),
+                ),
               ),
             ),
 
@@ -48,9 +51,9 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
             SliverToBoxAdapter(
               child: allExercises.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-    error: (e, _) => ErrorState(
-    onRetry: () => ref.invalidate(allExercisesProvider),
-    ),
+                error: (e, _) => ErrorState(
+                  onRetry: () => ref.invalidate(allExercisesProvider),
+                ),
                 data: (list) => list.isEmpty
                     ? _EmptyState()
                     : ExerciseDropdown(
@@ -105,7 +108,8 @@ class _ProgressContent extends ConsumerWidget {
           child: Center(child: CircularProgressIndicator())),
       error: (e, _) => SliverToBoxAdapter(
         child: ErrorState(
-          onRetry: () => ref.invalidate(exerciseLogsByNameProvider(exercise.name)),
+          onRetry: () =>
+              ref.invalidate(exerciseLogsByNameProvider(exercise.name)),
         ),
       ),
       data: (allLogs) {
@@ -115,12 +119,12 @@ class _ProgressContent extends ConsumerWidget {
             : allLogs.where((l) => l.logDate.isAfter(cutoff)).toList();
 
         if (filtered.isEmpty) {
-          return const SliverToBoxAdapter(
+          return SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.all(40),
+              padding: const EdgeInsets.all(40),
               child: Center(
-                child: Text('Nema podataka za odabrani period',
-                    style: TextStyle(color: AppColors.text2)),
+                child: Text(context.l10n.progress_no_data,
+                    style: const TextStyle(color: AppColors.text2)),
               ),
             ),
           );
@@ -162,19 +166,20 @@ class _ProgressContent extends ConsumerWidget {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.all(60),
+    return Padding(
+      padding: const EdgeInsets.all(60),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.bar_chart_rounded, size: 64, color: AppColors.text3),
-            SizedBox(height: 16),
-            Text('Nemas jos nikakav trening',
-                style: TextStyle(fontSize: 16, color: AppColors.text2)),
-            SizedBox(height: 8),
-            Text('Pokreni trening na Home ekranu',
-                style: TextStyle(fontSize: 13, color: AppColors.text3)),
+            const Icon(Icons.bar_chart_rounded,
+                size: 64, color: AppColors.text3),
+            const SizedBox(height: 16),
+            Text(context.l10n.progress_no_workouts,
+                style: const TextStyle(fontSize: 16, color: AppColors.text2)),
+            const SizedBox(height: 8),
+            Text(context.l10n.progress_no_workouts_sub,
+                style: const TextStyle(fontSize: 13, color: AppColors.text3)),
           ],
         ),
       ),

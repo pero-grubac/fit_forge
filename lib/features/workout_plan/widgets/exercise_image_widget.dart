@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:fit_forge/data/repositories/exercise_repository.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
@@ -75,8 +76,9 @@ class _RealImage extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Promijeni sliku',
-                      style: TextStyle(fontSize: 12, color: Colors.white)),
+                  Text(context.l10n.exercise_change_image,
+                      style:
+                          const TextStyle(fontSize: 12, color: Colors.white)),
                   GestureDetector(
                     onTap: onRemove,
                     child: const Icon(Icons.delete_outline,
@@ -112,7 +114,7 @@ class _PlaceholderImage extends StatelessWidget {
           Icon(_muscleIcon(), size: 40, color: color.withOpacity(0.6)),
           const SizedBox(height: 8),
           Text(
-            editable ? 'Tapni za dodavanje slike' : exercise.muscleGroup,
+            editable ? context.l10n.exercise_tap_image : exercise.muscleGroup,
             style: TextStyle(fontSize: 12, color: color.withOpacity(0.7)),
           ),
         ],

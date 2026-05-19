@@ -1,3 +1,4 @@
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/repositories/workout_log_repository.dart';
 import 'package:fit_forge/features/workout_log/widgets/progression_banner.dart';
 import 'package:fit_forge/features/workout_log/widgets/set_row.dart';
@@ -122,7 +123,7 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_exercise?.name ?? 'Trening'),
+        title: Text(_exercise?.name ?? context.l10n.log_session_title),
         backgroundColor: AppColors.bg,
         actions: [
           if (_exercise?.youTubeUrl != null)
@@ -176,7 +177,7 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
               child: OutlinedButton.icon(
                 onPressed: _addSet,
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('Dodaj set'),
+                label: Text(context.l10n.log_add_set),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.accent,
                   side: const BorderSide(color: AppColors.accent),
@@ -194,15 +195,20 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Bilješka (opciono)',
-                      style: TextStyle(fontSize: 12, color: AppColors.text2)),
+                  Text(
+                    context.l10n.log_notes_label,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.text2,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _notesCtrl,
                     maxLines: 2,
                     style: const TextStyle(color: AppColors.text1),
-                    decoration: const InputDecoration(
-                      hintText: 'Npr. dobra pumpa, povecaj sljedeci put...',
+                    decoration: InputDecoration(
+                      hintText: context.l10n.log_notes_hint,
                     ),
                   ),
                 ],
@@ -232,8 +238,13 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
                 child: CircularProgressIndicator(
                     strokeWidth: 2, color: Colors.white))
             : const Icon(Icons.save_rounded, color: Colors.white),
-        label: const Text('Spremi trening',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        label: Text(
+          context.l10n.log_save,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }

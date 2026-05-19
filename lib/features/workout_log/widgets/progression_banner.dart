@@ -1,5 +1,6 @@
 import 'package:fit_forge/core/models/progression_suggestion.dart';
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:flutter/material.dart';
 
 class ProgressionBanner extends StatelessWidget {
@@ -32,11 +33,14 @@ class ProgressionBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Prijedlog progresije',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: color)),
+                Text(
+                  context.l10n.log_progression_title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(suggestion.reason,
                     style:

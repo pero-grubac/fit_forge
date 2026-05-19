@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/default_set_model.dart';
 import 'package:fit_forge/data/repositories/exercise_repository.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
@@ -26,16 +27,6 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
   double _increment = 2.5;
   bool _loading = false;
 
-  static const _muscleGroups = [
-    'Chest',
-    'Back',
-    'Shoulders',
-    'Biceps',
-    'Triceps',
-    'Legs',
-    'Core'
-  ];
-
   @override
   void dispose() {
     _nameCtrl.dispose();
@@ -44,6 +35,15 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final muscleGroups = [
+      (key: 'Chest', label: context.l10n.muscle_chest),
+      (key: 'Back', label: context.l10n.muscle_back),
+      (key: 'Shoulders', label: context.l10n.muscle_shoulders),
+      (key: 'Biceps', label: context.l10n.muscle_biceps),
+      (key: 'Triceps', label: context.l10n.muscle_triceps),
+      (key: 'Legs', label: context.l10n.muscle_legs),
+      (key: 'Core', label: context.l10n.muscle_core),
+    ];
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
           16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 24),
@@ -60,16 +60,16 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text('Nova vježba',
-              style: TextStyle(
+          Text(context.l10n.exercise_new,
+              style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: AppColors.text1)),
           const SizedBox(height: 16),
 
           // Naziv
-          const Text('Naziv vježbe',
-              style: TextStyle(fontSize: 12, color: AppColors.text2)),
+          Text(context.l10n.exercise_name_label,
+              style: const TextStyle(fontSize: 12, color: AppColors.text2)),
           const SizedBox(height: 6),
           TextField(
             controller: _nameCtrl,
@@ -79,17 +79,17 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
           const SizedBox(height: 16),
 
           // Misicna grupa
-          const Text('Mišićna grupa',
-              style: TextStyle(fontSize: 12, color: AppColors.text2)),
+          Text(context.l10n.exercise_muscle_label,
+              style: const TextStyle(fontSize: 12, color: AppColors.text2)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: _muscleGroups.map((g) {
-              final selected = _muscleGroup == g;
-              final color = AppColors.muscleGroupColor(g);
+            children: muscleGroups.map((g) {
+              final selected = _muscleGroup == g.key;
+              final color = AppColors.muscleGroupColor(g.key);
               return GestureDetector(
-                onTap: () => setState(() => _muscleGroup = g),
+                onTap: () => setState(() => _muscleGroup = g.key),
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -99,7 +99,7 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
                     border:
                         Border.all(color: selected ? color : AppColors.border2),
                   ),
-                  child: Text(g,
+                  child: Text(g.label,
                       style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -115,13 +115,13 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
             children: [
               Expanded(
                   child: StepperField(
-                      label: 'Setovi',
+                      label: context.l10n.exercise_sets_label,
                       value: _sets,
                       onChanged: (v) => setState(() => _sets = v))),
               const SizedBox(width: 10),
               Expanded(
                   child: StepperField(
-                      label: 'Repovi',
+                      label: context.l10n.exercise_reps_label,
                       value: _reps,
                       onChanged: (v) => setState(() => _reps = v))),
             ],
@@ -131,13 +131,13 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
             children: [
               Expanded(
                   child: _DoubleField(
-                      label: 'Pocetna tezina (kg)',
+                      label: context.l10n.exercise_weight_label,
                       value: _weight,
                       onChanged: (v) => setState(() => _weight = v))),
               const SizedBox(width: 10),
               Expanded(
                   child: _DoubleField(
-                      label: 'Inkrement (kg)',
+                      label: context.l10n.exercise_increment_label,
                       value: _increment,
                       onChanged: (v) => setState(() => _increment = v))),
             ],
@@ -147,15 +147,14 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _loading ? null : _save,
-              child: _loading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
-                  : const Text('Spremi vježbu'),
-            ),
+                onPressed: _loading ? null : _save,
+                child: _loading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white))
+                    : Text(context.l10n.exercise_save)),
           ),
         ],
       ),
