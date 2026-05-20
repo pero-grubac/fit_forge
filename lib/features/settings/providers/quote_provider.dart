@@ -11,16 +11,19 @@ class QuoteNotifier extends AsyncNotifier<List<QuoteModel>> {
   Future<void> create(String text) async {
     await _repo.create(text);
     ref.invalidateSelf();
+    ref.invalidate(randomActiveQuoteProvider);
   }
 
   Future<void> toggleActive(String id, bool isActive) async {
     await _repo.toggleActive(id, isActive);
     ref.invalidateSelf();
+    ref.invalidate(randomActiveQuoteProvider);
   }
 
   Future<void> delete(String id) async {
     await _repo.delete(id);
     ref.invalidateSelf();
+    ref.invalidate(randomActiveQuoteProvider);
   }
 }
 
