@@ -3,6 +3,7 @@ import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/local/database_helper.dart';
 import 'package:fit_forge/features/settings/providers/quote_provider.dart';
 import 'package:fit_forge/features/settings/providers/settings_provider.dart';
+import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
 import 'package:fit_forge/shared/widgets/error_state.dart';
 import 'package:fit_forge/shared/widgets/stepper_field.dart';
 import 'package:flutter/material.dart';
@@ -233,6 +234,8 @@ class _SettingsContent extends ConsumerWidget {
 
     // Invalidaj sve providere
     ref.invalidate(settingsProvider);
+    ref.invalidate(workoutPlanNotifierProvider);
+    ref.invalidate(quoteNotifierProvider);
   }
 
   void _showAddQuoteDialog(BuildContext context, WidgetRef ref) {
