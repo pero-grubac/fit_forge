@@ -111,4 +111,14 @@ class ExerciseDao {
       );
     });
   }
+
+  Future<void> updateDescriptionAndUrl(
+      String id, String? description, String? youTubeUrl) async {
+    await _db.update(
+      ExerciseModel.tableName,
+      {'description': description, 'youtube_url': youTubeUrl},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }

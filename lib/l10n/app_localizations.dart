@@ -393,6 +393,30 @@ abstract class AppLocalizations {
   /// **'Change image'**
   String get exercise_change_image;
 
+  /// No description provided for @exercise_description_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get exercise_description_label;
+
+  /// No description provided for @exercise_description_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Keep your back flat...'**
+  String get exercise_description_hint;
+
+  /// No description provided for @exercise_youtube_label.
+  ///
+  /// In en, this message translates to:
+  /// **'YouTube link (optional)'**
+  String get exercise_youtube_label;
+
+  /// No description provided for @exercise_watch_youtube.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch on YouTube'**
+  String get exercise_watch_youtube;
+
   /// No description provided for @log_save.
   ///
   /// In en, this message translates to:

@@ -38,6 +38,9 @@ dependencies:
   # Slike vjezbi
   image_picker: ^1.1.2
 
+  #URL
+  url_launcher: ^6.3.0
+
   # Utility
   uuid: ^4.4.0
   shared_preferences: ^2.2.3

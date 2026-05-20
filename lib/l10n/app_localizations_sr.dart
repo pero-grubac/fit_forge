@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -161,6 +160,18 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get exercise_change_image => 'Promijeni sliku';
+
+  @override
+  String get exercise_description_label => 'Opis';
+
+  @override
+  String get exercise_description_hint => 'npr. Drži leđa ravno...';
+
+  @override
+  String get exercise_youtube_label => 'YouTube link (opciono)';
+
+  @override
+  String get exercise_watch_youtube => 'Pogledaj na YouTube';
 
   @override
   String get log_save => 'Spremi trening';
@@ -543,6 +554,18 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get exercise_change_image => 'Промијени слику';
+
+  @override
+  String get exercise_description_label => 'Опис';
+
+  @override
+  String get exercise_description_hint => 'нпр. Држи леђа равно...';
+
+  @override
+  String get exercise_youtube_label => 'YouTube линк (опционо)';
+
+  @override
+  String get exercise_watch_youtube => 'Погледај на YouTube';
 
   @override
   String get log_save => 'Спреми тренинг';

@@ -86,4 +86,8 @@ class ExerciseRepository {
     if (await file.exists()) await file.delete();
     await _exerciseDao.updateImagePath(exerciseId, null);
   }
+
+  Future<void> updateDescriptionAndUrl(
+          String id, String? description, String? youTubeUrl) =>
+      _exerciseDao.updateDescriptionAndUrl(id, description, youTubeUrl);
 }

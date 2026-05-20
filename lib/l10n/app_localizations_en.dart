@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -161,6 +160,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exercise_change_image => 'Change image';
+
+  @override
+  String get exercise_description_label => 'Description';
+
+  @override
+  String get exercise_description_hint => 'e.g. Keep your back flat...';
+
+  @override
+  String get exercise_youtube_label => 'YouTube link (optional)';
+
+  @override
+  String get exercise_watch_youtube => 'Watch on YouTube';
 
   @override
   String get log_save => 'Save workout';

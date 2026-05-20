@@ -26,11 +26,15 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
   double _weight = 0;
   double _increment = 2.5;
   bool _loading = false;
+  final _descCtrl = TextEditingController();
+  final _urlCtrl = TextEditingController();
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     super.dispose();
+    _descCtrl.dispose();
+    _urlCtrl.dispose();
   }
 
   @override
@@ -142,19 +146,46 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
                       onChanged: (v) => setState(() => _increment = v))),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          Text(context.l10n.exercise_description_label,
+              style: const TextStyle(fontSize: 12, color: AppColors.text2)),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _descCtrl,
+            maxLines: 3,
+            style: const TextStyle(color: AppColors.text1),
+            decoration: InputDecoration(
+              hintText: context.l10n.exercise_description_hint,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(context.l10n.exercise_youtube_label,
+              style: const TextStyle(fontSize: 12, color: AppColors.text2)),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _urlCtrl,
+            style: const TextStyle(color: AppColors.text1),
+            decoration: const InputDecoration(
+              hintText: 'https://youtube.com/watch?v=...',
+              prefixIcon: Icon(Icons.play_circle_outline,
+                  color: AppColors.red, size: 20),
+            ),
+          ),
 
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-                onPressed: _loading ? null : _save,
-                child: _loading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white))
-                    : Text(context.l10n.exercise_save)),
+              onPressed: _loading ? null : _save,
+              child: _loading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : Text(context.l10n.exercise_save),
+            ),
           ),
         ],
       ),
@@ -180,6 +211,8 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
       planId: widget.planId,
       name: _nameCtrl.text.trim(),
       muscleGroup: _muscleGroup,
+      description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+      youTubeUrl: _urlCtrl.text.trim().isEmpty ? null : _urlCtrl.text.trim(),
       sortOrder: 0,
       sets: defaultSets
           .map((s) => (
@@ -189,7 +222,6 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
               ))
           .toList(),
     );
-
     widget.ref.invalidate(exercisesProvider(widget.planId));
     if (mounted) Navigator.pop(context);
   }

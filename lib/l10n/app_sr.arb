@@ -74,6 +74,10 @@
   "exercise_no_exercises_sub": "Dodaj prvu vježbu",
   "exercise_tap_image": "Tapni za dodavanje slike",
   "exercise_change_image": "Promijeni sliku",
+  "exercise_description_label": "Opis",
+  "exercise_description_hint": "npr. Drži leđa ravno...",
+  "exercise_youtube_label": "YouTube link (opciono)",
+  "exercise_watch_youtube": "Pogledaj na YouTube",
 
   "log_save": "Spremi trening",
   "log_add_set": "Dodaj set",

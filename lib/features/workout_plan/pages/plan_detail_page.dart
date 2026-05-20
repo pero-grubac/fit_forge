@@ -10,6 +10,8 @@ import 'package:fit_forge/shared/widgets/muscle_group_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../widgets/exercise_info_sheet.dart';
+
 class PlanDetailPage extends ConsumerWidget {
   const PlanDetailPage(
       {required this.planId, required this.planName, super.key});
@@ -125,6 +127,20 @@ class _ExerciseList extends StatelessWidget {
                       ),
                     ),
                     IconButton(
+                      icon: const Icon(Icons.info_outline,
+                          color: AppColors.accent, size: 20),
+                      onPressed: () => showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: AppColors.bg2,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20)),
+                        ),
+                        builder: (_) => ExerciseInfoSheet(exercise: ex),
+                      ),
+                    ),
+                    IconButton(
                       icon: const Icon(Icons.delete_outline,
                           color: AppColors.red, size: 20),
                       onPressed: () => _confirmDelete(context, ex),
@@ -134,7 +150,7 @@ class _ExerciseList extends StatelessWidget {
               ),
               ExerciseImageWidget(
                 exercise: ex,
-                height: 90,
+                height: 160,
                 editable: true,
               ),
               // Default setovi info

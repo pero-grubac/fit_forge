@@ -74,6 +74,10 @@
   "exercise_no_exercises_sub": "Add your first exercise",
   "exercise_tap_image": "Tap to add image",
   "exercise_change_image": "Change image",
+  "exercise_description_label": "Description",
+  "exercise_description_hint": "e.g. Keep your back flat...",
+  "exercise_youtube_label": "YouTube link (optional)",
+  "exercise_watch_youtube": "Watch on YouTube",
 
   "log_save": "Save workout",
   "log_add_set": "Add set",
