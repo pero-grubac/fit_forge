@@ -77,21 +77,25 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
   }
 
   Future<void> _loadLastLog() async {
-    final logs =
-        await WorkoutLogRepository().getByExercise(widget.exerciseId, limit: 1);
+    final logs = await WorkoutLogRepository()
+        .getByExercise(widget.exerciseId, limit: 1);
 
     if (!mounted) return;
 
     if (logs.isNotEmpty && logs.first.sets.isNotEmpty) {
-      final lastSets = logs.first.sets;
+      final lastLog  = logs.first;
+      final today    = DateTime.now().toIso8601String().substring(0, 10);
+      final logDate  = lastLog.logDate.toIso8601String().substring(0, 10);
+      final isToday  = logDate == today;
+
       setState(() {
         _sets.clear();
-        for (final s in lastSets) {
+        for (final s in lastLog.sets) {
           _sets.add(SetRow(
-            setNumber: s.setNumber,
+            setNumber:     s.setNumber,
             plannedWeight: s.actualWeight,
-            plannedReps: s.actualReps,
-            isDone: false,
+            plannedReps:   s.actualReps,
+            isDone:        isToday ? s.isCompleted : false,
           ));
         }
       });
@@ -100,10 +104,10 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
         for (int i = 0; i < _exercise!.defaultSets.length; i++) {
           final ds = _exercise!.defaultSets[i];
           _sets.add(SetRow(
-            setNumber: i + 1,
+            setNumber:     i + 1,
             plannedWeight: ds.weight,
-            plannedReps: ds.reps,
-            isDone: false,
+            plannedReps:   ds.reps,
+            isDone:        false,
           ));
         }
       });
