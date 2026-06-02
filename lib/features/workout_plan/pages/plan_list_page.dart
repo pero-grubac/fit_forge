@@ -123,6 +123,11 @@ class _PlanList extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
+                  icon: const Icon(Icons.edit_outlined,
+                      color: AppColors.accent, size: 20),
+                  onPressed: () => _showEditDialog(context, ref, plan),
+                ),
+                IconButton(
                   icon: const Icon(Icons.delete_outline,
                       color: AppColors.red, size: 20),
                   onPressed: () => _confirmDeletePlan(context, ref, plan),
@@ -184,6 +189,66 @@ class _PlanList extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showEditDialog(BuildContext context, WidgetRef ref, WorkoutPlanModel plan) {
+    final ctrl = TextEditingController(text: plan.name);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.bg2,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+            16, 16, 16, MediaQuery.of(ctx).viewInsets.bottom + 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36, height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.bg4,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(context.l10n.plan_name_label,
+                style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.text1)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              autofocus: true,
+              style: const TextStyle(color: AppColors.text1),
+              decoration: InputDecoration(
+                hintText: context.l10n.plan_name_hint,
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (ctrl.text.trim().isEmpty) return;
+                  await ref
+                      .read(workoutPlanNotifierProvider.notifier)
+                      .updateName(plan.id, ctrl.text.trim());
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: Text(context.l10n.btn_save),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

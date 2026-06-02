@@ -30,4 +30,7 @@ class WorkoutPlanRepository {
   Future<void> update(WorkoutPlanModel plan) => _planDao.update(plan);
 
   Future<void> delete(String id) => _planDao.delete(id);
+
+  Future<void> updateName(String id, String name) =>
+      _planDao.updateName(id, name);
 }

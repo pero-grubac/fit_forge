@@ -159,14 +159,14 @@ class WorkoutLogDao {
     final placeholders = exerciseIds.map((_) => '?').join(',');
     final rows = await _db.rawQuery(
       '''
-        SELECT l.exercise_id, COUNT(s.id) as completed
-        FROM ${WorkoutLogModel.tableName} l
-        JOIN ${WorkoutSetModel.tableName} s ON s.log_id = l.id
-        WHERE l.log_date = ?
-          AND l.exercise_id IN ($placeholders)
-          AND s.is_completed = 1
-        GROUP BY l.exercise_id
-      ''',
+      SELECT l.exercise_id, COUNT(s.id) as completed
+      FROM ${WorkoutLogModel.tableName} l
+      JOIN ${WorkoutSetModel.tableName} s ON s.log_id = l.id
+      WHERE date(l.log_date) = ?
+        AND l.exercise_id IN ($placeholders)
+        AND s.is_completed = 1
+      GROUP BY l.exercise_id
+    ''',
       [today, ...exerciseIds],
     );
 

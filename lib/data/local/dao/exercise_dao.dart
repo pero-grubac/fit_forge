@@ -121,4 +121,13 @@ class ExerciseDao {
       whereArgs: [id],
     );
   }
+
+  Future<void> updateMuscleGroup(String id, String muscleGroup) async {
+    await _db.update(
+      ExerciseModel.tableName,
+      {'muscle_group': muscleGroup},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }

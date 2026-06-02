@@ -77,16 +77,13 @@ class WorkoutLogRepository {
             })>
         sets,
   }) async {
-    // Provjeri postoji li log za danas
     final today = logDate.toIso8601String().substring(0, 10);
     final existing = await _logDao.getByExerciseAndDate(exerciseId, today);
 
-    // Ako postoji, obrisi ga
     if (existing != null) {
       await _logDao.delete(existing.id);
     }
 
-    // Kreiraj novi
     return create(
       exerciseId: exerciseId,
       logDate: logDate,

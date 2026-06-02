@@ -85,4 +85,13 @@ class WorkoutPlanDao {
       );
     });
   }
+
+  Future<void> updateName(String id, String name) async {
+    await _db.update(
+      WorkoutPlanModel.tableName,
+      {'name': name},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }

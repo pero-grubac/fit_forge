@@ -7,6 +7,7 @@ import 'package:fit_forge/data/repositories/exercise_repository.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ExerciseImageWidget extends ConsumerWidget {
   const ExerciseImageWidget({
@@ -25,7 +26,7 @@ class ExerciseImageWidget extends ConsumerWidget {
     final color = AppColors.muscleGroupColor(exercise.muscleGroup);
 
     return GestureDetector(
-      onTap: editable ? () => _pickImage(ref) : null,
+      onTap: editable ? () => _pickImage(context, ref) : null,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: SizedBox(
@@ -42,8 +43,49 @@ class ExerciseImageWidget extends ConsumerWidget {
     );
   }
 
-  Future<void> _pickImage(WidgetRef ref) async {
-    await ExerciseRepository().pickAndSaveImage(exercise.id);
+  Future<void> _pickImage(BuildContext context, WidgetRef ref) async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: AppColors.bg2,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Center(
+              child: Container(
+                width: 36, height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.bg4,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined,
+                  color: AppColors.accent),
+              title: const Text('Galerija',
+                  style: TextStyle(color: AppColors.text1)),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined,
+                  color: AppColors.accent),
+              title: const Text('Kamera',
+                  style: TextStyle(color: AppColors.text1)),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null) return;
+    await ExerciseRepository().pickAndSaveImage(exercise.id, source);
     ref.invalidate(exercisesProvider(exercise.planId));
   }
 
@@ -64,7 +106,7 @@ class _RealImage extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.file(File(path), fit: BoxFit.cover),
+        Image.file(File(path), fit: BoxFit.contain),
         if (onRemove != null)
           Positioned(
             bottom: 0,

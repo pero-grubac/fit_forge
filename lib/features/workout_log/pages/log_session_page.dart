@@ -6,7 +6,8 @@ import 'package:fit_forge/features/workout_log/widgets/volume_info.dart';
 import 'package:fit_forge/features/workout_plan/widgets/exercise_image_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:io';
 import '../../../core/models/progression_suggestion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/exercise_model.dart';
@@ -89,8 +90,8 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
           _sets.add(SetRow(
             setNumber: s.setNumber,
             plannedWeight: s.actualWeight,
-            plannedReps: s.actualReps, // stvarni repovi, ne planirani
-            isDone: s.isCompleted, // postavi checkmark
+            plannedReps: s.actualReps,
+            isDone: false,
           ));
         }
       });
@@ -129,8 +130,11 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
           if (_exercise?.youTubeUrl != null)
             IconButton(
               icon: const Icon(Icons.play_circle_outline, color: AppColors.red),
-              onPressed: () {
-                /* otvori YouTube */
+              onPressed: () async {
+                final url = Uri.parse(_exercise!.youTubeUrl!);
+                if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+                }
               },
             ),
         ],
@@ -142,10 +146,13 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                child: ExerciseImageWidget(
-                  exercise: _exercise!,
-                  height: 130,
-                  editable: false,
+                child: GestureDetector(
+                  onTap: _exercise!.hasCustomImage ? () => _openFullImage(context) : null,
+                  child: ExerciseImageWidget(
+                    exercise: _exercise!,
+                    height: 130,
+                    editable: false,
+                  ),
                 ),
               ),
             ),
@@ -284,5 +291,25 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
     // Invalidaj completed sets provider
     ref.invalidate(completedSetsTodayProvider(widget.exerciseId));
     if (mounted) Navigator.pop(context);
+  }
+
+  void _openFullImage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(backgroundColor: Colors.black),
+          body: Center(
+            child: InteractiveViewer(
+              child: Image.file(
+                File(_exercise!.imagePath!),
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

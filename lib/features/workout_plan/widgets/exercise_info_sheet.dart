@@ -21,12 +21,14 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
   late final TextEditingController _descCtrl;
   late final TextEditingController _urlCtrl;
   bool _saving = false;
+  late String _muscleGroup;
 
   @override
   void initState() {
     super.initState();
     _descCtrl = TextEditingController(text: widget.exercise.description ?? '');
     _urlCtrl = TextEditingController(text: widget.exercise.youTubeUrl ?? '');
+    _muscleGroup = widget.exercise.muscleGroup;
   }
 
   @override
@@ -43,10 +45,25 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
       _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
       _urlCtrl.text.trim().isEmpty ? null : _urlCtrl.text.trim(),
     );
+
+    await ExerciseRepository().updateMuscleGroup(
+      widget.exercise.id,
+      _muscleGroup,
+    );
     ref.invalidate(exercisesProvider(widget.exercise.planId));
     if (mounted) Navigator.pop(context);
   }
 
+  String _labelToKey(String label, BuildContext context) {
+    final l = context.l10n;
+    if (label == l.muscle_chest)     return 'Chest';
+    if (label == l.muscle_back)      return 'Back';
+    if (label == l.muscle_shoulders) return 'Shoulders';
+    if (label == l.muscle_biceps)    return 'Biceps';
+    if (label == l.muscle_triceps)   return 'Triceps';
+    if (label == l.muscle_legs)      return 'Legs';
+    return 'Core';
+  }
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -84,6 +101,46 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
             editable: true,
           ),
           const SizedBox(height: 20),
+
+          const SizedBox(height: 16),
+          Text(context.l10n.exercise_muscle_label,
+              style: const TextStyle(fontSize: 12, color: AppColors.text2)),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: AppColors.bg3,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border2),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _muscleGroup,
+                isExpanded: true,
+                dropdownColor: AppColors.bg2,
+                style: const TextStyle(color: AppColors.text1, fontSize: 14),
+                icon: const Icon(Icons.expand_more, color: AppColors.text2),
+                items: [
+                  context.l10n.muscle_chest,
+                  context.l10n.muscle_back,
+                  context.l10n.muscle_shoulders,
+                  context.l10n.muscle_biceps,
+                  context.l10n.muscle_triceps,
+                  context.l10n.muscle_legs,
+                  context.l10n.muscle_core,
+                ].map((label) {
+                  final key = _labelToKey(label, context);
+                  return DropdownMenuItem(
+                    value: key,
+                    child: Text(label),
+                  );
+                }).toList(),
+                onChanged: (v) {
+                  if (v != null) setState(() => _muscleGroup = v);
+                },
+              ),
+            ),
+          ),
 
           // Opis
           Text(context.l10n.exercise_description_label,

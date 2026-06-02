@@ -49,6 +49,11 @@ class WorkoutPlanNotifier extends AsyncNotifier<List<WorkoutPlanModel>> {
     await _repo.delete(id);
     ref.invalidateSelf();
   }
+
+  Future<void> updateName(String id, String name) async {
+    await _repo.updateName(id, name);
+    ref.invalidateSelf();
+  }
 }
 
 final allExercisesProvider = FutureProvider<List<ExerciseModel>>((ref) async {

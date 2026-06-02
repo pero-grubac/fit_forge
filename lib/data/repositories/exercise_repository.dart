@@ -63,9 +63,9 @@ class ExerciseRepository {
 
   Future<void> delete(String id) => _exerciseDao.delete(id);
 
-  Future<String?> pickAndSaveImage(String exerciseId) async {
+  Future<String?> pickAndSaveImage(String exerciseId, ImageSource source) async {
     final picked = await _picker.pickImage(
-      source: ImageSource.gallery,
+      source: source,
       maxWidth: 800,
       maxHeight: 800,
       imageQuality: 85,
@@ -90,4 +90,7 @@ class ExerciseRepository {
   Future<void> updateDescriptionAndUrl(
           String id, String? description, String? youTubeUrl) =>
       _exerciseDao.updateDescriptionAndUrl(id, description, youTubeUrl);
+
+  Future<void> updateMuscleGroup(String id, String muscleGroup) =>
+      _exerciseDao.updateMuscleGroup(id, muscleGroup);
 }
