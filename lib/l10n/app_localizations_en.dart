@@ -396,4 +396,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get log_session_title => 'Workout';
+
+  @override
+  String get muscle_forearms => 'Forearms';
+
+  @override
+  String get muscle_bodyweight => 'Bodyweight';
+
+  @override
+  String get exercise_search_hint => 'Search exercises...';
+
+  @override
+  String get exercise_seconds_label => 'Seconds';
+
+  @override
+  String get exercise_sets_count_label => 'Sets';
+
+  @override
+  String get exercise_type_weighted => 'Weighted';
+
+  @override
+  String get exercise_type_bodyweight => 'Bodyweight';
+
+  @override
+  String get exercise_type_timed => 'Timed';
 }

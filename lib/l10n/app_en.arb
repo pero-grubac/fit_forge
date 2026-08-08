@@ -158,5 +158,13 @@
   "motivation_4": "The weight doesn't lie. Neither do you.",
   "motivation_5": "Every workout is an investment in yourself.",
 
-  "log_session_title": "Workout"
+  "log_session_title": "Workout",
+  "muscle_forearms": "Forearms",
+  "muscle_bodyweight": "Bodyweight",
+  "exercise_search_hint": "Search exercises...",
+  "exercise_seconds_label": "Seconds",
+  "exercise_sets_count_label": "Sets",
+  "exercise_type_weighted": "Weighted",
+  "exercise_type_bodyweight": "Bodyweight",
+  "exercise_type_timed": "Timed"
 }

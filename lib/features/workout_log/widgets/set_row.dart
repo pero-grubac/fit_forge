@@ -31,114 +31,123 @@ class SetRowWidget extends StatelessWidget {
     required this.set,
     required this.onToggle,
     required this.isLast,
+    this.onDelete,
+    this.exerciseType = 'weighted',
   });
 
   final SetRow set;
   final VoidCallback onToggle;
   final bool isLast;
+  final VoidCallback? onDelete;
+  final String exerciseType;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          child: Row(
-            children: [
-              // Broj seta
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: set.isDone
-                      ? AppColors.green.withOpacity(0.15)
-                      : AppColors.bg4,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text('${set.setNumber}',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color:
-                              set.isDone ? AppColors.green : AppColors.text2)),
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Tezina
-              Expanded(
-                child: TextField(
-                  controller: set.weightCtrl,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.text1, fontSize: 14),
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                    fillColor: AppColors.bg3,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(9),
-                      borderSide: const BorderSide(color: AppColors.border2),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(9),
-                      borderSide: const BorderSide(color: AppColors.border2),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Repovi
-              Expanded(
-                child: TextField(
-                  controller: set.repsCtrl,
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.text1, fontSize: 14),
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                    fillColor: AppColors.bg3,
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(9),
-                      borderSide: const BorderSide(color: AppColors.border2),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(9),
-                      borderSide: const BorderSide(color: AppColors.border2),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Check dugme
-              GestureDetector(
-                onTap: onToggle,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 32,
-                  height: 32,
+        Dismissible(
+          key: Key('set_${set.setNumber}_${set.hashCode}'),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 16),
+            color: AppColors.red.withOpacity(0.2),
+            child: const Icon(Icons.delete_outline, color: AppColors.red),
+          ),
+          onDismissed: (_) => onDelete?.call(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            child: Row(
+              children: [
+                // Broj seta
+                Container(
+                  width: 24, height: 24,
                   decoration: BoxDecoration(
-                    color: set.isDone
-                        ? AppColors.green.withOpacity(0.15)
-                        : AppColors.bg3,
-                    borderRadius: BorderRadius.circular(9),
-                    border: Border.all(
-                      color: set.isDone ? AppColors.green : AppColors.border2,
-                      width: 1.5,
+                    color: AppColors.bg4,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Center(
+                    child: Text('${set.setNumber}',
+                        style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.text2)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Težina — samo za weighted
+                if (exerciseType == 'weighted') ...[
+                  Expanded(
+                    child: TextField(
+                      controller: set.weightCtrl,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 14, color: AppColors.text1),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.bg3,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.border2),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.border2),
+                        ),
+                      ),
                     ),
                   ),
-                  child: set.isDone
-                      ? const Icon(Icons.check_rounded,
-                          size: 18, color: AppColors.green)
-                      : null,
+                  const SizedBox(width: 8),
+                ],
+
+                // Repovi ili sekunde
+                Expanded(
+                  child: TextField(
+                    controller: set.repsCtrl,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 14, color: AppColors.text1),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: AppColors.bg3,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppColors.border2),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppColors.border2),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 8),
+
+                // Checkmark
+                GestureDetector(
+                  onTap: onToggle,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 28, height: 28,
+                    decoration: BoxDecoration(
+                      color: set.isDone
+                          ? AppColors.green.withOpacity(0.15)
+                          : AppColors.bg3,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: set.isDone ? AppColors.green : AppColors.border2,
+                      ),
+                    ),
+                    child: set.isDone
+                        ? const Icon(Icons.check, size: 16, color: AppColors.green)
+                        : null,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         if (!isLast) const Divider(height: 1, color: AppColors.border),
@@ -148,14 +157,23 @@ class SetRowWidget extends StatelessWidget {
 }
 
 class SetsTable extends StatelessWidget {
-  const SetsTable({super.key, required this.sets, required this.onToggle});
+  const SetsTable({
+    super.key,
+    required this.sets,
+    required this.onToggle,
+    required this.onDelete,
+    this.exerciseType = 'weighted',
+  });
 
   final List<SetRow> sets;
   final ValueChanged<int> onToggle;
+  final ValueChanged<int> onDelete;
+  final String exerciseType;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+
+  return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       decoration: BoxDecoration(
         color: AppColors.card,
@@ -170,24 +188,21 @@ class SetsTable extends StatelessWidget {
             child: Row(
               children: [
                 const SizedBox(width: 30),
-                Expanded(
-                  child: Text(
-                    context.l10n.exercise_weight_label,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: AppColors.text3,
+                if (exerciseType == 'weighted')
+                  Expanded(
+                    child: Text(
+                      context.l10n.exercise_weight_label,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 11, color: AppColors.text3),
                     ),
                   ),
-                ),
                 Expanded(
                   child: Text(
-                    context.l10n.exercise_reps_label,
+                    exerciseType == 'timed'
+                        ? context.l10n.exercise_seconds_label
+                        : context.l10n.exercise_reps_label,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: AppColors.text3,
-                    ),
+                    style: const TextStyle(fontSize: 11, color: AppColors.text3),
                   ),
                 ),
                 const SizedBox(width: 36),
@@ -203,7 +218,9 @@ class SetsTable extends StatelessWidget {
             return SetRowWidget(
               set: set,
               onToggle: () => onToggle(i),
+              onDelete: () => onDelete(i),
               isLast: i == sets.length - 1,
+              exerciseType: exerciseType,
             );
           }),
         ],

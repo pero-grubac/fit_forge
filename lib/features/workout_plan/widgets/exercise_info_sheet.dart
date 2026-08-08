@@ -56,14 +56,17 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
 
   String _labelToKey(String label, BuildContext context) {
     final l = context.l10n;
-    if (label == l.muscle_chest)     return 'Chest';
-    if (label == l.muscle_back)      return 'Back';
+    if (label == l.muscle_chest) return 'Chest';
+    if (label == l.muscle_back) return 'Back';
     if (label == l.muscle_shoulders) return 'Shoulders';
-    if (label == l.muscle_biceps)    return 'Biceps';
-    if (label == l.muscle_triceps)   return 'Triceps';
-    if (label == l.muscle_legs)      return 'Legs';
+    if (label == l.muscle_biceps) return 'Biceps';
+    if (label == l.muscle_triceps) return 'Triceps';
+    if (label == l.muscle_legs) return 'Legs';
+    if (label == l.muscle_forearms) return 'Forearms';
+    if (label == l.muscle_bodyweight) return 'Bodyweight';
     return 'Core';
   }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -128,6 +131,8 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
                   context.l10n.muscle_triceps,
                   context.l10n.muscle_legs,
                   context.l10n.muscle_core,
+                  context.l10n.muscle_forearms,
+                  context.l10n.muscle_bodyweight,
                 ].map((label) {
                   final key = _labelToKey(label, context);
                   return DropdownMenuItem(

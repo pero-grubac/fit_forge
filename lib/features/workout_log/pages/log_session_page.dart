@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/repositories/workout_log_repository.dart';
 import 'package:fit_forge/features/workout_log/widgets/progression_banner.dart';
@@ -7,7 +9,7 @@ import 'package:fit_forge/features/workout_plan/widgets/exercise_image_widget.da
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:io';
+
 import '../../../core/models/progression_suggestion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/exercise_model.dart';
@@ -77,25 +79,33 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
   }
 
   Future<void> _loadLastLog() async {
-    final logs = await WorkoutLogRepository()
-        .getByExercise(widget.exerciseId, limit: 1);
+    final logs =
+        await WorkoutLogRepository().getByExercise(widget.exerciseId, limit: 1);
 
     if (!mounted) return;
 
     if (logs.isNotEmpty && logs.first.sets.isNotEmpty) {
-      final lastLog  = logs.first;
-      final today    = DateTime.now().toIso8601String().substring(0, 10);
-      final logDate  = lastLog.logDate.toIso8601String().substring(0, 10);
-      final isToday  = logDate == today;
+      final lastLog = logs.first;
+      final today = DateTime.now().toIso8601String().substring(0, 10);
+      final logDate = lastLog.logDate.toIso8601String().substring(0, 10);
+      final isToday = logDate == today;
+
+      if (isToday && lastLog.notes != null) {
+        _notesCtrl.text = lastLog.notes!;
+      }
+
+      final setsToShow = lastLog.sets.length > 3
+          ? lastLog.sets.sublist(lastLog.sets.length - 3)
+          : lastLog.sets;
 
       setState(() {
         _sets.clear();
-        for (final s in lastLog.sets) {
+        for (final s in setsToShow) {
           _sets.add(SetRow(
-            setNumber:     s.setNumber,
+            setNumber: s.setNumber,
             plannedWeight: s.actualWeight,
-            plannedReps:   s.actualReps,
-            isDone:        isToday ? s.isCompleted : false,
+            plannedReps: s.actualReps,
+            isDone: isToday ? s.isCompleted : false,
           ));
         }
       });
@@ -104,10 +114,10 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
         for (int i = 0; i < _exercise!.defaultSets.length; i++) {
           final ds = _exercise!.defaultSets[i];
           _sets.add(SetRow(
-            setNumber:     i + 1,
+            setNumber: i + 1,
             plannedWeight: ds.weight,
-            plannedReps:   ds.reps,
-            isDone:        false,
+            plannedReps: ds.reps,
+            isDone: false,
           ));
         }
       });
@@ -130,18 +140,6 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
       appBar: AppBar(
         title: Text(_exercise?.name ?? context.l10n.log_session_title),
         backgroundColor: AppColors.bg,
-        actions: [
-          if (_exercise?.youTubeUrl != null)
-            IconButton(
-              icon: const Icon(Icons.play_circle_outline, color: AppColors.red),
-              onPressed: () async {
-                final url = Uri.parse(_exercise!.youTubeUrl!);
-                if (await canLaunchUrl(url)) {
-                await launchUrl(url, mode: LaunchMode.externalApplication);
-                }
-              },
-            ),
-        ],
       ),
       body: CustomScrollView(
         slivers: [
@@ -151,7 +149,9 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                 child: GestureDetector(
-                  onTap: _exercise!.hasCustomImage ? () => _openFullImage(context) : null,
+                  onTap: _exercise!.hasCustomImage
+                      ? () => _openFullImage(context)
+                      : null,
                   child: ExerciseImageWidget(
                     exercise: _exercise!,
                     height: 130,
@@ -160,7 +160,31 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
                 ),
               ),
             ),
-
+          // YouTube dugme
+          if (_exercise?.youTubeUrl != null)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    final url = Uri.parse(_exercise!.youTubeUrl!);
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url,
+                          mode: LaunchMode.externalApplication);
+                    }
+                  },
+                  icon: const Icon(Icons.play_circle_outline,
+                      color: AppColors.red),
+                  label: Text(context.l10n.exercise_watch_youtube,
+                      style: const TextStyle(color: AppColors.red)),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.red),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ),
           // Progression banner
           SliverToBoxAdapter(
             child: suggestion.when(
@@ -178,6 +202,18 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
               sets: _sets,
               onToggle: (i) =>
                   setState(() => _sets[i].isDone = !_sets[i].isDone),
+              onDelete: (i) => setState(() {
+                _sets.removeAt(i);
+                for (int j = 0; j < _sets.length; j++) {
+                  _sets[j] = SetRow(
+                    setNumber: j + 1,
+                    plannedWeight: _sets[j].plannedWeight,
+                    plannedReps: _sets[j].plannedReps,
+                    isDone: _sets[j].isDone,
+                  );
+                }
+              }),
+              exerciseType: _exercise?.exerciseType ?? 'weighted',
             ),
           ),
 

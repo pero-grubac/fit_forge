@@ -158,5 +158,13 @@
   "motivation_4": "Težina ne laže. Niti ti.",
   "motivation_5": "Svaki trening je investicija u sebe.",
 
-  "log_session_title": "Trening"
+  "log_session_title": "Trening",
+  "muscle_forearms": "Podlaktice",
+  "muscle_bodyweight": "Tjelesna težina",
+  "exercise_search_hint": "Pretraži vježbe...",
+  "exercise_seconds_label": "Sekunde",
+  "exercise_sets_count_label": "Setovi",
+  "exercise_type_weighted": "Sa težinom",
+  "exercise_type_bodyweight": "Tjelesna težina",
+  "exercise_type_timed": "Vremenski"
 }

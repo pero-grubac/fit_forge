@@ -1,8 +1,10 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
+import 'package:fit_forge/data/models/workout_plan_model.dart';
 import 'package:fit_forge/features/settings/widgets/motivational_banner.dart';
 import 'package:fit_forge/features/workout_log/pages/log_session_page.dart';
+import 'package:fit_forge/features/workout_log/providers/streak_provider.dart';
 import 'package:fit_forge/features/workout_log/providers/workout_log_provider.dart';
 import 'package:fit_forge/features/workout_log/widgets/exercise_hero_card.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
@@ -15,127 +17,80 @@ class TodayWorkoutPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final todayPlan = ref.watch(todayPlanProvider);
+    final todayPlans = ref.watch(todayPlansProvider);
 
     return Scaffold(
       body: SafeArea(
-        child: todayPlan.when(
+        child: todayPlans.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => ErrorState(
-            onRetry: () => ref.invalidate(todayPlanProvider),
+            onRetry: () => ref.invalidate(todayPlansProvider),
           ),
-          data: (plan) => plan == null
-              ? _EmptyState()
-              : _PlanContent(planId: plan.id, planName: plan.name),
+          data: (plans) =>
+              plans.isEmpty ? _EmptyState() : _PlansContent(plans: plans),
         ),
       ),
     );
   }
 }
 
-class _PlanContent extends ConsumerWidget {
-  const _PlanContent({required this.planId, required this.planName});
+class _PlansContent extends ConsumerWidget {
+  const _PlansContent({required this.plans});
 
-  final String planId;
-  final String planName;
+  final List<WorkoutPlanModel> plans;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final exercises = ref.watch(exercisesProvider(planId));
-
     return CustomScrollView(
       slivers: [
         // Header
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
-            child: Column(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _greeting(context),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.calendar_today,
-                        size: 13, color: AppColors.text2),
-                    const SizedBox(width: 5),
-                    Text(
-                      '${_dayName(context)}  ·  $planName',
-                      style:
-                          const TextStyle(fontSize: 13, color: AppColors.text2),
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _greeting(context),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.calendar_today,
+                              size: 13, color: AppColors.text2),
+                          const SizedBox(width: 5),
+                          Text(
+                            _dayName(context),
+                            style: const TextStyle(
+                                fontSize: 13, color: AppColors.text2),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
+                _StreakBadge(),
               ],
             ),
           ),
         ),
 
         // Motivaciona poruka
-        SliverToBoxAdapter(
-          child: MotivationBanner(planName: planName),
+        const SliverToBoxAdapter(
+          child: MotivationBanner(planName: ''),
         ),
 
-        // Lista vjezbi
-        exercises.when(
-          loading: () => const SliverToBoxAdapter(
-              child: Center(child: CircularProgressIndicator())),
-          error: (e, _) => ErrorState(
-            onRetry: () => ref.invalidate(exercisesProvider),
-          ),
-          data: (list) {
-            final exerciseIds = list.map((e) => e.id).toList();
-            final joined = exerciseIds.join(',');
-            final completedAsync =
-                ref.watch(completedSetsTodayProvider(joined));
+        // Jedan ili vise planova
+        ...plans.map((plan) => _PlanSection(
+              planId: plan.id,
+              planName: plan.name,
+            )),
 
-            return completedAsync.when(
-              loading: () => const SliverToBoxAdapter(
-                  child: Center(child: CircularProgressIndicator())),
-              error: (e, _) => ErrorState(
-                onRetry: () => ref.invalidate(exercisesProvider),
-              ),
-              data: (completed) => SliverPadding(
-                padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, i) {
-                      final ex = list[i];
-                      final completedSets = completed[ex.id] ?? 0;
-                      final totalSets = ex.defaultSets.length;
-                      final isDone =
-                          completedSets >= totalSets && completedSets > 0;
-                      final isActive = completedSets > 0 && !isDone;
-
-                      return ExerciseHeroCard(
-                        exercise: ex,
-                        completedSets: completedSets,
-                        totalSets: totalSets,
-                        isActive: isActive,
-                        onTap: () => _openLogSession(context, ref, ex, joined),
-                      );
-                    },
-                    childCount: list.length,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 40)),
       ],
     );
-  }
-
-  void _openLogSession(BuildContext context, WidgetRef ref,
-      ExerciseModel exercise, String joined) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => LogSessionPage(exerciseId: exercise.id),
-      ),
-    ).then((_) {
-      ref.invalidate(completedSetsTodayProvider(joined));
-    });
   }
 
   Widget _greeting(BuildContext context) {
@@ -145,11 +100,9 @@ class _PlanContent extends ConsumerWidget {
         : hour < 18
             ? context.l10n.greeting_afternoon
             : context.l10n.greeting_evening;
-    return Text(
-      greet,
-      style: const TextStyle(
-          fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.text1),
-    );
+    return Text(greet,
+        style: const TextStyle(
+            fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.text1));
   }
 
   String _dayName(BuildContext context) {
@@ -164,6 +117,78 @@ class _PlanContent extends ConsumerWidget {
       context.l10n.days_sunday,
     ];
     return days[DateTime.now().weekday];
+  }
+}
+
+class _PlanSection extends ConsumerWidget {
+  const _PlanSection({required this.planId, required this.planName});
+
+  final String planId;
+  final String planName;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final exercises = ref.watch(exercisesProvider(planId));
+
+    return exercises.when(
+      loading: () => const SliverToBoxAdapter(
+          child: Center(child: CircularProgressIndicator())),
+      error: (e, _) => SliverToBoxAdapter(
+          child: ErrorState(onRetry: () => ref.invalidate(exercisesProvider))),
+      data: (list) {
+        final exerciseIds = list.map((e) => e.id).toList();
+        final joined = exerciseIds.join(',');
+        final completedAsync = ref.watch(completedSetsTodayProvider(joined));
+
+        return completedAsync.when(
+          loading: () => const SliverToBoxAdapter(
+              child: Center(child: CircularProgressIndicator())),
+          error: (e, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+          data: (completed) => SliverList(
+            delegate: SliverChildListDelegate([
+              // Plan naziv header ako ima vise planova
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 8, 18, 4),
+                child: Text(planName,
+                    style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.text2)),
+              ),
+              ...list.map((ex) {
+                final completedSets = completed[ex.id] ?? 0;
+                final totalSets = ex.defaultSets.length;
+                final isDone = completedSets >= totalSets && completedSets > 0;
+                final isActive = completedSets > 0 && !isDone;
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: ExerciseHeroCard(
+                    exercise: ex,
+                    completedSets: completedSets,
+                    totalSets: totalSets,
+                    isActive: isActive,
+                    onTap: () => _openLogSession(context, ref, ex, joined),
+                  ),
+                );
+              }),
+            ]),
+          ),
+        );
+      },
+    );
+  }
+
+  void _openLogSession(BuildContext context, WidgetRef ref,
+      ExerciseModel exercise, String joined) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LogSessionPage(exerciseId: exercise.id),
+      ),
+    ).then((_) {
+      ref.invalidate(completedSetsTodayProvider(joined));
+    });
   }
 }
 
@@ -194,6 +219,42 @@ class _EmptyState extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _StreakBadge extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final streak = ref.watch(streakProvider);
+
+    return streak.maybeWhen(
+      data: (days) => days == 0
+          ? const SizedBox.shrink()
+          : Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.amber.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.amber.withOpacity(0.4)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.local_fire_department_rounded,
+                      size: 16, color: AppColors.amber),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$days',
+                    style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.amber),
+                  ),
+                ],
+              ),
+            ),
+      orElse: () => const SizedBox.shrink(),
     );
   }
 }

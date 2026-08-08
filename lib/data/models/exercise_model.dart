@@ -13,7 +13,7 @@ class ExerciseModel {
   final int sortOrder;
   final DateTime createdAt;
   final List<DefaultSetModel> defaultSets;
-
+  final String exerciseType;
   static const tableName = 'exercises';
 
   const ExerciseModel({
@@ -27,6 +27,7 @@ class ExerciseModel {
     required this.sortOrder,
     required this.createdAt,
     this.defaultSets = const [],
+    this.exerciseType = 'weighted',
   });
 
   bool get hasCustomImage => imagePath != null;
@@ -44,6 +45,7 @@ class ExerciseModel {
       youTubeUrl: map['youtube_url'] as String?,
       sortOrder: map['sort_order'] as int,
       createdAt: DateTime.parse(map['created_at'] as String),
+      exerciseType: map['exercise_type'] as String? ?? 'weighted',
     );
   }
 
@@ -58,6 +60,7 @@ class ExerciseModel {
       'youtube_url': youTubeUrl,
       'sort_order': sortOrder,
       'created_at': createdAt.toIso8601String(),
+      'exercise_type': exerciseType,
     };
   }
 
@@ -69,6 +72,7 @@ class ExerciseModel {
     String? youTubeUrl,
     int? sortOrder,
     List<DefaultSetModel>? defaultSets,
+    String? exerciseType,
   }) {
     return ExerciseModel(
       id: id,
@@ -81,6 +85,13 @@ class ExerciseModel {
       sortOrder: sortOrder ?? this.sortOrder,
       createdAt: createdAt,
       defaultSets: defaultSets ?? this.defaultSets,
+      exerciseType: exerciseType ?? this.exerciseType,
     );
   }
+
+  bool get isWeighted => exerciseType == 'weighted';
+
+  bool get isBodyweight => exerciseType == 'bodyweight';
+
+  bool get isTimed => exerciseType == 'timed';
 }

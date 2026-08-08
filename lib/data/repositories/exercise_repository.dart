@@ -20,6 +20,7 @@ class ExerciseRepository {
     required String planId,
     required String name,
     required String muscleGroup,
+    String exerciseType = 'weighted',
     String? description,
     String? youTubeUrl,
     required int sortOrder,
@@ -47,6 +48,7 @@ class ExerciseRepository {
       sortOrder: sortOrder,
       createdAt: DateTime.now(),
       defaultSets: defaultSets,
+      exerciseType: exerciseType,
     );
 
     await _exerciseDao.insert(exercise);
@@ -63,7 +65,8 @@ class ExerciseRepository {
 
   Future<void> delete(String id) => _exerciseDao.delete(id);
 
-  Future<String?> pickAndSaveImage(String exerciseId, ImageSource source) async {
+  Future<String?> pickAndSaveImage(
+      String exerciseId, ImageSource source) async {
     final picked = await _picker.pickImage(
       source: source,
       maxWidth: 800,

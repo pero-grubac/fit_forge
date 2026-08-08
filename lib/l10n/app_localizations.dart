@@ -848,6 +848,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Workout'**
   String get log_session_title;
+
+  /// No description provided for @muscle_forearms.
+  ///
+  /// In en, this message translates to:
+  /// **'Forearms'**
+  String get muscle_forearms;
+
+  /// No description provided for @muscle_bodyweight.
+  ///
+  /// In en, this message translates to:
+  /// **'Bodyweight'**
+  String get muscle_bodyweight;
+
+  /// No description provided for @exercise_search_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search exercises...'**
+  String get exercise_search_hint;
+
+  /// No description provided for @exercise_seconds_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Seconds'**
+  String get exercise_seconds_label;
+
+  /// No description provided for @exercise_sets_count_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets'**
+  String get exercise_sets_count_label;
+
+  /// No description provided for @exercise_type_weighted.
+  ///
+  /// In en, this message translates to:
+  /// **'Weighted'**
+  String get exercise_type_weighted;
+
+  /// No description provided for @exercise_type_bodyweight.
+  ///
+  /// In en, this message translates to:
+  /// **'Bodyweight'**
+  String get exercise_type_bodyweight;
+
+  /// No description provided for @exercise_type_timed.
+  ///
+  /// In en, this message translates to:
+  /// **'Timed'**
+  String get exercise_type_timed;
 }
 
 class _AppLocalizationsDelegate

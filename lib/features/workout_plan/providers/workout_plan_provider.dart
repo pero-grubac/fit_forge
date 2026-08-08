@@ -17,10 +17,10 @@ final planByDayProvider =
       );
 });
 
-final todayPlanProvider = FutureProvider<WorkoutPlanModel?>((ref) {
+final todayPlansProvider = FutureProvider<List<WorkoutPlanModel>>((ref) {
   final today = DateTime.now().weekday;
   return ref.watch(workoutPlanNotifierProvider.future).then(
-        (plans) => plans.where((p) => p.dayOfWeek == today).firstOrNull,
+        (plans) => plans.where((p) => p.dayOfWeek == today).toList(),
       );
 });
 

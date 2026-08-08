@@ -158,5 +158,13 @@
   "motivation_4": "Тежина не лаже. Нити ти.",
   "motivation_5": "Сваки тренинг је инвестиција у себе.",
 
-  "log_session_title": "Тренинг"
+  "log_session_title": "Тренинг",
+  "muscle_forearms": "Подлактице",
+  "muscle_bodyweight": "Тјелесна тежина",
+  "exercise_search_hint": "Претражи вјежбе...",
+  "exercise_seconds_label": "Секунде",
+  "exercise_sets_count_label": "Сетови",
+  "exercise_type_weighted": "Са тежином",
+  "exercise_type_bodyweight": "Тјелесна тежина",
+  "exercise_type_timed": "Временски"
 }

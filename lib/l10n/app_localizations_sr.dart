@@ -396,6 +396,30 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get log_session_title => 'Trening';
+
+  @override
+  String get muscle_forearms => 'Podlaktice';
+
+  @override
+  String get muscle_bodyweight => 'Tjelesna težina';
+
+  @override
+  String get exercise_search_hint => 'Pretraži vježbe...';
+
+  @override
+  String get exercise_seconds_label => 'Sekunde';
+
+  @override
+  String get exercise_sets_count_label => 'Setovi';
+
+  @override
+  String get exercise_type_weighted => 'Sa težinom';
+
+  @override
+  String get exercise_type_bodyweight => 'Tjelesna težina';
+
+  @override
+  String get exercise_type_timed => 'Vremenski';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -790,4 +814,28 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get log_session_title => 'Тренинг';
+
+  @override
+  String get muscle_forearms => 'Подлактице';
+
+  @override
+  String get muscle_bodyweight => 'Тјелесна тежина';
+
+  @override
+  String get exercise_search_hint => 'Претражи вјежбе...';
+
+  @override
+  String get exercise_seconds_label => 'Секунде';
+
+  @override
+  String get exercise_sets_count_label => 'Сетови';
+
+  @override
+  String get exercise_type_weighted => 'Са тежином';
+
+  @override
+  String get exercise_type_bodyweight => 'Тјелесна тежина';
+
+  @override
+  String get exercise_type_timed => 'Временски';
 }
