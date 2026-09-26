@@ -1,9 +1,13 @@
 import 'package:fit_forge/data/local/dao/workout_plan_dao.dart';
 import 'package:fit_forge/data/models/workout_plan_model.dart';
+import 'package:fit_forge/data/repositories/exercise_repository.dart';
 import 'package:uuid/uuid.dart';
 
 class WorkoutPlanRepository {
-  final _planDao = WorkoutPlanDao();
+  WorkoutPlanRepository(this._planDao, this._exercises);
+
+  final WorkoutPlanDao _planDao;
+  final ExerciseRepository _exercises;
 
   Future<List<WorkoutPlanModel>> getAll() => _planDao.getAll();
 
@@ -29,7 +33,12 @@ class WorkoutPlanRepository {
 
   Future<void> update(WorkoutPlanModel plan) => _planDao.update(plan);
 
-  Future<void> delete(String id) => _planDao.delete(id);
+  /// Deletes the plan. Workout history is kept; exercises left without a
+  /// plan or history are removed.
+  Future<void> delete(String id) async {
+    await _planDao.delete(id);
+    await _exercises.deleteUnused();
+  }
 
   Future<void> updateName(String id, String name) =>
       _planDao.updateName(id, name);

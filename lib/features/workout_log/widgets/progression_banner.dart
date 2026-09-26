@@ -10,20 +10,35 @@ class ProgressionBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = switch (suggestion.confidence) {
-      'High' => AppColors.green,
-      'Hold' => AppColors.amber,
-      'Reduce' => AppColors.red,
-      _ => AppColors.accent,
+    final color = switch (suggestion.action) {
+      ProgressionAction.increase => AppColors.green,
+      ProgressionAction.hold => AppColors.amber,
+      ProgressionAction.reduce => AppColors.red,
+      ProgressionAction.noData => AppColors.accent,
+    };
+    final l10n = context.l10n;
+    final message = switch ((suggestion.action, suggestion.unit)) {
+      (ProgressionAction.increase, ProgressionUnit.kg) =>
+        l10n.log_progression_increase(_formatKg(suggestion.increment)),
+      (ProgressionAction.increase, ProgressionUnit.reps) =>
+        l10n.log_progression_increase_reps(suggestion.increment.round()),
+      (ProgressionAction.increase, ProgressionUnit.seconds) =>
+        l10n.log_progression_increase_seconds(suggestion.increment.round()),
+      (ProgressionAction.hold, ProgressionUnit.kg) => l10n.log_progression_hold,
+      (ProgressionAction.hold, _) => l10n.log_progression_hold_reps,
+      (ProgressionAction.reduce, ProgressionUnit.kg) =>
+        l10n.log_progression_reduce,
+      (ProgressionAction.reduce, _) => l10n.log_progression_reduce_reps,
+      (ProgressionAction.noData, _) => '',
     };
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.25)),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Row(
         children: [
@@ -42,7 +57,7 @@ class ProgressionBanner extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(suggestion.reason,
+                Text(message,
                     style:
                         const TextStyle(fontSize: 12, color: AppColors.text2)),
               ],
@@ -52,4 +67,7 @@ class ProgressionBanner extends StatelessWidget {
       ),
     );
   }
+
+  static String _formatKg(double kg) =>
+      kg == kg.roundToDouble() ? kg.toStringAsFixed(0) : kg.toString();
 }

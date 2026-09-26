@@ -29,7 +29,7 @@ class MuscleGroupBadge extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(size * 0.25),
       ),
       child: Icon(_icon, color: color, size: size * 0.55),

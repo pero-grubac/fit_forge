@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 class ErrorHandler {
   static void handle(Object error, StackTrace? stack) {
-    // U debug modu loguj sve detalje
+    // Log full details in debug builds
     if (kDebugMode) {
       print('=== ERROR ===');
       print('Error: $error');
@@ -10,7 +10,7 @@ class ErrorHandler {
       print('=============');
     }
 
-    // Jednog dana Crashlytics, Sentry ili nesto dzabe sto se nadje
+    // Hook for a crash reporter (Crashlytics, Sentry, ...) later
     // FirebaseCrashlytics.instance.recordError(error, stack);
   }
 }

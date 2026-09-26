@@ -44,7 +44,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Skip dugme
+            // Skip button
             if (_currentPage < 2)
               Align(
                 alignment: Alignment.topRight,
@@ -74,7 +74,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
               ),
             ),
 
-            // Dots i dugme
+            // Dots and button
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
               child: Column(
@@ -99,7 +99,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Dugme
+                  // Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -123,7 +123,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   }
 }
 
-// ── Ekran 1 — Dobrodošlica ────────────────────────────────────────────────────
+// ── Screen 1 — Welcome ───────────────────────────────────────────────────────
 
 class _WelcomePage extends StatelessWidget {
   const _WelcomePage();
@@ -172,7 +172,7 @@ class _WelcomePage extends StatelessWidget {
   }
 }
 
-// ── Ekran 2 — Kako radi ───────────────────────────────────────────────────────
+// ── Screen 2 — How it works ──────────────────────────────────────────────────
 
 class _HowItWorksPage extends StatelessWidget {
   const _HowItWorksPage();
@@ -242,7 +242,7 @@ class _Step extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -250,7 +250,7 @@ class _Step extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
@@ -293,7 +293,7 @@ class _Arrow extends StatelessWidget {
   }
 }
 
-// ── Ekran 3 — Počni ───────────────────────────────────────────────────────────
+// ── Screen 3 — Get started ───────────────────────────────────────────────────
 
 class _GetStartedPage extends StatelessWidget {
   const _GetStartedPage();
@@ -309,7 +309,7 @@ class _GetStartedPage extends StatelessWidget {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: AppColors.accent.withOpacity(0.15),
+              color: AppColors.accent.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(28),
             ),
             child: const Icon(

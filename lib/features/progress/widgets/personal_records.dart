@@ -1,16 +1,24 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
+import 'package:fit_forge/core/utils/one_rep_max.dart';
 import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:flutter/material.dart';
 
 class PersonalRecords extends StatelessWidget {
-  const PersonalRecords({super.key, required this.logs});
+  const PersonalRecords({
+    super.key,
+    required this.logs,
+    this.showOneRepMax = false,
+  });
 
   final List<WorkoutLogModel> logs;
 
+  /// Also show the best estimated one-rep max (weighted exercises).
+  final bool showOneRepMax;
+
   @override
   Widget build(BuildContext context) {
-    // Nadji max tezinu i datum
+    // Find the max weight and its date
     WorkoutLogModel? bestLog;
     double bestWeight = 0;
 
@@ -24,6 +32,10 @@ class PersonalRecords extends StatelessWidget {
     }
 
     if (bestLog == null) return const SizedBox.shrink();
+
+    final bestOneRm = showOneRepMax
+        ? logs.map(bestOneRepMax).fold(0.0, (max, v) => v > max ? v : max)
+        : 0.0;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 12),
@@ -39,7 +51,7 @@ class PersonalRecords extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.amber.withOpacity(0.15),
+              color: AppColors.amber.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.emoji_events_rounded,
@@ -59,6 +71,13 @@ class PersonalRecords extends StatelessWidget {
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: AppColors.text1)),
+                if (bestOneRm > 0)
+                  Text(
+                    '${context.l10n.progress_one_rep_max}: '
+                    '${bestOneRm.toStringAsFixed(1)} kg',
+                    style:
+                        const TextStyle(fontSize: 12, color: AppColors.text2),
+                  ),
               ],
             ),
           ),

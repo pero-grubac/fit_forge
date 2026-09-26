@@ -1,7 +1,7 @@
 class WorkoutPlanModel {
   final String id;
   final String name;
-  final int dayOfWeek; // 1=Pon, 2=Uto ... 7=Ned
+  final int dayOfWeek; // 1 = Monday ... 7 = Sunday (DateTime.weekday)
   final bool isActive;
   final DateTime createdAt;
 

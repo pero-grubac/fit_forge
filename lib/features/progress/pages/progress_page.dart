@@ -9,7 +9,6 @@ import 'package:fit_forge/features/progress/widgets/personal_records.dart';
 import 'package:fit_forge/features/progress/widgets/stat_cards.dart';
 import 'package:fit_forge/features/progress/widgets/volume_bar_chart.dart';
 import 'package:fit_forge/features/progress/widgets/weight_line_chart.dart';
-import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
 import 'package:fit_forge/shared/widgets/error_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,12 +21,15 @@ class ProgressPage extends ConsumerStatefulWidget {
 }
 
 class _ProgressPageState extends ConsumerState<ProgressPage> {
-  ExerciseModel? _selectedExercise;
-  int _periodDays = 90; // default 3 mj
+  String? _selectedId;
+  int _periodDays = 90; // default: 3 months
 
   @override
   Widget build(BuildContext context) {
-    final allExercises = ref.watch(allExercisesProvider);
+    final allExercises = ref.watch(exercisesWithLogsProvider);
+    final list = allExercises.valueOrNull ?? const <ExerciseModel>[];
+    final selected =
+        list.where((e) => e.id == _selectedId).firstOrNull ?? list.firstOrNull;
 
     return Scaffold(
       body: SafeArea(
@@ -47,26 +49,25 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
               ),
             ),
 
-            // Dropdown za vjezbu
+            // Exercise dropdown
             SliverToBoxAdapter(
               child: allExercises.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => ErrorState(
-                  onRetry: () => ref.invalidate(allExercisesProvider),
+                  onRetry: () => ref.invalidate(exercisesWithLogsProvider),
                 ),
                 data: (list) => list.isEmpty
                     ? _EmptyState()
                     : ExerciseDropdown(
                         exercises: list,
-                        selected: _selectedExercise ?? list.first,
-                        onChanged: (ex) =>
-                            setState(() => _selectedExercise = ex),
+                        selected: selected!,
+                        onChanged: (ex) => setState(() => _selectedId = ex.id),
                       ),
               ),
             ),
 
             // Period filter
-            if (allExercises.value?.isNotEmpty == true)
+            if (selected != null)
               SliverToBoxAdapter(
                 child: PeriodFilter(
                   selected: _periodDays,
@@ -74,11 +75,10 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
                 ),
               ),
 
-            // Grafovi i statistike
-            if (_selectedExercise != null ||
-                allExercises.value?.isNotEmpty == true)
+            // Charts and stats
+            if (selected != null)
               _ProgressContent(
-                exercise: _selectedExercise ?? allExercises.value!.first,
+                exercise: selected,
                 periodDays: _periodDays,
               ),
 
@@ -101,15 +101,14 @@ class _ProgressContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final logs = ref.watch(exerciseLogsByNameProvider(exercise.name));
+    final logs = ref.watch(exerciseHistoryProvider(exercise.id));
 
     return logs.when(
       loading: () => const SliverToBoxAdapter(
           child: Center(child: CircularProgressIndicator())),
       error: (e, _) => SliverToBoxAdapter(
         child: ErrorState(
-          onRetry: () =>
-              ref.invalidate(exerciseLogsByNameProvider(exercise.name)),
+          onRetry: () => ref.invalidate(exerciseHistoryProvider(exercise.id)),
         ),
       ),
       data: (allLogs) {
@@ -135,7 +134,7 @@ class _ProgressContent extends ConsumerWidget {
 
         return SliverList(
           delegate: SliverChildListDelegate([
-            // Stat kartice
+            // Stat cards
             StatCards(
               maxWeight: maxWeight,
               totalSessions: totalSessions,
@@ -145,8 +144,11 @@ class _ProgressContent extends ConsumerWidget {
             WeightLineChart(logs: filtered, exercise: exercise),
             // Bar chart
             VolumeBarChart(logs: filtered),
-            // Licni rekordi
-            PersonalRecords(logs: allLogs),
+            // Personal records
+            PersonalRecords(
+              logs: allLogs,
+              showOneRepMax: exercise.isWeighted,
+            ),
           ]),
         );
       },

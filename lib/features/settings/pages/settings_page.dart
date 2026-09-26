@@ -1,15 +1,24 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/error_handler.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
-import 'package:fit_forge/data/local/database_helper.dart';
+import 'package:fit_forge/data/providers.dart';
+import 'package:fit_forge/data/repositories/backup_repository.dart';
+import 'package:fit_forge/features/progress/providers/progress_provider.dart';
 import 'package:fit_forge/features/settings/providers/quote_provider.dart';
 import 'package:fit_forge/features/settings/providers/settings_provider.dart';
+import 'package:fit_forge/features/workout_log/providers/streak_provider.dart';
+import 'package:fit_forge/features/workout_log/providers/workout_log_provider.dart';
+import 'package:fit_forge/features/workout_log/widgets/rest_timer_bar.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
 import 'package:fit_forge/shared/widgets/error_state.dart';
 import 'package:fit_forge/shared/widgets/stepper_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -42,7 +51,7 @@ class _SettingsContent extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(14, 16, 14, 40),
       children: [
-        // Jezik
+        // Language
         _SectionLabel(context.l10n.settings_language_section),
         _SettingsCard(children: [
           _LanguageRow(
@@ -58,7 +67,7 @@ class _SettingsContent extends ConsumerWidget {
                 color: AppColors.text1)),
         const SizedBox(height: 20),
 
-        // Progression pravila
+        // Progression rules
         _SectionLabel(context.l10n.settings_progression_section),
         _SettingsCard(children: [
           _IncrementRow(
@@ -93,7 +102,47 @@ class _SettingsContent extends ConsumerWidget {
         ]),
         const SizedBox(height: 20),
 
-        // Opste
+        // Rest timer
+        _SectionLabel(context.l10n.settings_rest_section),
+        _SettingsCard(children: [
+          _IncrementRow(
+            label: context.l10n.settings_rest,
+            subtitle: context.l10n.settings_rest_sub,
+            value: settings.restSeconds.toDouble(),
+            min: 0,
+            max: 300,
+            step: 15,
+            format: (v) => v == 0
+                ? context.l10n.settings_rest_off
+                : formatDuration(Duration(seconds: v.toInt())),
+            onChanged: (v) =>
+                ref.read(settingsProvider.notifier).setRestSeconds(v.toInt()),
+          ),
+        ]),
+        const SizedBox(height: 20),
+
+        // Data
+        _SectionLabel(context.l10n.settings_data_section),
+        _SettingsCard(children: [
+          _ActionRow(
+            label: context.l10n.settings_export,
+            subtitle: context.l10n.settings_export_sub,
+            icon: Icons.upload_file_outlined,
+            color: AppColors.accent,
+            onTap: () => _exportData(context, ref),
+          ),
+          const _Divider(),
+          _ActionRow(
+            label: context.l10n.settings_import,
+            subtitle: context.l10n.settings_import_sub,
+            icon: Icons.download_outlined,
+            color: AppColors.accent,
+            onTap: () => _confirmImport(context, ref),
+          ),
+        ]),
+        const SizedBox(height: 20),
+
+        // General
         _SectionLabel(context.l10n.settings_general_section),
         _SettingsCard(children: [
           _ActionRow(
@@ -119,7 +168,7 @@ class _SettingsContent extends ConsumerWidget {
         ]),
         const SizedBox(height: 10),
 
-// Lista poruka
+// Quote list
         ref.watch(quoteNotifierProvider).when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => const ErrorState(),
@@ -149,16 +198,16 @@ class _SettingsContent extends ConsumerWidget {
                                   horizontal: 16, vertical: 12),
                               child: Row(
                                 children: [
-                                  // Toggle aktivnosti
+                                  // Active toggle
                                   Switch(
                                     value: quote.isActive,
-                                    activeColor: AppColors.accent,
+                                    activeThumbColor: AppColors.accent,
                                     onChanged: (v) => ref
                                         .read(quoteNotifierProvider.notifier)
                                         .toggleActive(quote.id, v),
                                   ),
                                   const SizedBox(width: 8),
-                                  // Tekst poruke
+                                  // Quote text
                                   Expanded(
                                     child: Text(
                                       quote.text,
@@ -188,6 +237,33 @@ class _SettingsContent extends ConsumerWidget {
                       }).toList(),
                     ),
             ),
+
+        // Developer (hidden until unlocked)
+        if (settings.devMode) ...[
+          const SizedBox(height: 20),
+          _SectionLabel(context.l10n.settings_dev_section),
+          _SettingsCard(children: [
+            _ActionRow(
+              label: context.l10n.settings_demo,
+              subtitle: context.l10n.settings_demo_sub,
+              icon: Icons.science_outlined,
+              color: AppColors.amber,
+              onTap: () => _confirmDemoData(context, ref),
+            ),
+            const _Divider(),
+            _ActionRow(
+              label: context.l10n.settings_dev_hide,
+              subtitle: context.l10n.settings_dev_hide_sub,
+              icon: Icons.visibility_off_outlined,
+              color: AppColors.text2,
+              onTap: () =>
+                  ref.read(settingsProvider.notifier).setDevMode(false),
+            ),
+          ]),
+        ],
+
+        const SizedBox(height: 24),
+        _VersionFooter(devMode: settings.devMode),
       ],
     );
   }
@@ -223,19 +299,127 @@ class _SettingsContent extends ConsumerWidget {
   }
 
   Future<void> _resetAllData(WidgetRef ref) async {
-    // Obrisi bazu
-    final dbPath = join(await getDatabasesPath(), 'fitforge.db');
-    await DatabaseHelper.instance.close();
-    await deleteDatabase(dbPath);
-    await DatabaseHelper.instance.initialize();
-
-    // Resetuj settings
+    await ref.read(databaseHelperProvider).recreate();
     await ref.read(settingsProvider.notifier).resetAllData();
-
-    // Invalidaj sve providere
     ref.invalidate(settingsProvider);
+    _invalidateData(ref);
+  }
+
+  /// Everything cached from the database is stale after a reset or import.
+  void _invalidateData(WidgetRef ref) {
     ref.invalidate(workoutPlanNotifierProvider);
+    ref.invalidate(planExercisesProvider);
+    ref.invalidate(exercisesWithLogsProvider);
+    ref.invalidate(exerciseHistoryProvider);
+    ref.invalidate(exerciseLogsProvider);
     ref.invalidate(quoteNotifierProvider);
+    ref.invalidate(streakProvider);
+  }
+
+  Future<void> _exportData(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    try {
+      final json = await ref.read(backupRepositoryProvider).exportJson();
+      final date = DateTime.now().toIso8601String().substring(0, 10);
+      final uri = await FilePicker.saveFile(
+        fileName: 'fitforge-backup-$date.json',
+        bytes: Uint8List.fromList(utf8.encode(json)),
+        mimeType: 'application/json',
+      );
+      if (uri != null) {
+        messenger
+            .showSnackBar(SnackBar(content: Text(l10n.settings_export_done)));
+      }
+    } catch (e, st) {
+      ErrorHandler.handle(e, st);
+      messenger.showSnackBar(SnackBar(content: Text(l10n.error_generic)));
+    }
+  }
+
+  Future<void> _confirmDemoData(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.bg2,
+        title: Text(context.l10n.settings_demo,
+            style: const TextStyle(color: AppColors.text1)),
+        content: Text(context.l10n.settings_demo_confirm,
+            style: const TextStyle(color: AppColors.text2)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(context.l10n.btn_cancel,
+                style: const TextStyle(color: AppColors.text2)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(context.l10n.settings_demo_btn,
+                style: const TextStyle(color: AppColors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    try {
+      await ref.read(demoDataProvider).load();
+      _invalidateData(ref);
+      messenger.showSnackBar(SnackBar(content: Text(l10n.settings_demo_done)));
+    } catch (e, st) {
+      ErrorHandler.handle(e, st);
+      messenger.showSnackBar(SnackBar(content: Text(l10n.error_generic)));
+    }
+  }
+
+  Future<void> _confirmImport(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.bg2,
+        title: Text(context.l10n.settings_import,
+            style: const TextStyle(color: AppColors.text1)),
+        content: Text(context.l10n.settings_import_confirm,
+            style: const TextStyle(color: AppColors.text2)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(context.l10n.btn_cancel,
+                style: const TextStyle(color: AppColors.text2)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(context.l10n.settings_import_btn,
+                style: const TextStyle(color: AppColors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    try {
+      final files = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      if (files.isEmpty) return;
+      final json = await files.first.xFile.readAsString();
+      await ref.read(backupRepositoryProvider).importJson(json);
+      _invalidateData(ref);
+      messenger
+          .showSnackBar(SnackBar(content: Text(l10n.settings_import_done)));
+    } on BackupFormatException catch (e) {
+      ErrorHandler.handle(e, StackTrace.current);
+      messenger
+          .showSnackBar(SnackBar(content: Text(l10n.settings_import_invalid)));
+    } catch (e, st) {
+      ErrorHandler.handle(e, st);
+      messenger.showSnackBar(SnackBar(content: Text(l10n.error_generic)));
+    }
   }
 
   void _showAddQuoteDialog(BuildContext context, WidgetRef ref) {
@@ -299,7 +483,7 @@ class _SettingsContent extends ConsumerWidget {
   }
 }
 
-// ── Helper widgeti ────────────────────────────────────────────────────────────
+// ── Helper widgets ───────────────────────────────────────────────────────────
 
 class _SectionLabel extends StatelessWidget {
   const _SectionLabel(this.text);
@@ -355,6 +539,7 @@ class _IncrementRow extends StatelessWidget {
     required this.max,
     required this.step,
     required this.onChanged,
+    this.format,
   });
 
   final String label;
@@ -364,6 +549,7 @@ class _IncrementRow extends StatelessWidget {
   final double max;
   final double step;
   final ValueChanged<double> onChanged;
+  final String Function(double value)? format;
 
   @override
   Widget build(BuildContext context) {
@@ -391,6 +577,7 @@ class _IncrementRow extends StatelessWidget {
             max: max,
             step: step,
             onChanged: onChanged,
+            format: format,
           ),
         ],
       ),
@@ -445,7 +632,7 @@ class _SliderRow extends StatelessWidget {
               activeTrackColor: AppColors.accent,
               inactiveTrackColor: AppColors.bg4,
               thumbColor: AppColors.accent,
-              overlayColor: AppColors.accent.withOpacity(0.1),
+              overlayColor: AppColors.accent.withValues(alpha: 0.1),
               trackHeight: 3,
             ),
             child: Slider(
@@ -500,7 +687,8 @@ class _ActionRow extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: color.withOpacity(0.5), size: 20),
+            Icon(Icons.chevron_right,
+                color: color.withValues(alpha: 0.5), size: 20),
           ],
         ),
       ),
@@ -540,6 +728,65 @@ class _LanguageRow extends StatelessWidget {
           onChanged: (v) {
             if (v != null) onChanged(v);
           },
+        ),
+      ),
+    );
+  }
+}
+
+final appVersionProvider = FutureProvider<String>((ref) async {
+  final info = await PackageInfo.fromPlatform();
+  return '${info.version} (${info.buildNumber})';
+});
+
+/// App version. Tapping it [_tapsToUnlock] times unlocks the developer
+/// section, like Android's "build number" trick.
+class _VersionFooter extends ConsumerStatefulWidget {
+  const _VersionFooter({required this.devMode});
+
+  final bool devMode;
+
+  @override
+  ConsumerState<_VersionFooter> createState() => _VersionFooterState();
+}
+
+class _VersionFooterState extends ConsumerState<_VersionFooter> {
+  static const _tapsToUnlock = 7;
+  static const _hintFrom = 4;
+  int _taps = 0;
+
+  void _onTap() {
+    if (widget.devMode) return;
+    _taps++;
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    if (_taps >= _tapsToUnlock) {
+      _taps = 0;
+      ref.read(settingsProvider.notifier).setDevMode(true);
+      messenger.showSnackBar(
+          SnackBar(content: Text(context.l10n.settings_dev_unlocked)));
+    } else if (_taps >= _hintFrom) {
+      messenger.showSnackBar(SnackBar(
+        content:
+            Text(context.l10n.settings_dev_taps_left(_tapsToUnlock - _taps)),
+        duration: const Duration(milliseconds: 800),
+      ));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final version = ref.watch(appVersionProvider).valueOrNull ?? '';
+    return Center(
+      child: GestureDetector(
+        key: const Key('app_version'),
+        behavior: HitTestBehavior.opaque,
+        onTap: _onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Text(
+            context.l10n.settings_version(version),
+            style: const TextStyle(fontSize: 12, color: AppColors.text3),
+          ),
         ),
       ),
     );

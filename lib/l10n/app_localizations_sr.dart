@@ -36,7 +36,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get greeting_evening => 'Dobro veče';
 
   @override
-  String get motivationTitle => 'Motivacija dana';
+  String get motivationTitle => 'Motivacija';
 
   @override
   String get days_monday => 'Ponedjeljak';
@@ -183,13 +183,25 @@ class AppLocalizationsSr extends AppLocalizations {
   String get log_notes_hint => 'Npr. dobra pumpa, povećaj sljedeći put...';
 
   @override
-  String get log_notes_label => 'Bilješka (opciono)';
+  String get log_notes_label => 'Bilješka za ovaj trening';
 
   @override
   String get log_volume => 'Ukupni volumen';
 
   @override
   String get log_progression_title => 'Prijedlog progresije';
+
+  @override
+  String log_progression_increase(String increment) {
+    return 'Odlično! Povećavamo za $increment kg';
+  }
+
+  @override
+  String get log_progression_hold => 'Zadrži težinu — skoro si spreman';
+
+  @override
+  String get log_progression_reduce =>
+      'Fokusiraj se na tehniku — malo smanjujemo težinu';
 
   @override
   String get progress_title => 'Napredak';
@@ -420,6 +432,207 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get exercise_type_timed => 'Vremenski';
+
+  @override
+  String get btn_remove => 'Ukloni';
+
+  @override
+  String get exercise_remove_title => 'Ukloni iz plana';
+
+  @override
+  String exercise_remove_confirm(String name) {
+    return 'Ukloniti \"$name\" iz ovog plana? Istorija treninga ostaje sačuvana.';
+  }
+
+  @override
+  String get exercise_delete_everywhere => 'Obriši vježbu i istoriju';
+
+  @override
+  String exercise_delete_everywhere_confirm(String name) {
+    return 'Obrisati \"$name\" iz svih planova zajedno sa cijelom istorijom treninga? Ovo se ne može poništiti.';
+  }
+
+  @override
+  String exercise_shared_hint(int count) {
+    return 'Koristi se u $count plana — izmjene važe za sve.';
+  }
+
+  @override
+  String get exercise_already_in_plan => 'Ova vježba je već u planu';
+
+  @override
+  String get exercise_in_plan => 'Već u planu';
+
+  @override
+  String exercise_create_custom(String name) {
+    return 'Napravi \"$name\"';
+  }
+
+  @override
+  String get progress_one_rep_max => 'Proc. 1RM';
+
+  @override
+  String log_progression_increase_reps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Odlično! Dodajemo $count ponavljanja po setu',
+      one: 'Odlično! Dodajemo 1 ponavljanje po setu',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String log_progression_increase_seconds(int count) {
+    return 'Odlično! Dodajemo $count s po setu';
+  }
+
+  @override
+  String get log_progression_hold_reps =>
+      'Zadrži iste ciljeve — skoro si spreman';
+
+  @override
+  String get log_progression_reduce_reps =>
+      'Fokusiraj se na tehniku — malo smanjujemo';
+
+  @override
+  String get settings_data_section => 'PODACI';
+
+  @override
+  String get settings_export => 'Izvezi podatke';
+
+  @override
+  String get settings_export_sub => 'Sačuvaj planove, vježbe i istoriju u fajl';
+
+  @override
+  String get settings_export_done => 'Rezervna kopija sačuvana';
+
+  @override
+  String get settings_import => 'Uvezi podatke';
+
+  @override
+  String get settings_import_sub => 'Vrati podatke iz rezervne kopije';
+
+  @override
+  String get settings_import_confirm =>
+      'Uvoz zamjenjuje sve trenutne planove, vježbe i istoriju treninga podacima iz kopije. Slike vježbi nisu dio kopije. Nastaviti?';
+
+  @override
+  String get settings_import_btn => 'Uvezi';
+
+  @override
+  String get settings_import_done => 'Podaci vraćeni';
+
+  @override
+  String get settings_import_invalid =>
+      'Ovaj fajl nije ispravna FitForge rezervna kopija';
+
+  @override
+  String get rest_title => 'Odmor';
+
+  @override
+  String get rest_skip => 'Preskoči';
+
+  @override
+  String get rest_notification_title => 'Odmor';
+
+  @override
+  String get rest_done_title => 'Odmor je gotov';
+
+  @override
+  String rest_done_body(String exercise) {
+    return 'Vrijeme je za sljedeći set: $exercise';
+  }
+
+  @override
+  String get settings_rest_section => 'TAJMER ODMORA';
+
+  @override
+  String get settings_rest => 'Odmor između setova';
+
+  @override
+  String get settings_rest_sub => 'Počinje nakon svakog završenog seta';
+
+  @override
+  String get settings_rest_off => 'Isklj.';
+
+  @override
+  String get nav_home => 'Početna';
+
+  @override
+  String get nav_progress => 'Napredak';
+
+  @override
+  String get nav_plans => 'Planovi';
+
+  @override
+  String get nav_settings => 'Podešavanja';
+
+  @override
+  String get exercise_edit => 'Uredi vježbu';
+
+  @override
+  String get exercise_add_description => 'Dodaj opis';
+
+  @override
+  String get log_show_more => 'Prikaži više';
+
+  @override
+  String get log_show_less => 'Prikaži manje';
+
+  @override
+  String log_last_note(String date) {
+    return 'Prošli put ($date)';
+  }
+
+  @override
+  String get plan_edit => 'Uredi plan';
+
+  @override
+  String get settings_demo => 'Učitaj demo podatke';
+
+  @override
+  String get settings_demo_sub =>
+      'Primjer planova i 8 sedmica treninga za isprobavanje';
+
+  @override
+  String get settings_demo_confirm =>
+      'Ovo zamjenjuje sve tvoje planove, vježbe i istoriju treninga primjerima. Prvo izvezi podatke ako želiš da ih sačuvaš.';
+
+  @override
+  String get settings_demo_btn => 'Učitaj';
+
+  @override
+  String get settings_demo_done => 'Demo podaci učitani';
+
+  @override
+  String settings_version(String version) {
+    return 'FitForge $version';
+  }
+
+  @override
+  String get settings_dev_section => 'RAZVOJ';
+
+  @override
+  String get settings_dev_unlocked => 'Opcije za razvoj uključene';
+
+  @override
+  String settings_dev_taps_left(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Još $count dodira do opcija za razvoj',
+      one: 'Još 1 dodir do opcija za razvoj',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settings_dev_hide => 'Sakrij opcije za razvoj';
+
+  @override
+  String get settings_dev_hide_sub =>
+      'Dodirni verziju 7 puta da ih ponovo prikažeš';
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -454,7 +667,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get greeting_evening => 'Добро вече';
 
   @override
-  String get motivationTitle => 'Мотивација дана';
+  String get motivationTitle => 'Мотивација';
 
   @override
   String get days_monday => 'Понедјељак';
@@ -601,13 +814,25 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get log_notes_hint => 'Нпр. добра пумпа, повећај сљедећи пут...';
 
   @override
-  String get log_notes_label => 'Биљешка (опционо)';
+  String get log_notes_label => 'Биљешка за овај тренинг';
 
   @override
   String get log_volume => 'Укупни волумен';
 
   @override
   String get log_progression_title => 'Приједлог прогресије';
+
+  @override
+  String log_progression_increase(String increment) {
+    return 'Одлично! Повећавамо за $increment kg';
+  }
+
+  @override
+  String get log_progression_hold => 'Задржи тежину — скоро си спреман';
+
+  @override
+  String get log_progression_reduce =>
+      'Фокусирај се на технику — мало смањујемо тежину';
 
   @override
   String get progress_title => 'Напредак';
@@ -838,4 +1063,205 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get exercise_type_timed => 'Временски';
+
+  @override
+  String get btn_remove => 'Уклони';
+
+  @override
+  String get exercise_remove_title => 'Уклони из плана';
+
+  @override
+  String exercise_remove_confirm(String name) {
+    return 'Уклонити \"$name\" из овог плана? Историја тренинга остаје сачувана.';
+  }
+
+  @override
+  String get exercise_delete_everywhere => 'Обриши вјежбу и историју';
+
+  @override
+  String exercise_delete_everywhere_confirm(String name) {
+    return 'Обрисати \"$name\" из свих планова заједно са цијелом историјом тренинга? Ово се не може поништити.';
+  }
+
+  @override
+  String exercise_shared_hint(int count) {
+    return 'Користи се у $count плана — измјене важе за све.';
+  }
+
+  @override
+  String get exercise_already_in_plan => 'Ова вјежба је већ у плану';
+
+  @override
+  String get exercise_in_plan => 'Већ у плану';
+
+  @override
+  String exercise_create_custom(String name) {
+    return 'Направи \"$name\"';
+  }
+
+  @override
+  String get progress_one_rep_max => 'Проц. 1RM';
+
+  @override
+  String log_progression_increase_reps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Одлично! Додајемо $count понављања по сету',
+      one: 'Одлично! Додајемо 1 понављање по сету',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String log_progression_increase_seconds(int count) {
+    return 'Одлично! Додајемо $count s по сету';
+  }
+
+  @override
+  String get log_progression_hold_reps =>
+      'Задржи исте циљеве — скоро си спреман';
+
+  @override
+  String get log_progression_reduce_reps =>
+      'Фокусирај се на технику — мало смањујемо';
+
+  @override
+  String get settings_data_section => 'ПОДАЦИ';
+
+  @override
+  String get settings_export => 'Извези податке';
+
+  @override
+  String get settings_export_sub => 'Сачувај планове, вјежбе и историју у фајл';
+
+  @override
+  String get settings_export_done => 'Резервна копија сачувана';
+
+  @override
+  String get settings_import => 'Увези податке';
+
+  @override
+  String get settings_import_sub => 'Врати податке из резервне копије';
+
+  @override
+  String get settings_import_confirm =>
+      'Увоз замјењује све тренутне планове, вјежбе и историју тренинга подацима из копије. Слике вјежби нису дио копије. Наставити?';
+
+  @override
+  String get settings_import_btn => 'Увези';
+
+  @override
+  String get settings_import_done => 'Подаци враћени';
+
+  @override
+  String get settings_import_invalid =>
+      'Овај фајл није исправна FitForge резервна копија';
+
+  @override
+  String get rest_title => 'Одмор';
+
+  @override
+  String get rest_skip => 'Прескочи';
+
+  @override
+  String get rest_notification_title => 'Одмор';
+
+  @override
+  String get rest_done_title => 'Одмор је готов';
+
+  @override
+  String rest_done_body(String exercise) {
+    return 'Вријеме је за сљедећи сет: $exercise';
+  }
+
+  @override
+  String get settings_rest_section => 'ТАЈМЕР ОДМОРА';
+
+  @override
+  String get settings_rest => 'Одмор између сетова';
+
+  @override
+  String get settings_rest_sub => 'Почиње након сваког завршеног сета';
+
+  @override
+  String get settings_rest_off => 'Искљ.';
+
+  @override
+  String get nav_home => 'Почетна';
+
+  @override
+  String get nav_progress => 'Напредак';
+
+  @override
+  String get nav_plans => 'Планови';
+
+  @override
+  String get nav_settings => 'Подешавања';
+
+  @override
+  String get exercise_edit => 'Уреди вјежбу';
+
+  @override
+  String get exercise_add_description => 'Додај опис';
+
+  @override
+  String get log_show_more => 'Прикажи више';
+
+  @override
+  String get log_show_less => 'Прикажи мање';
+
+  @override
+  String log_last_note(String date) {
+    return 'Прошли пут ($date)';
+  }
+
+  @override
+  String get plan_edit => 'Уреди план';
+
+  @override
+  String get settings_demo => 'Учитај демо податке';
+
+  @override
+  String get settings_demo_sub =>
+      'Примјер планова и 8 седмица тренинга за испробавање';
+
+  @override
+  String get settings_demo_confirm =>
+      'Ово замјењује све твоје планове, вјежбе и историју тренинга примјерима. Прво извези податке ако желиш да их сачуваш.';
+
+  @override
+  String get settings_demo_btn => 'Учитај';
+
+  @override
+  String get settings_demo_done => 'Демо подаци учитани';
+
+  @override
+  String settings_version(String version) {
+    return 'FitForge $version';
+  }
+
+  @override
+  String get settings_dev_section => 'РАЗВОЈ';
+
+  @override
+  String get settings_dev_unlocked => 'Опције за развој укључене';
+
+  @override
+  String settings_dev_taps_left(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Још $count додира до опција за развој',
+      one: 'Још 1 додир до опција за развој',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settings_dev_hide => 'Сакриј опције за развој';
+
+  @override
+  String get settings_dev_hide_sub =>
+      'Додирни верзију 7 пута да их поново прикажеш';
 }

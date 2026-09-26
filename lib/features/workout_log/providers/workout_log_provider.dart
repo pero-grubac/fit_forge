@@ -1,53 +1,58 @@
+import 'package:fit_forge/data/models/plan_exercise_model.dart';
 import 'package:fit_forge/data/models/workout_log_model.dart';
+import 'package:fit_forge/data/providers.dart';
 import 'package:fit_forge/data/repositories/workout_log_repository.dart';
+import 'package:fit_forge/features/progress/providers/progress_provider.dart';
+import 'package:fit_forge/features/workout_log/providers/streak_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final _logRepo = WorkoutLogRepository();
-
+/// Recent history of an exercise across all plans, newest first.
 final exerciseLogsProvider =
     FutureProvider.family<List<WorkoutLogModel>, String>((ref, exerciseId) {
-  return _logRepo.getByExercise(exerciseId);
+  return ref.watch(workoutLogRepositoryProvider).getByExercise(exerciseId);
 });
 
+/// Completed sets today, keyed by plan exercise id. The argument is the
+/// comma-joined plan exercise ids.
 final completedSetsTodayProvider =
-    FutureProvider.family<Map<String, int>, String>((ref, exerciseIdsJoined) {
-  final ids =
-      exerciseIdsJoined.isEmpty ? <String>[] : exerciseIdsJoined.split(',');
-  return WorkoutLogRepository().getCompletedSetsToday(ids);
+    FutureProvider.family<Map<String, int>, String>((ref, planExerciseIds) {
+  final ids = planExerciseIds.isEmpty ? <String>[] : planExerciseIds.split(',');
+  return ref.watch(workoutLogRepositoryProvider).getCompletedSetsToday(ids);
 });
 
 class WorkoutLogNotifier extends AsyncNotifier<void> {
-  final _repo = WorkoutLogRepository();
+  WorkoutLogRepository get _repo => ref.read(workoutLogRepositoryProvider);
 
   @override
   Future<void> build() async {}
 
-  Future<WorkoutLogModel> logWorkout({
-    required String exerciseId,
+  /// Returns the saved log, or null if saving failed (state holds the error).
+  Future<WorkoutLogModel?> logWorkout({
+    required PlanExerciseModel planExercise,
     required DateTime logDate,
     String? notes,
-    required List<
-            ({
-              int plannedReps,
-              int actualReps,
-              double plannedWeight,
-              double actualWeight,
-              bool isCompleted,
-            })>
-        sets,
+    required List<LoggedSet> sets,
   }) async {
     state = const AsyncLoading();
     final log = await AsyncValue.guard(() => _repo.createOrReplace(
-          exerciseId: exerciseId,
+          exerciseId: planExercise.exerciseId,
+          planExerciseId: planExercise.id,
           logDate: logDate,
           notes: notes,
           sets: sets,
         ));
+    if (log.hasError) {
+      state = AsyncError(log.error!, log.stackTrace!);
+      return null;
+    }
     state = const AsyncData(null);
 
-    ref.invalidate(exerciseLogsProvider(exerciseId));
+    ref.invalidate(exerciseLogsProvider(planExercise.exerciseId));
+    ref.invalidate(exerciseHistoryProvider(planExercise.exerciseId));
+    ref.invalidate(exercisesWithLogsProvider);
+    ref.invalidate(streakProvider);
 
-    return log.value!;
+    return log.value;
   }
 }
 

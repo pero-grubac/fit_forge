@@ -1,6 +1,6 @@
 class DefaultSetModel {
   final String id;
-  final String exerciseId;
+  final String planExerciseId;
   final int setNumber;
   final int reps;
   final double weight;
@@ -10,7 +10,7 @@ class DefaultSetModel {
 
   const DefaultSetModel({
     required this.id,
-    required this.exerciseId,
+    required this.planExerciseId,
     required this.setNumber,
     required this.reps,
     required this.weight,
@@ -20,7 +20,7 @@ class DefaultSetModel {
   factory DefaultSetModel.fromMap(Map<String, dynamic> map) {
     return DefaultSetModel(
       id: map['id'] as String,
-      exerciseId: map['exercise_id'] as String,
+      planExerciseId: map['plan_exercise_id'] as String,
       setNumber: map['set_number'] as int,
       reps: map['reps'] as int,
       weight: (map['weight'] as num).toDouble(),
@@ -31,7 +31,7 @@ class DefaultSetModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'exercise_id': exerciseId,
+      'plan_exercise_id': planExerciseId,
       'set_number': setNumber,
       'reps': reps,
       'weight': weight,

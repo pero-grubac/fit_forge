@@ -30,35 +30,47 @@ A personal fitness tracker built with Flutter — plan your workouts, log your s
 ## ✨ Features
 
 ### 🗓️ Workout Planning
-- Create workout plans assigned to specific days of the week
-- Add exercises with custom sets, reps, starting weight, and increment
-- Assign exercises to muscle groups (Chest, Back, Shoulders, Biceps, Triceps, Legs, Core)
-- Add exercise descriptions and YouTube tutorial links
-- Attach custom images to exercises from your gallery
+- Create workout plans assigned to specific days of the week; rename a plan or move it to another day anytime
+- Pick from 230+ predefined exercises or create your own
+- Muscle groups: Chest, Back, Shoulders, Biceps, Triceps, Legs, Core, Forearms, Bodyweight
+- Exercise types: weighted, bodyweight (reps) and timed (seconds)
+- Each plan has its own targets (sets, reps, starting weight, increment) — e.g. heavy 5×5 on Monday
+  and a lighter 3×10 on Thursday for the same exercise
+- One exercise, one history: an exercise used in several plans shares its workout history
+- Add exercise descriptions, YouTube tutorial links and custom images
 
 ### 🏋️ Workout Logging
 - Log sets in real time with actual weight and reps
 - Mark sets as completed with a single tap
-- Add optional notes to each session
+- **Rest timer** starts after each completed set, with +15 s and skip; a countdown notification and
+  a "rest is over" alert keep working when the phone is locked
+- Exercise description shown while logging, editable right there
+- Add optional notes to each session; last session's note is shown as a reminder
 - View total volume for the current session
-- Auto-fills from your last session as a starting point
+- Auto-fills from today's session, the progression suggestion or your last session in that plan
 
 ### 📈 Automatic Progression
-- Progression calculator suggests weight increases based on your performance
-- Configurable progression threshold (how many sets must be completed before increasing)
-- Configurable small and large increments (e.g. 2.5 kg and 5.0 kg)
+- Suggests the next targets based on your last 3 sessions
+- Weighted exercises: add weight (per-exercise increment, or small/large increment from Settings)
+- Bodyweight exercises: +1 rep per set; timed exercises: +5 seconds per set
+- Holds or eases off when you fall short; reduced weights are rounded to loadable plates
+- Configurable threshold: the share of planned reps you must complete to progress
 - Progression banner shown before your sets when a suggestion is available
 
 ### 📊 Progress Tracking
-- Line chart showing max weight per session
+- Line chart showing max weight per session, with **estimated 1RM** (Epley formula)
 - Bar chart showing volume per session (last 7 sessions)
 - Stat cards: max weight, number of sessions, strength growth %
-- Personal record card with date
+- Personal record card with date and best estimated 1RM
 - Filter by period: 1 month, 3 months, 6 months, or all time
-- Track multiple exercises across all plans
+- Combined history for each exercise across all plans
+
+### 💾 Backup
+- Export all plans, exercises and workout history to a JSON file
+- Import a backup on a new phone or after reinstalling (replaces current data; images are not included)
 
 ### 💬 Motivational Quotes
-- Built-in motivational quotes rotate daily
+- A new motivational quote every time you come back to the Home screen
 - Add your own custom quotes
 - Toggle individual quotes on/off
 - Your quotes take priority over built-in ones
@@ -71,9 +83,12 @@ A personal fitness tracker built with Flutter — plan your workouts, log your s
 ### ⚙️ Settings
 - Small and large weight increments
 - Progression threshold slider
+- Rest timer length (or off)
+- Export / import data
 - Language selection
 - Motivational quote management
 - Full data reset option
+- Hidden developer options (tap the version 7 times): load demo data — sample plans and 8 weeks of history
 
 ### 🚀 Onboarding
 - 3-screen onboarding for new users
@@ -94,6 +109,9 @@ A personal fitness tracker built with Flutter — plan your workouts, log your s
 | Charts | fl_chart |
 | Localization | flutter_localizations + intl |
 | Image picker | image_picker |
+| Backup files | file_picker |
+| Notifications | flutter_local_notifications |
+| App version | package_info_plus |
 | Splash screen | flutter_native_splash |
 | App icon | flutter_launcher_icons |
 
@@ -106,16 +124,19 @@ Feature-first, layered architecture:
 ```
 lib/
 ├── core/
+│   ├── constants/        # predefined exercise library
 │   ├── models/
 │   ├── router/
+│   ├── services/         # rest timer notifications
 │   ├── theme/
-│   └── utils/
+│   └── utils/            # progression, 1RM, error handling
 ├── data/
 │   ├── local/
 │   │   ├── dao/
-│   │   └── database_helper.dart
+│   │   └── database_helper.dart   # schema + migrations
 │   ├── models/
-│   └── repositories/
+│   ├── repositories/
+│   └── providers.dart    # dependency wiring (Riverpod)
 ├── features/
 │   ├── onboarding/
 │   ├── progress/
@@ -127,7 +148,8 @@ lib/
     └── widgets/
 ```
 
-**Data flow:** UI → Riverpod Provider → Repository → DAO → SQLite
+**Data flow:** UI → Riverpod provider → Repository → DAO → SQLite.
+DAOs and repositories are created in `data/providers.dart` and injected, so tests can swap them.
 
 ---
 
@@ -136,11 +158,16 @@ lib/
 | Table | Description |
 |---|---|
 | `workout_plans` | Plans with day of week |
-| `exercises` | Exercises with muscle group, description, YouTube URL |
-| `default_sets` | Default sets per exercise (reps, weight, increment) |
-| `workout_logs` | Logged sessions per exercise per date |
+| `exercises` | Global exercise catalogue: name (unique), muscle group, type, description, image, YouTube URL |
+| `plan_exercises` | An exercise placed in a plan, with its order |
+| `default_sets` | Target sets per plan exercise (reps, weight, increment) |
+| `workout_logs` | Logged sessions: exercise, plan slot and date |
 | `workout_sets` | Individual sets within a log |
 | `motivational_quotes` | User-defined motivational quotes |
+
+**Upgrading from 1.2.x:** the database is migrated automatically on first launch. Exercises with the
+same name in different plans are merged into one exercise; every plan keeps its own targets and all
+workout history is kept.
 
 ---
 
@@ -159,6 +186,9 @@ flutter gen-l10n
 
 # Run on connected device
 flutter run
+
+# Run the tests
+flutter test
 ```
 
 ---

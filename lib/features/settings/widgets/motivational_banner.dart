@@ -4,30 +4,45 @@ import 'package:fit_forge/features/settings/providers/quote_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MotivationBanner extends ConsumerWidget {
-  const MotivationBanner({super.key, required this.planName});
-
-  final String planName;
+/// Motivational quote on the home screen. A different quote is picked every
+/// time the banner is shown again (see [QuoteRotation]).
+class MotivationBanner extends ConsumerStatefulWidget {
+  const MotivationBanner({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final quoteAsync = ref.watch(randomActiveQuoteProvider);
+  ConsumerState<MotivationBanner> createState() => _MotivationBannerState();
+}
 
-    final message = quoteAsync.maybeWhen(
-      data: (q) => q ?? _defaultMessage(context),
-      orElse: () => _defaultMessage(context),
-    );
+class _MotivationBannerState extends ConsumerState<MotivationBanner> {
+  @override
+  void initState() {
+    super.initState();
+    // Coming back to the home tab builds a new banner: rotate. Providers
+    // can't change during build, so do it after the first frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(quoteRotationProvider.notifier).next();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final position = ref.watch(quoteRotationProvider);
+    final custom = ref.watch(activeQuotesProvider).valueOrNull ?? const [];
+    final pool = custom.isNotEmpty
+        ? [for (final q in custom) q.text]
+        : _builtInQuotes(context);
+    final message = pool[position % pool.length];
 
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         gradient: LinearGradient(colors: [
-          AppColors.accent.withOpacity(0.1),
-          AppColors.green.withOpacity(0.06),
+          AppColors.accent.withValues(alpha: 0.1),
+          AppColors.green.withValues(alpha: 0.06),
         ]),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.accent.withOpacity(0.18)),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.18)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,6 +58,7 @@ class MotivationBanner extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(
             '"$message"',
+            key: const Key('motivation_quote'),
             style: const TextStyle(
               fontSize: 13,
               color: AppColors.text2,
@@ -54,14 +70,12 @@ class MotivationBanner extends ConsumerWidget {
     );
   }
 
-  String _defaultMessage(BuildContext context) {
-    final messages = [
-      context.l10n.motivation_1,
-      context.l10n.motivation_2,
-      context.l10n.motivation_3,
-      context.l10n.motivation_4,
-      context.l10n.motivation_5,
-    ];
-    return messages[DateTime.now().day % messages.length];
-  }
+  /// Must stay in sync with [builtInQuoteCount].
+  List<String> _builtInQuotes(BuildContext context) => [
+        context.l10n.motivation_1,
+        context.l10n.motivation_2,
+        context.l10n.motivation_3,
+        context.l10n.motivation_4,
+        context.l10n.motivation_5,
+      ];
 }

@@ -36,7 +36,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get greeting_evening => 'Good evening';
 
   @override
-  String get motivationTitle => 'Motivation of the day';
+  String get motivationTitle => 'Motivation';
 
   @override
   String get days_monday => 'Monday';
@@ -183,13 +183,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get log_notes_hint => 'e.g. good pump, increase next time...';
 
   @override
-  String get log_notes_label => 'Note (optional)';
+  String get log_notes_label => 'Notes for this session';
 
   @override
   String get log_volume => 'Total volume';
 
   @override
   String get log_progression_title => 'Progression suggestion';
+
+  @override
+  String log_progression_increase(String increment) {
+    return 'Great work! Increasing by $increment kg';
+  }
+
+  @override
+  String get log_progression_hold => 'Hold the weight — you are almost there';
+
+  @override
+  String get log_progression_reduce =>
+      'Focus on technique — reducing the weight slightly';
 
   @override
   String get progress_title => 'Progress';
@@ -420,4 +432,206 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exercise_type_timed => 'Timed';
+
+  @override
+  String get btn_remove => 'Remove';
+
+  @override
+  String get exercise_remove_title => 'Remove from plan';
+
+  @override
+  String exercise_remove_confirm(String name) {
+    return 'Remove \"$name\" from this plan? Its workout history is kept.';
+  }
+
+  @override
+  String get exercise_delete_everywhere => 'Delete exercise and history';
+
+  @override
+  String exercise_delete_everywhere_confirm(String name) {
+    return 'Delete \"$name\" from all plans together with its whole workout history? This cannot be undone.';
+  }
+
+  @override
+  String exercise_shared_hint(int count) {
+    return 'Used in $count plans — changes apply to all of them.';
+  }
+
+  @override
+  String get exercise_already_in_plan => 'This exercise is already in the plan';
+
+  @override
+  String get exercise_in_plan => 'Already in plan';
+
+  @override
+  String exercise_create_custom(String name) {
+    return 'Create \"$name\"';
+  }
+
+  @override
+  String get progress_one_rep_max => 'Est. 1RM';
+
+  @override
+  String log_progression_increase_reps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Great work! Adding $count reps per set',
+      one: 'Great work! Adding 1 rep per set',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String log_progression_increase_seconds(int count) {
+    return 'Great work! Adding $count s per set';
+  }
+
+  @override
+  String get log_progression_hold_reps =>
+      'Keep the same targets — you\'re almost there';
+
+  @override
+  String get log_progression_reduce_reps =>
+      'Focus on technique — easing off a little';
+
+  @override
+  String get settings_data_section => 'DATA';
+
+  @override
+  String get settings_export => 'Export data';
+
+  @override
+  String get settings_export_sub =>
+      'Save plans, exercises and history to a file';
+
+  @override
+  String get settings_export_done => 'Backup saved';
+
+  @override
+  String get settings_import => 'Import data';
+
+  @override
+  String get settings_import_sub => 'Restore from a backup file';
+
+  @override
+  String get settings_import_confirm =>
+      'Importing replaces all your current plans, exercises and workout history with the backup. Exercise images are not part of the backup. Continue?';
+
+  @override
+  String get settings_import_btn => 'Import';
+
+  @override
+  String get settings_import_done => 'Backup restored';
+
+  @override
+  String get settings_import_invalid =>
+      'This file is not a valid FitForge backup';
+
+  @override
+  String get rest_title => 'Rest';
+
+  @override
+  String get rest_skip => 'Skip';
+
+  @override
+  String get rest_notification_title => 'Resting';
+
+  @override
+  String get rest_done_title => 'Rest is over';
+
+  @override
+  String rest_done_body(String exercise) {
+    return 'Time for your next set of $exercise';
+  }
+
+  @override
+  String get settings_rest_section => 'REST TIMER';
+
+  @override
+  String get settings_rest => 'Rest between sets';
+
+  @override
+  String get settings_rest_sub => 'Starts after each completed set';
+
+  @override
+  String get settings_rest_off => 'Off';
+
+  @override
+  String get nav_home => 'Home';
+
+  @override
+  String get nav_progress => 'Progress';
+
+  @override
+  String get nav_plans => 'Plans';
+
+  @override
+  String get nav_settings => 'Settings';
+
+  @override
+  String get exercise_edit => 'Edit exercise';
+
+  @override
+  String get exercise_add_description => 'Add description';
+
+  @override
+  String get log_show_more => 'Show more';
+
+  @override
+  String get log_show_less => 'Show less';
+
+  @override
+  String log_last_note(String date) {
+    return 'Last time ($date)';
+  }
+
+  @override
+  String get plan_edit => 'Edit plan';
+
+  @override
+  String get settings_demo => 'Load demo data';
+
+  @override
+  String get settings_demo_sub =>
+      'Sample plans and 8 weeks of workouts to try the app';
+
+  @override
+  String get settings_demo_confirm =>
+      'This replaces all your plans, exercises and workout history with sample data. Export your data first if you want to keep it.';
+
+  @override
+  String get settings_demo_btn => 'Load';
+
+  @override
+  String get settings_demo_done => 'Demo data loaded';
+
+  @override
+  String settings_version(String version) {
+    return 'FitForge $version';
+  }
+
+  @override
+  String get settings_dev_section => 'DEVELOPER';
+
+  @override
+  String get settings_dev_unlocked => 'Developer options enabled';
+
+  @override
+  String settings_dev_taps_left(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more taps to enable developer options',
+      one: '1 more tap to enable developer options',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settings_dev_hide => 'Hide developer options';
+
+  @override
+  String get settings_dev_hide_sub =>
+      'Tap the version 7 times to show them again';
 }

@@ -1,7 +1,7 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
-import 'package:fit_forge/data/models/exercise_model.dart';
-import 'package:fit_forge/data/repositories/exercise_repository.dart';
+import 'package:fit_forge/data/models/plan_exercise_model.dart';
+import 'package:fit_forge/data/providers.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
 import 'package:fit_forge/features/workout_plan/widgets/add_exercise_sheet.dart';
 import 'package:fit_forge/features/workout_plan/widgets/exercise_image_widget.dart';
@@ -21,7 +21,7 @@ class PlanDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final exercises = ref.watch(exercisesProvider(planId));
+    final exercises = ref.watch(planExercisesProvider(planId));
 
     return Scaffold(
       appBar: AppBar(
@@ -31,7 +31,7 @@ class PlanDetailPage extends ConsumerWidget {
       body: exercises.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ErrorState(
-          onRetry: () => ref.invalidate(exercisesProvider(planId)),
+          onRetry: () => ref.invalidate(planExercisesProvider(planId)),
         ),
         data: (list) => list.isEmpty
             ? _EmptyState()
@@ -72,7 +72,7 @@ class _ExerciseList extends StatelessWidget {
     required this.ref,
   });
 
-  final List<ExerciseModel> exercises;
+  final List<PlanExerciseModel> exercises;
   final String planId;
   final WidgetRef ref;
 
@@ -82,7 +82,8 @@ class _ExerciseList extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 100),
       itemCount: exercises.length,
       itemBuilder: (context, i) {
-        final ex = exercises[i];
+        final pe = exercises[i];
+        final ex = pe.exercise;
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
           decoration: BoxDecoration(
@@ -99,7 +100,8 @@ class _ExerciseList extends StatelessWidget {
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(14)),
                   gradient: LinearGradient(colors: [
-                    AppColors.muscleGroupColor(ex.muscleGroup).withOpacity(0.2),
+                    AppColors.muscleGroupColor(ex.muscleGroup)
+                        .withValues(alpha: 0.2),
                     AppColors.bg3,
                   ]),
                 ),
@@ -119,7 +121,7 @@ class _ExerciseList extends StatelessWidget {
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.text1)),
                           Text(
-                            '${ex.muscleGroup}  ·  ${ex.defaultSets.length}  ${context.l10n.exercise_sets_label.toLowerCase()}',
+                            '${ex.muscleGroup}  ·  ${pe.defaultSets.length}  ${context.l10n.exercise_sets_label.toLowerCase()}',
                             style: const TextStyle(
                                 fontSize: 12, color: AppColors.text2),
                           ),
@@ -143,7 +145,7 @@ class _ExerciseList extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.delete_outline,
                           color: AppColors.red, size: 20),
-                      onPressed: () => _confirmDelete(context, ex),
+                      onPressed: () => _confirmRemove(context, pe),
                     ),
                   ],
                 ),
@@ -153,24 +155,24 @@ class _ExerciseList extends StatelessWidget {
                 height: 160,
                 editable: true,
               ),
-              // Default setovi info
-              if (ex.defaultSets.isNotEmpty)
+              // Default sets for this plan
+              if (pe.defaultSets.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
                   child: Row(
                     children: [
                       _InfoChip(
                           label:
-                              '${ex.defaultSets.length}  ${context.l10n.exercise_sets_label.toLowerCase()}',
+                              '${pe.defaultSets.length}  ${context.l10n.exercise_sets_label.toLowerCase()}',
                           icon: Icons.repeat),
                       const SizedBox(width: 8),
                       _InfoChip(
                           label:
-                              '${ex.defaultSets.first.reps}  ${context.l10n.exercise_reps_label.toLowerCase()}',
+                              '${pe.defaultSets.first.reps}  ${context.l10n.exercise_reps_label.toLowerCase()}',
                           icon: Icons.fitness_center),
                       const SizedBox(width: 8),
                       _InfoChip(
-                          label: '${ex.defaultSets.first.weight} kg',
+                          label: '${pe.defaultSets.first.weight} kg',
                           icon: Icons.monitor_weight_outlined),
                     ],
                   ),
@@ -182,19 +184,19 @@ class _ExerciseList extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, ExerciseModel ex) {
+  void _confirmRemove(BuildContext context, PlanExerciseModel pe) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.bg2,
         title: Text(
-          context.l10n.exercise_delete_title,
+          context.l10n.exercise_remove_title,
           style: const TextStyle(
             color: AppColors.text1,
           ),
         ),
         content: Text(
-          context.l10n.exercise_delete_confirm(ex.name),
+          context.l10n.exercise_remove_confirm(pe.exercise.name),
           style: const TextStyle(
             color: AppColors.text2,
           ),
@@ -212,10 +214,10 @@ class _ExerciseList extends StatelessWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
-              await ExerciseRepository().delete(ex.id);
-              ref.invalidate(exercisesProvider(planId));
+              await ref.read(planExerciseRepositoryProvider).remove(pe.id);
+              ref.invalidate(planExercisesProvider(planId));
             },
-            child: Text(context.l10n.btn_delete,
+            child: Text(context.l10n.btn_remove,
                 style: const TextStyle(color: AppColors.red)),
           ),
         ],

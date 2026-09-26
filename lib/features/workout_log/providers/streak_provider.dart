@@ -1,42 +1,48 @@
-import 'package:fit_forge/data/local/database_helper.dart';
+import 'package:fit_forge/data/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final streakProvider = FutureProvider<int>((ref) async {
-  final db = DatabaseHelper.instance.database;
+  final plans = await ref.watch(workoutPlanRepositoryProvider).getAll();
+  final loggedDates =
+      await ref.watch(workoutLogRepositoryProvider).getLoggedDates();
 
-  final plans = await db.query('workout_plans');
-  if (plans.isEmpty) return 0;
-
-  final plannedDays = plans.map((p) => p['day_of_week'] as int).toSet();
-
-  final logs = await db.query(
-    'workout_logs',
-    orderBy: 'log_date DESC',
+  return calculateStreak(
+    plannedDays: {for (final p in plans) p.dayOfWeek},
+    loggedDates: loggedDates,
+    today: DateTime.now(),
   );
+});
 
-  final loggedDates = <String>{};
-  for (final log in logs) {
-    final date = (log['log_date'] as String).substring(0, 10);
-    loggedDates.add(date);
-  }
+/// Counts consecutive planned workout days that were logged, going back from
+/// [today]. Rest days are skipped. Today only breaks the streak once it is
+/// over, so an unlogged workout day that is still in progress is ignored.
+int calculateStreak({
+  required Set<int> plannedDays,
+  required Set<String> loggedDates,
+  required DateTime today,
+}) {
+  if (plannedDays.isEmpty || loggedDates.isEmpty) return 0;
 
-  int streak = 0;
-  var date = DateTime.now();
+  final earliest = loggedDates.reduce((a, b) => a.compareTo(b) < 0 ? a : b);
+  var date = DateTime(today.year, today.month, today.day);
+  var streak = 0;
 
-  for (int i = 0; i < 60; i++) {
-    final dayOfWeek = date.weekday;
+  while (true) {
     final dateStr = date.toIso8601String().substring(0, 10);
+    if (dateStr.compareTo(earliest) < 0) break;
 
-    if (!plannedDays.contains(dayOfWeek)) {
-      date = date.subtract(const Duration(days: 1));
-      continue;
+    if (plannedDays.contains(date.weekday)) {
+      if (loggedDates.contains(dateStr)) {
+        streak++;
+      } else if (!_isSameDay(date, today)) {
+        break;
+      }
     }
-
-    if (!loggedDates.contains(dateStr)) break;
-
-    streak++;
-    date = date.subtract(const Duration(days: 1));
+    date = DateTime(date.year, date.month, date.day - 1);
   }
 
   return streak;
-});
+}
+
+bool _isSameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;

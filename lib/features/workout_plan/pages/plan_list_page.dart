@@ -68,17 +68,22 @@ class PlanListPage extends ConsumerWidget {
     );
   }
 
-  void _showCreateDialog(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.bg2,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => _CreatePlanSheet(ref: ref),
-    );
-  }
+  void _showCreateDialog(BuildContext context, WidgetRef ref) =>
+      showPlanSheet(context, ref);
+}
+
+/// Sheet for creating a plan, or editing the name and day of [plan].
+void showPlanSheet(BuildContext context, WidgetRef ref,
+    {WorkoutPlanModel? plan}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: AppColors.bg2,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) => _PlanSheet(ref: ref, plan: plan),
+  );
 }
 
 class _PlanList extends ConsumerWidget {
@@ -108,7 +113,7 @@ class _PlanList extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.accent.withOpacity(0.15),
+                color: AppColors.accent.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(Icons.calendar_month,
@@ -125,7 +130,7 @@ class _PlanList extends ConsumerWidget {
                 IconButton(
                   icon: const Icon(Icons.edit_outlined,
                       color: AppColors.accent, size: 20),
-                  onPressed: () => _showEditDialog(context, ref, plan),
+                  onPressed: () => showPlanSheet(context, ref, plan: plan),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline,
@@ -192,81 +197,26 @@ class _PlanList extends ConsumerWidget {
       ),
     );
   }
-
-  void _showEditDialog(BuildContext context, WidgetRef ref, WorkoutPlanModel plan) {
-    final ctrl = TextEditingController(text: plan.name);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.bg2,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(
-            16, 16, 16, MediaQuery.of(ctx).viewInsets.bottom + 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 36, height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.bg4,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(context.l10n.plan_name_label,
-                style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.text1)),
-            const SizedBox(height: 12),
-            TextField(
-              controller: ctrl,
-              autofocus: true,
-              style: const TextStyle(color: AppColors.text1),
-              decoration: InputDecoration(
-                hintText: context.l10n.plan_name_hint,
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  if (ctrl.text.trim().isEmpty) return;
-                  await ref
-                      .read(workoutPlanNotifierProvider.notifier)
-                      .updateName(plan.id, ctrl.text.trim());
-                  if (ctx.mounted) Navigator.pop(ctx);
-                },
-                child: Text(context.l10n.btn_save),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
-class _CreatePlanSheet extends StatefulWidget {
-  const _CreatePlanSheet({required this.ref});
+class _PlanSheet extends StatefulWidget {
+  const _PlanSheet({required this.ref, this.plan});
 
   final WidgetRef ref;
 
+  /// The plan being edited; null when creating a new one.
+  final WorkoutPlanModel? plan;
+
   @override
-  State<_CreatePlanSheet> createState() => _CreatePlanSheetState();
+  State<_PlanSheet> createState() => _PlanSheetState();
 }
 
-class _CreatePlanSheetState extends State<_CreatePlanSheet> {
-  final _nameController = TextEditingController();
-  int _selectedDay = 1;
+class _PlanSheetState extends State<_PlanSheet> {
+  late final _nameController = TextEditingController(text: widget.plan?.name);
+  late int _selectedDay = widget.plan?.dayOfWeek ?? DateTime.now().weekday;
   bool _loading = false;
+
+  bool get _isEdit => widget.plan != null;
 
   @override
   void dispose() {
@@ -306,7 +256,7 @@ class _CreatePlanSheetState extends State<_CreatePlanSheet> {
           ),
           const SizedBox(height: 16),
           Text(
-            context.l10n.plan_new,
+            _isEdit ? context.l10n.plan_edit : context.l10n.plan_new,
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -315,7 +265,7 @@ class _CreatePlanSheetState extends State<_CreatePlanSheet> {
           ),
           const SizedBox(height: 16),
 
-          // Naziv
+          // Name
           Text(
             context.l10n.plan_name_label,
             style: const TextStyle(
@@ -333,7 +283,7 @@ class _CreatePlanSheetState extends State<_CreatePlanSheet> {
           ),
           const SizedBox(height: 16),
 
-          // Dan sedmice
+          // Day of week
           Text(
             context.l10n.plan_day_label,
             style: const TextStyle(
@@ -348,6 +298,7 @@ class _CreatePlanSheetState extends State<_CreatePlanSheet> {
               final day = i + 1;
               final selected = _selectedDay == day;
               return GestureDetector(
+                key: Key('plan_day_$day'),
                 onTap: () => setState(() => _selectedDay = day),
                 child: Container(
                   padding:
@@ -373,7 +324,7 @@ class _CreatePlanSheetState extends State<_CreatePlanSheet> {
           ),
           const SizedBox(height: 24),
 
-          // Dugme
+          // Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -388,7 +339,9 @@ class _CreatePlanSheetState extends State<_CreatePlanSheet> {
                       ),
                     )
                   : Text(
-                      context.l10n.plan_create,
+                      _isEdit
+                          ? context.l10n.btn_save
+                          : context.l10n.plan_create,
                     ),
             ),
           ),
@@ -398,11 +351,17 @@ class _CreatePlanSheetState extends State<_CreatePlanSheet> {
   }
 
   Future<void> _save() async {
-    if (_nameController.text.trim().isEmpty) return;
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
     setState(() => _loading = true);
-    await widget.ref
-        .read(workoutPlanNotifierProvider.notifier)
-        .create(name: _nameController.text.trim(), dayOfWeek: _selectedDay);
+    final notifier = widget.ref.read(workoutPlanNotifierProvider.notifier);
+    final plan = widget.plan;
+    if (plan == null) {
+      await notifier.create(name: name, dayOfWeek: _selectedDay);
+    } else {
+      await notifier
+          .updatePlan(plan.copyWith(name: name, dayOfWeek: _selectedDay));
+    }
     if (mounted) Navigator.pop(context);
   }
 }

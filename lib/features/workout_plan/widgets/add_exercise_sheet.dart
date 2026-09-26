@@ -1,13 +1,13 @@
 import 'package:fit_forge/core/constants/exercise_library.dart';
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
-import 'package:fit_forge/data/models/default_set_model.dart';
-import 'package:fit_forge/data/repositories/exercise_repository.dart';
+import 'package:fit_forge/data/models/exercise_model.dart';
+import 'package:fit_forge/data/models/plan_exercise_model.dart';
+import 'package:fit_forge/data/providers.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
 import 'package:fit_forge/shared/widgets/stepper_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 
 class AddExerciseSheet extends StatefulWidget {
   const AddExerciseSheet({super.key, required this.planId, required this.ref});
@@ -30,13 +30,58 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
   double _increment = 2.5;
   bool _loading = false;
 
+  /// Exercises already in the catalogue (from any plan).
+  List<ExerciseModel> _catalogue = [];
+
+  @override
+  void initState() {
+    super.initState();
+    widget.ref.read(exerciseRepositoryProvider).getAll().then((list) {
+      if (mounted) setState(() => _catalogue = list);
+    });
+  }
+
+  /// Library exercises of the selected group plus catalogue exercises of
+  /// that group that aren't in the library (custom ones).
   List<ExerciseDefinition> get _filtered {
-    final all = ExerciseLibrary.getExercises(_muscleGroup);
+    final library = ExerciseLibrary.getExercises(_muscleGroup);
+    final libraryNames = library.map((e) => e.name.toLowerCase()).toSet();
+    final custom = _catalogue
+        .where((e) =>
+            e.muscleGroup == _muscleGroup &&
+            !libraryNames.contains(e.name.toLowerCase()))
+        .map((e) => ExerciseDefinition(e.name, _typeOf(e.exerciseType)));
+    final all = [...library, ...custom];
     if (_searchQuery.isEmpty) return all;
     return all
         .where((e) => e.name.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
   }
+
+  /// Names (lowercase) of exercises already in this plan.
+  Set<String> get _inPlan => {
+        for (final pe in widget.ref
+                .read(planExercisesProvider(widget.planId))
+                .valueOrNull ??
+            const <PlanExerciseModel>[])
+          pe.exercise.name.toLowerCase(),
+      };
+
+  /// Search text that can be added as a new custom exercise, or null if an
+  /// exercise with that name already exists anywhere.
+  String? get _newExerciseName {
+    final query = _searchQuery.trim();
+    if (query.isEmpty) return null;
+    final lower = query.toLowerCase();
+    final exists = ExerciseLibrary.exercises.values
+            .expand((l) => l)
+            .any((e) => e.name.toLowerCase() == lower) ||
+        _catalogue.any((e) => e.name.toLowerCase() == lower);
+    return exists ? null : query;
+  }
+
+  static ExerciseType _typeOf(String type) => ExerciseType.values
+      .firstWhere((t) => t.name == type, orElse: () => ExerciseType.weighted);
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +155,7 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
             ),
           ),
 
-          // Naslov
+          // Title
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: Row(
@@ -138,16 +183,16 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
                     selectedGroup: _muscleGroup,
                     searchQuery: _searchQuery,
                     filtered: _filtered,
+                    inPlan: _inPlan,
+                    newExerciseName: _newExerciseName,
                     onGroupChanged: (g) => setState(() {
                       _muscleGroup = g;
                       _searchQuery = '';
                       _selectedExercise = null;
                     }),
                     onSearchChanged: (q) => setState(() => _searchQuery = q),
-                    onExerciseSelected: (ex) => setState(() {
-                      _selectedExercise = ex;
-                      // Auto postavi tip
-                    }),
+                    onExerciseSelected: (ex) =>
+                        setState(() => _selectedExercise = ex),
                     scrollController: controller,
                   )
                 : _ExerciseForm(
@@ -180,36 +225,35 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
     final isWeighted = ex.type == ExerciseType.weighted;
     final isBodyweight = ex.type == ExerciseType.bodyweight;
 
-    final defaultSets = List.generate(
-      _sets,
-      (i) => DefaultSetModel(
-        id: const Uuid().v4(),
-        exerciseId: '',
-        setNumber: i + 1,
-        reps: isWeighted || isBodyweight ? _reps : _seconds,
-        weight: isWeighted ? _weight : 0,
-        increment: isWeighted ? _increment : 0,
-      ),
-    );
+    final exercise =
+        await widget.ref.read(exerciseRepositoryProvider).findOrCreate(
+              name: ex.name,
+              muscleGroup: _muscleGroup,
+              exerciseType: ex.type.name,
+            );
+    final added = await widget.ref.read(planExerciseRepositoryProvider).add(
+          planId: widget.planId,
+          exercise: exercise,
+          sets: List.generate(
+            _sets,
+            (_) => (
+              reps: isWeighted || isBodyweight ? _reps : _seconds,
+              weight: isWeighted ? _weight : 0.0,
+              increment: isWeighted ? _increment : 0.0,
+            ),
+          ),
+        );
 
-    await ExerciseRepository().create(
-      planId: widget.planId,
-      name: ex.name,
-      muscleGroup: _muscleGroup,
-      exerciseType: ex.type.name,
-      // 'weighted' | 'bodyweight' | 'timed'
-      sortOrder: 0,
-      sets: defaultSets
-          .map((s) => (
-                reps: s.reps,
-                weight: s.weight,
-                increment: s.increment,
-              ))
-          .toList(),
-    );
-
-    widget.ref.invalidate(exercisesProvider(widget.planId));
-    if (mounted) Navigator.pop(context);
+    if (!mounted) return;
+    if (added == null) {
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.exercise_already_in_plan)),
+      );
+      return;
+    }
+    widget.ref.invalidate(planExercisesProvider(widget.planId));
+    Navigator.pop(context);
   }
 }
 
@@ -219,6 +263,8 @@ class _ExercisePicker extends StatelessWidget {
     required this.selectedGroup,
     required this.searchQuery,
     required this.filtered,
+    required this.inPlan,
+    required this.newExerciseName,
     required this.onGroupChanged,
     required this.onSearchChanged,
     required this.onExerciseSelected,
@@ -229,6 +275,8 @@ class _ExercisePicker extends StatelessWidget {
   final String selectedGroup;
   final String searchQuery;
   final List<ExerciseDefinition> filtered;
+  final Set<String> inPlan;
+  final String? newExerciseName;
   final ValueChanged<String> onGroupChanged;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<ExerciseDefinition> onExerciseSelected;
@@ -257,7 +305,8 @@ class _ExercisePicker extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: selected ? color.withOpacity(0.2) : AppColors.bg3,
+                    color:
+                        selected ? color.withValues(alpha: 0.2) : AppColors.bg3,
                     borderRadius: BorderRadius.circular(20),
                     border:
                         Border.all(color: selected ? color : AppColors.border2),
@@ -304,8 +353,29 @@ class _ExercisePicker extends StatelessWidget {
         ),
         const SizedBox(height: 8),
 
-        // Lista vjezbi
+        // Create a custom exercise from the search text
+        if (newExerciseName != null)
+          ListTile(
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            leading: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.add, size: 18, color: AppColors.accent),
+            ),
+            title: Text(context.l10n.exercise_create_custom(newExerciseName!),
+                style: const TextStyle(fontSize: 14, color: AppColors.accent)),
+            onTap: () => onExerciseSelected(
+                ExerciseDefinition(newExerciseName!, ExerciseType.weighted)),
+          ),
+
+        // Exercise list
         ...filtered.map((ex) {
+          final alreadyInPlan = inPlan.contains(ex.name.toLowerCase());
           final typeIcon = switch (ex.type) {
             ExerciseType.weighted => Icons.fitness_center,
             ExerciseType.bodyweight => Icons.accessibility_new,
@@ -323,16 +393,23 @@ class _ExercisePicker extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: typeColor.withOpacity(0.12),
+                color: typeColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(typeIcon, size: 18, color: typeColor),
             ),
             title: Text(ex.name,
-                style: const TextStyle(fontSize: 14, color: AppColors.text1)),
-            trailing: const Icon(Icons.chevron_right,
+                style: TextStyle(
+                    fontSize: 14,
+                    color: alreadyInPlan ? AppColors.text3 : AppColors.text1)),
+            subtitle: alreadyInPlan
+                ? Text(context.l10n.exercise_in_plan,
+                    style:
+                        const TextStyle(fontSize: 12, color: AppColors.text3))
+                : null,
+            trailing: Icon(alreadyInPlan ? Icons.check : Icons.chevron_right,
                 color: AppColors.text3, size: 18),
-            onTap: () => onExerciseSelected(ex),
+            onTap: alreadyInPlan ? null : () => onExerciseSelected(ex),
           );
         }),
       ],
@@ -395,13 +472,13 @@ class _ExerciseForm extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(
           16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 24),
       children: [
-        // Naziv vježbe
+        // Exercise name
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: typeColor.withOpacity(0.08),
+            color: typeColor.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: typeColor.withOpacity(0.25)),
+            border: Border.all(color: typeColor.withValues(alpha: 0.25)),
           ),
           child: Row(
             children: [
@@ -434,7 +511,7 @@ class _ExerciseForm extends StatelessWidget {
         ),
         const SizedBox(height: 20),
 
-        // Setovi — uvijek
+        // Sets — always
         StepperField(
           label: context.l10n.exercise_sets_label,
           value: sets,
@@ -442,7 +519,7 @@ class _ExerciseForm extends StatelessWidget {
         ),
         const SizedBox(height: 12),
 
-        // Repovi — weighted i bodyweight
+        // Reps — weighted and bodyweight
         if (isWeighted || isBodyweight) ...[
           StepperField(
             label: context.l10n.exercise_reps_label,
@@ -452,17 +529,17 @@ class _ExerciseForm extends StatelessWidget {
           const SizedBox(height: 12),
         ],
 
-        // Sekunde — timed
+        // Seconds — timed
         if (isTimed) ...[
           StepperField(
-            label: 'Sekunde',
+            label: context.l10n.exercise_seconds_label,
             value: seconds,
             onChanged: onSecondsChanged,
           ),
           const SizedBox(height: 12),
         ],
 
-        // Težina i inkrement — samo weighted
+        // Weight and increment — weighted only
         if (isWeighted) ...[
           Row(
             children: [

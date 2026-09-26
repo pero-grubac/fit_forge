@@ -13,10 +13,10 @@ class AppColors {
   static const border2 = Color(0xFF2D3554);
 
   // Accent
-  static const accent = Color(0xFF4F8EF7); // plava
-  static const green = Color(0xFF38D9A9); // zavrseno
+  static const accent = Color(0xFF4F8EF7); // blue
+  static const green = Color(0xFF38D9A9); // done
   static const amber = Color(0xFFFFB347); // streak
-  static const red = Color(0xFFE55B5B); // greska
+  static const red = Color(0xFFE55B5B); // error
 
   // Text
   static const text1 = Color(0xFFEEF0FF);

@@ -1,69 +1,47 @@
 import 'dart:io';
 
 import 'package:fit_forge/data/local/dao/exercise_dao.dart';
-import 'package:fit_forge/data/models/default_set_model.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
+/// The global exercise catalogue.
 class ExerciseRepository {
-  final _exerciseDao = ExerciseDao();
-  final _picker = ImagePicker();
+  ExerciseRepository(this._exerciseDao, {ImagePicker? picker})
+      : _picker = picker ?? ImagePicker();
 
-  Future<List<ExerciseModel>> getByPlan(String planId) =>
-      _exerciseDao.getByPlan(planId);
+  final ExerciseDao _exerciseDao;
+  final ImagePicker _picker;
 
   Future<ExerciseModel?> getById(String id) => _exerciseDao.getById(id);
 
-  Future<ExerciseModel> create({
-    required String planId,
+  Future<List<ExerciseModel>> getAll() => _exerciseDao.getAll();
+
+  Future<List<ExerciseModel>> getWithLogs() => _exerciseDao.getWithLogs();
+
+  Future<int> countPlans(String id) => _exerciseDao.countPlans(id);
+
+  /// Returns the exercise with this name (case-insensitive), creating it if
+  /// it doesn't exist yet.
+  Future<ExerciseModel> findOrCreate({
     required String name,
     required String muscleGroup,
     String exerciseType = 'weighted',
-    String? description,
-    String? youTubeUrl,
-    required int sortOrder,
-    required List<({int reps, double weight, double increment})> sets,
   }) async {
-    final id = const Uuid().v4();
-    final defaultSets = sets.indexed
-        .map((e) => DefaultSetModel(
-              id: const Uuid().v4(),
-              exerciseId: id,
-              setNumber: e.$1 + 1,
-              reps: e.$2.reps,
-              weight: e.$2.weight,
-              increment: e.$2.increment,
-            ))
-        .toList();
+    final existing = await _exerciseDao.findByName(name);
+    if (existing != null) return existing;
 
     final exercise = ExerciseModel(
-      id: id,
-      planId: planId,
-      name: name,
+      id: const Uuid().v4(),
+      name: name.trim(),
       muscleGroup: muscleGroup,
-      description: description,
-      youTubeUrl: youTubeUrl,
-      sortOrder: sortOrder,
-      createdAt: DateTime.now(),
-      defaultSets: defaultSets,
       exerciseType: exerciseType,
+      createdAt: DateTime.now(),
     );
-
     await _exerciseDao.insert(exercise);
     return exercise;
   }
-
-  Future<void> update(ExerciseModel exercise) => _exerciseDao.update(exercise);
-
-  Future<void> updateImagePath(String id, String? imagePath) =>
-      _exerciseDao.updateImagePath(id, imagePath);
-
-  Future<void> updateSortOrder(String id, int sortOrder) =>
-      _exerciseDao.updateSortOrder(id, sortOrder);
-
-  Future<void> delete(String id) => _exerciseDao.delete(id);
 
   Future<String?> pickAndSaveImage(
       String exerciseId, ImageSource source) async {
@@ -85,8 +63,7 @@ class ExerciseRepository {
   }
 
   Future<void> removeImage(String exerciseId, String imagePath) async {
-    final file = File(imagePath);
-    if (await file.exists()) await file.delete();
+    await _deleteFile(imagePath);
     await _exerciseDao.updateImagePath(exerciseId, null);
   }
 
@@ -96,4 +73,23 @@ class ExerciseRepository {
 
   Future<void> updateMuscleGroup(String id, String muscleGroup) =>
       _exerciseDao.updateMuscleGroup(id, muscleGroup);
+
+  /// Deletes the exercise from every plan, together with its history.
+  Future<void> delete(ExerciseModel exercise) async {
+    await _exerciseDao.delete(exercise.id);
+    if (exercise.imagePath != null) await _deleteFile(exercise.imagePath!);
+  }
+
+  /// Removes exercises that are in no plan and have no history.
+  Future<void> deleteUnused() async {
+    final images = await _exerciseDao.deleteUnused();
+    for (final path in images) {
+      await _deleteFile(path);
+    }
+  }
+
+  Future<void> _deleteFile(String path) async {
+    final file = File(path);
+    if (await file.exists()) await file.delete();
+  }
 }

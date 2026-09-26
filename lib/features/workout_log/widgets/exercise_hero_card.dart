@@ -49,7 +49,7 @@ class ExerciseHeroCard extends StatelessWidget {
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(16)),
                 gradient: LinearGradient(
-                  colors: [color.withOpacity(0.2), AppColors.bg3],
+                  colors: [color.withValues(alpha: 0.2), AppColors.bg3],
                 ),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -139,7 +139,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

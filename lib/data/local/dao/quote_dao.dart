@@ -3,7 +3,11 @@ import 'package:fit_forge/data/models/quote_model.dart';
 import 'package:sqflite/sqflite.dart';
 
 class QuoteDao {
-  Database get _db => DatabaseHelper.instance.database;
+  QuoteDao(this._helper);
+
+  final DatabaseHelper _helper;
+
+  Database get _db => _helper.database;
 
   Future<List<QuoteModel>> getAll() async {
     final rows = await _db.query(

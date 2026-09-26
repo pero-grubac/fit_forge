@@ -3,92 +3,77 @@ import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:fit_forge/data/models/workout_set_model.dart';
 import 'package:uuid/uuid.dart';
 
-class WorkoutLogRepository {
-  final _logDao = WorkoutLogDao();
+typedef LoggedSet = ({
+  int plannedReps,
+  int actualReps,
+  double plannedWeight,
+  double actualWeight,
+  bool isCompleted,
+});
 
+class WorkoutLogRepository {
+  WorkoutLogRepository(this._logDao);
+
+  final WorkoutLogDao _logDao;
+
+  /// History of an exercise across all plans, newest first.
   Future<List<WorkoutLogModel>> getByExercise(
     String exerciseId, {
     int limit = 10,
   }) =>
       _logDao.getByExercise(exerciseId, limit: limit);
 
-  Future<WorkoutLogModel?> getById(String id) => _logDao.getById(id);
-
-  Future<bool> hasLogToday(String exerciseId) =>
-      _logDao.hasLogToday(exerciseId);
-
-  Future<WorkoutLogModel> create({
-    required String exerciseId,
-    required DateTime logDate,
-    String? notes,
-    required List<
-            ({
-              int plannedReps,
-              int actualReps,
-              double plannedWeight,
-              double actualWeight,
-              bool isCompleted,
-            })>
-        sets,
-  }) async {
-    final logId = const Uuid().v4();
-
-    final workoutSets = sets.indexed
-        .map((e) => WorkoutSetModel(
-              id: const Uuid().v4(),
-              logId: logId,
-              setNumber: e.$1 + 1,
-              plannedReps: e.$2.plannedReps,
-              actualReps: e.$2.actualReps,
-              plannedWeight: e.$2.plannedWeight,
-              actualWeight: e.$2.actualWeight,
-              isCompleted: e.$2.isCompleted,
-            ))
-        .toList();
-
-    final log = WorkoutLogModel.create(
-      id: logId,
-      exerciseId: exerciseId,
-      logDate: logDate,
-      notes: notes,
-      sets: workoutSets,
-    );
-
-    await _logDao.insert(log);
-    return log;
-  }
-
   Future<void> delete(String id) => _logDao.delete(id);
 
-  Future<Map<String, int>> getCompletedSetsToday(List<String> exerciseIds) =>
-      _logDao.getCompletedSetsToday(exerciseIds);
+  /// Distinct dates (yyyy-MM-dd) with at least one logged workout.
+  Future<Set<String>> getLoggedDates() => _logDao.getLoggedDates();
 
+  Future<Map<String, int>> getCompletedSetsToday(
+          List<String> planExerciseIds) =>
+      _logDao.getCompletedSetsToday(planExerciseIds);
+
+  Future<WorkoutLogModel?> getForPlanExerciseOn(
+          String planExerciseId, DateTime date) =>
+      _logDao.getByPlanExerciseAndDate(
+          planExerciseId, date.toIso8601String().substring(0, 10));
+
+  /// Saves the session, replacing an earlier log of the same plan exercise
+  /// on the same day.
   Future<WorkoutLogModel> createOrReplace({
     required String exerciseId,
+    required String planExerciseId,
     required DateTime logDate,
     String? notes,
-    required List<
-            ({
-              int plannedReps,
-              int actualReps,
-              double plannedWeight,
-              double actualWeight,
-              bool isCompleted,
-            })>
-        sets,
+    required List<LoggedSet> sets,
   }) async {
-    final today = logDate.toIso8601String().substring(0, 10);
-    final existing = await _logDao.getByExerciseAndDate(exerciseId, today);
-
+    final existing = await getForPlanExerciseOn(planExerciseId, logDate);
     if (existing != null) {
       await _logDao.delete(existing.id);
     }
 
-    return create(
+    final logId = const Uuid().v4();
+    final log = WorkoutLogModel.create(
+      id: logId,
       exerciseId: exerciseId,
+      planExerciseId: planExerciseId,
       logDate: logDate,
       notes: notes,
-      sets: sets,
+      sets: [
+        for (final (i, s) in sets.indexed)
+          WorkoutSetModel(
+            id: const Uuid().v4(),
+            logId: logId,
+            setNumber: i + 1,
+            plannedReps: s.plannedReps,
+            actualReps: s.actualReps,
+            plannedWeight: s.plannedWeight,
+            actualWeight: s.actualWeight,
+            isCompleted: s.isCompleted,
+          ),
+      ],
     );
+
+    await _logDao.insert(log);
+    return log;
   }
 }

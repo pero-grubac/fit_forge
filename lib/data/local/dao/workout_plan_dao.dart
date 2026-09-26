@@ -1,11 +1,13 @@
 import 'package:fit_forge/data/local/database_helper.dart';
-import 'package:fit_forge/data/models/exercise_model.dart';
-import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:fit_forge/data/models/workout_plan_model.dart';
 import 'package:sqflite/sqflite.dart';
 
 class WorkoutPlanDao {
-  Database get _db => DatabaseHelper.instance.database;
+  WorkoutPlanDao(this._helper);
+
+  final DatabaseHelper _helper;
+
+  Database get _db => _helper.database;
 
   Future<List<WorkoutPlanModel>> getAll() async {
     final rows = await _db.query(
@@ -54,36 +56,14 @@ class WorkoutPlanDao {
     );
   }
 
+  /// Deletes the plan. Its plan exercises and default sets cascade; workout
+  /// history stays with the exercises.
   Future<void> delete(String id) async {
-    await _db.transaction((txn) async {
-      final exerciseRows = await txn.query(
-        ExerciseModel.tableName,
-        columns: ['id'],
-        where: 'plan_id = ?',
-        whereArgs: [id],
-      );
-      final exerciseIds = exerciseRows.map((r) => r['id'] as String).toList();
-
-      if (exerciseIds.isNotEmpty) {
-        final placeholders = exerciseIds.map((_) => '?').join(',');
-        await txn.rawDelete(
-          'DELETE FROM ${WorkoutLogModel.tableName} WHERE exercise_id IN ($placeholders)',
-          exerciseIds,
-        );
-      }
-
-      await txn.delete(
-        ExerciseModel.tableName,
-        where: 'plan_id = ?',
-        whereArgs: [id],
-      );
-
-      await txn.delete(
-        WorkoutPlanModel.tableName,
-        where: 'id = ?',
-        whereArgs: [id],
-      );
-    });
+    await _db.delete(
+      WorkoutPlanModel.tableName,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<void> updateName(String id, String name) async {

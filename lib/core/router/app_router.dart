@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/router/route_names.dart';
+import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/features/onboarding/pages/onboarding_page.dart';
 import 'package:fit_forge/features/progress/pages/progress_page.dart';
 import 'package:fit_forge/features/settings/pages/settings_page.dart';
@@ -98,15 +99,19 @@ class MainShell extends StatelessWidget {
               context.go(RouteNames.settings);
           }
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded), label: 'Home'),
+              icon: const Icon(Icons.home_rounded),
+              label: context.l10n.nav_home),
           BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart_rounded), label: 'Progres'),
+              icon: const Icon(Icons.bar_chart_rounded),
+              label: context.l10n.nav_progress),
           BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_month), label: 'Plan'),
+              icon: const Icon(Icons.calendar_month),
+              label: context.l10n.nav_plans),
           BottomNavigationBarItem(
-              icon: Icon(Icons.settings_rounded), label: 'Settings'),
+              icon: const Icon(Icons.settings_rounded),
+              label: context.l10n.nav_settings),
         ],
       ),
     );

@@ -9,6 +9,7 @@ class AppStepper extends StatelessWidget {
     required this.max,
     required this.step,
     required this.onChanged,
+    this.format,
   });
 
   final double value;
@@ -16,6 +17,13 @@ class AppStepper extends StatelessWidget {
   final double max;
   final double step;
   final ValueChanged<double> onChanged;
+
+  /// Formats the displayed value; defaults to kilograms.
+  final String Function(double value)? format;
+
+  static String _formatKg(double value) => value == value.truncateToDouble()
+      ? '${value.toInt()} kg'
+      : '${value.toStringAsFixed(1)} kg';
 
   @override
   Widget build(BuildContext context) {
@@ -31,9 +39,7 @@ class AppStepper extends StatelessWidget {
           width: 56,
           alignment: Alignment.center,
           child: Text(
-            value == value.truncateToDouble()
-                ? '${value.toInt()} kg'
-                : '${value.toStringAsFixed(1)} kg',
+            (format ?? _formatKg)(value),
             style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,

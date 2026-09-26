@@ -51,7 +51,7 @@ class SetRowWidget extends StatelessWidget {
           background: Container(
             alignment: Alignment.centerRight,
             padding: const EdgeInsets.only(right: 16),
-            color: AppColors.red.withOpacity(0.2),
+            color: AppColors.red.withValues(alpha: 0.2),
             child: const Icon(Icons.delete_outline, color: AppColors.red),
           ),
           onDismissed: (_) => onDelete?.call(),
@@ -59,9 +59,10 @@ class SetRowWidget extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             child: Row(
               children: [
-                // Broj seta
+                // Set number
                 Container(
-                  width: 24, height: 24,
+                  width: 24,
+                  height: 24,
                   decoration: BoxDecoration(
                     color: AppColors.bg4,
                     borderRadius: BorderRadius.circular(6),
@@ -76,25 +77,30 @@ class SetRowWidget extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
 
-                // Težina — samo za weighted
+                // Weight — weighted exercises only
                 if (exerciseType == 'weighted') ...[
                   Expanded(
                     child: TextField(
                       controller: set.weightCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14, color: AppColors.text1),
+                      style:
+                          const TextStyle(fontSize: 14, color: AppColors.text1),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: AppColors.bg3,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 10),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppColors.border2),
+                          borderSide:
+                              const BorderSide(color: AppColors.border2),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppColors.border2),
+                          borderSide:
+                              const BorderSide(color: AppColors.border2),
                         ),
                       ),
                     ),
@@ -102,13 +108,14 @@ class SetRowWidget extends StatelessWidget {
                   const SizedBox(width: 8),
                 ],
 
-                // Repovi ili sekunde
+                // Reps or seconds
                 Expanded(
                   child: TextField(
                     controller: set.repsCtrl,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 14, color: AppColors.text1),
+                    style:
+                        const TextStyle(fontSize: 14, color: AppColors.text1),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: AppColors.bg3,
@@ -128,13 +135,15 @@ class SetRowWidget extends StatelessWidget {
 
                 // Checkmark
                 GestureDetector(
+                  key: Key('set_toggle_${set.setNumber}'),
                   onTap: onToggle,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    width: 28, height: 28,
+                    width: 28,
+                    height: 28,
                     decoration: BoxDecoration(
                       color: set.isDone
-                          ? AppColors.green.withOpacity(0.15)
+                          ? AppColors.green.withValues(alpha: 0.15)
                           : AppColors.bg3,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
@@ -142,7 +151,8 @@ class SetRowWidget extends StatelessWidget {
                       ),
                     ),
                     child: set.isDone
-                        ? const Icon(Icons.check, size: 16, color: AppColors.green)
+                        ? const Icon(Icons.check,
+                            size: 16, color: AppColors.green)
                         : null,
                   ),
                 ),
@@ -172,8 +182,7 @@ class SetsTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-  return Container(
+    return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       decoration: BoxDecoration(
         color: AppColors.card,
@@ -193,7 +202,8 @@ class SetsTable extends StatelessWidget {
                     child: Text(
                       context.l10n.exercise_weight_label,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 11, color: AppColors.text3),
+                      style:
+                          const TextStyle(fontSize: 11, color: AppColors.text3),
                     ),
                   ),
                 Expanded(
@@ -202,7 +212,8 @@ class SetsTable extends StatelessWidget {
                         ? context.l10n.exercise_seconds_label
                         : context.l10n.exercise_reps_label,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 11, color: AppColors.text3),
+                    style:
+                        const TextStyle(fontSize: 11, color: AppColors.text3),
                   ),
                 ),
                 const SizedBox(width: 36),
@@ -211,7 +222,7 @@ class SetsTable extends StatelessWidget {
           ),
           const Divider(height: 1, color: AppColors.border),
 
-          // Setovi
+          // Sets
           ...sets.asMap().entries.map((e) {
             final i = e.key;
             final set = e.value;

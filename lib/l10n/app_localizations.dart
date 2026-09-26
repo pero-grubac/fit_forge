@@ -156,7 +156,7 @@ abstract class AppLocalizations {
   /// No description provided for @motivationTitle.
   ///
   /// In en, this message translates to:
-  /// **'Motivation of the day'**
+  /// **'Motivation'**
   String get motivationTitle;
 
   /// No description provided for @days_monday.
@@ -438,7 +438,7 @@ abstract class AppLocalizations {
   /// No description provided for @log_notes_label.
   ///
   /// In en, this message translates to:
-  /// **'Note (optional)'**
+  /// **'Notes for this session'**
   String get log_notes_label;
 
   /// No description provided for @log_volume.
@@ -452,6 +452,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Progression suggestion'**
   String get log_progression_title;
+
+  /// No description provided for @log_progression_increase.
+  ///
+  /// In en, this message translates to:
+  /// **'Great work! Increasing by {increment} kg'**
+  String log_progression_increase(String increment);
+
+  /// No description provided for @log_progression_hold.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold the weight — you are almost there'**
+  String get log_progression_hold;
+
+  /// No description provided for @log_progression_reduce.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus on technique — reducing the weight slightly'**
+  String get log_progression_reduce;
 
   /// No description provided for @progress_title.
   ///
@@ -896,6 +914,330 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Timed'**
   String get exercise_type_timed;
+
+  /// No description provided for @btn_remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get btn_remove;
+
+  /// No description provided for @exercise_remove_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from plan'**
+  String get exercise_remove_title;
+
+  /// No description provided for @exercise_remove_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove \"{name}\" from this plan? Its workout history is kept.'**
+  String exercise_remove_confirm(String name);
+
+  /// No description provided for @exercise_delete_everywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete exercise and history'**
+  String get exercise_delete_everywhere;
+
+  /// No description provided for @exercise_delete_everywhere_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\" from all plans together with its whole workout history? This cannot be undone.'**
+  String exercise_delete_everywhere_confirm(String name);
+
+  /// No description provided for @exercise_shared_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Used in {count} plans — changes apply to all of them.'**
+  String exercise_shared_hint(int count);
+
+  /// No description provided for @exercise_already_in_plan.
+  ///
+  /// In en, this message translates to:
+  /// **'This exercise is already in the plan'**
+  String get exercise_already_in_plan;
+
+  /// No description provided for @exercise_in_plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in plan'**
+  String get exercise_in_plan;
+
+  /// No description provided for @exercise_create_custom.
+  ///
+  /// In en, this message translates to:
+  /// **'Create \"{name}\"'**
+  String exercise_create_custom(String name);
+
+  /// No description provided for @progress_one_rep_max.
+  ///
+  /// In en, this message translates to:
+  /// **'Est. 1RM'**
+  String get progress_one_rep_max;
+
+  /// No description provided for @log_progression_increase_reps.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Great work! Adding 1 rep per set} other{Great work! Adding {count} reps per set}}'**
+  String log_progression_increase_reps(int count);
+
+  /// No description provided for @log_progression_increase_seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Great work! Adding {count} s per set'**
+  String log_progression_increase_seconds(int count);
+
+  /// No description provided for @log_progression_hold_reps.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the same targets — you\'re almost there'**
+  String get log_progression_hold_reps;
+
+  /// No description provided for @log_progression_reduce_reps.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus on technique — easing off a little'**
+  String get log_progression_reduce_reps;
+
+  /// No description provided for @settings_data_section.
+  ///
+  /// In en, this message translates to:
+  /// **'DATA'**
+  String get settings_data_section;
+
+  /// No description provided for @settings_export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export data'**
+  String get settings_export;
+
+  /// No description provided for @settings_export_sub.
+  ///
+  /// In en, this message translates to:
+  /// **'Save plans, exercises and history to a file'**
+  String get settings_export_sub;
+
+  /// No description provided for @settings_export_done.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup saved'**
+  String get settings_export_done;
+
+  /// No description provided for @settings_import.
+  ///
+  /// In en, this message translates to:
+  /// **'Import data'**
+  String get settings_import;
+
+  /// No description provided for @settings_import_sub.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from a backup file'**
+  String get settings_import_sub;
+
+  /// No description provided for @settings_import_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing replaces all your current plans, exercises and workout history with the backup. Exercise images are not part of the backup. Continue?'**
+  String get settings_import_confirm;
+
+  /// No description provided for @settings_import_btn.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get settings_import_btn;
+
+  /// No description provided for @settings_import_done.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup restored'**
+  String get settings_import_done;
+
+  /// No description provided for @settings_import_invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is not a valid FitForge backup'**
+  String get settings_import_invalid;
+
+  /// No description provided for @rest_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest'**
+  String get rest_title;
+
+  /// No description provided for @rest_skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get rest_skip;
+
+  /// No description provided for @rest_notification_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Resting'**
+  String get rest_notification_title;
+
+  /// No description provided for @rest_done_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest is over'**
+  String get rest_done_title;
+
+  /// No description provided for @rest_done_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Time for your next set of {exercise}'**
+  String rest_done_body(String exercise);
+
+  /// No description provided for @settings_rest_section.
+  ///
+  /// In en, this message translates to:
+  /// **'REST TIMER'**
+  String get settings_rest_section;
+
+  /// No description provided for @settings_rest.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest between sets'**
+  String get settings_rest;
+
+  /// No description provided for @settings_rest_sub.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts after each completed set'**
+  String get settings_rest_sub;
+
+  /// No description provided for @settings_rest_off.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get settings_rest_off;
+
+  /// No description provided for @nav_home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get nav_home;
+
+  /// No description provided for @nav_progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get nav_progress;
+
+  /// No description provided for @nav_plans.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans'**
+  String get nav_plans;
+
+  /// No description provided for @nav_settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get nav_settings;
+
+  /// No description provided for @exercise_edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit exercise'**
+  String get exercise_edit;
+
+  /// No description provided for @exercise_add_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Add description'**
+  String get exercise_add_description;
+
+  /// No description provided for @log_show_more.
+  ///
+  /// In en, this message translates to:
+  /// **'Show more'**
+  String get log_show_more;
+
+  /// No description provided for @log_show_less.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get log_show_less;
+
+  /// No description provided for @log_last_note.
+  ///
+  /// In en, this message translates to:
+  /// **'Last time ({date})'**
+  String log_last_note(String date);
+
+  /// No description provided for @plan_edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit plan'**
+  String get plan_edit;
+
+  /// No description provided for @settings_demo.
+  ///
+  /// In en, this message translates to:
+  /// **'Load demo data'**
+  String get settings_demo;
+
+  /// No description provided for @settings_demo_sub.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample plans and 8 weeks of workouts to try the app'**
+  String get settings_demo_sub;
+
+  /// No description provided for @settings_demo_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This replaces all your plans, exercises and workout history with sample data. Export your data first if you want to keep it.'**
+  String get settings_demo_confirm;
+
+  /// No description provided for @settings_demo_btn.
+  ///
+  /// In en, this message translates to:
+  /// **'Load'**
+  String get settings_demo_btn;
+
+  /// No description provided for @settings_demo_done.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo data loaded'**
+  String get settings_demo_done;
+
+  /// No description provided for @settings_version.
+  ///
+  /// In en, this message translates to:
+  /// **'FitForge {version}'**
+  String settings_version(String version);
+
+  /// No description provided for @settings_dev_section.
+  ///
+  /// In en, this message translates to:
+  /// **'DEVELOPER'**
+  String get settings_dev_section;
+
+  /// No description provided for @settings_dev_unlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer options enabled'**
+  String get settings_dev_unlocked;
+
+  /// No description provided for @settings_dev_taps_left.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 more tap to enable developer options} other{{count} more taps to enable developer options}}'**
+  String settings_dev_taps_left(int count);
+
+  /// No description provided for @settings_dev_hide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide developer options'**
+  String get settings_dev_hide;
+
+  /// No description provided for @settings_dev_hide_sub.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the version 7 times to show them again'**
+  String get settings_dev_hide_sub;
 }
 
 class _AppLocalizationsDelegate

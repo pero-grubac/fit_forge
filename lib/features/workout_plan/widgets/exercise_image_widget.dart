@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
-import 'package:fit_forge/data/repositories/exercise_repository.dart';
+import 'package:fit_forge/data/providers.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,7 +57,8 @@ class ExerciseImageWidget extends ConsumerWidget {
           children: [
             Center(
               child: Container(
-                width: 36, height: 4,
+                width: 36,
+                height: 4,
                 decoration: BoxDecoration(
                   color: AppColors.bg4,
                   borderRadius: BorderRadius.circular(2),
@@ -85,13 +86,17 @@ class ExerciseImageWidget extends ConsumerWidget {
     );
 
     if (source == null) return;
-    await ExerciseRepository().pickAndSaveImage(exercise.id, source);
-    ref.invalidate(exercisesProvider(exercise.planId));
+    await ref
+        .read(exerciseRepositoryProvider)
+        .pickAndSaveImage(exercise.id, source);
+    ref.invalidate(planExercisesProvider);
   }
 
   Future<void> _removeImage(WidgetRef ref) async {
-    await ExerciseRepository().removeImage(exercise.id, exercise.imagePath!);
-    ref.invalidate(exercisesProvider(exercise.planId));
+    await ref
+        .read(exerciseRepositoryProvider)
+        .removeImage(exercise.id, exercise.imagePath!);
+    ref.invalidate(planExercisesProvider);
   }
 }
 
@@ -149,15 +154,15 @@ class _PlaceholderImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: color.withOpacity(0.1),
+      color: color.withValues(alpha: 0.1),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(_muscleIcon(), size: 40, color: color.withOpacity(0.6)),
+          Icon(_muscleIcon(), size: 40, color: color.withValues(alpha: 0.6)),
           const SizedBox(height: 8),
           Text(
             editable ? context.l10n.exercise_tap_image : exercise.muscleGroup,
-            style: TextStyle(fontSize: 12, color: color.withOpacity(0.7)),
+            style: TextStyle(fontSize: 12, color: color.withValues(alpha: 0.7)),
           ),
         ],
       ),

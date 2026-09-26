@@ -3,7 +3,9 @@ import 'package:fit_forge/data/models/quote_model.dart';
 import 'package:uuid/uuid.dart';
 
 class QuoteRepository {
-  final _dao = QuoteDao();
+  QuoteRepository(this._dao);
+
+  final QuoteDao _dao;
 
   Future<List<QuoteModel>> getAll() => _dao.getAll();
 

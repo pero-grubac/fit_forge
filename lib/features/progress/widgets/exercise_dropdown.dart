@@ -26,15 +26,15 @@ class ExerciseDropdown extends StatelessWidget {
           border: Border.all(color: AppColors.border),
         ),
         child: DropdownButtonHideUnderline(
-          child: DropdownButton<ExerciseModel>(
-            value: selected,
+          child: DropdownButton<String>(
+            value: selected.id,
             isExpanded: true,
             dropdownColor: AppColors.bg2,
             style: const TextStyle(color: AppColors.text1, fontSize: 14),
             icon: const Icon(Icons.expand_more, color: AppColors.text2),
             items: exercises
                 .map((ex) => DropdownMenuItem(
-                      value: ex,
+                      value: ex.id,
                       child: Row(
                         children: [
                           Container(
@@ -51,7 +51,8 @@ class ExerciseDropdown extends StatelessWidget {
                       ),
                     ))
                 .toList(),
-            onChanged: (ex) {
+            onChanged: (id) {
+              final ex = exercises.where((e) => e.id == id).firstOrNull;
               if (ex != null) onChanged(ex);
             },
           ),

@@ -1,10 +1,9 @@
-import 'package:fit_forge/data/models/exercise_model.dart';
+import 'package:fit_forge/data/models/plan_exercise_model.dart';
 import 'package:fit_forge/data/models/workout_plan_model.dart';
-import 'package:fit_forge/data/repositories/exercise_repository.dart';
+import 'package:fit_forge/data/providers.dart';
 import 'package:fit_forge/data/repositories/workout_plan_repository.dart';
+import 'package:fit_forge/features/workout_log/providers/streak_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-final _exerciseRepo = ExerciseRepository();
 
 final workoutPlansProvider = FutureProvider<List<WorkoutPlanModel>>((ref) {
   return ref.watch(workoutPlanNotifierProvider.future);
@@ -24,13 +23,13 @@ final todayPlansProvider = FutureProvider<List<WorkoutPlanModel>>((ref) {
       );
 });
 
-final exercisesProvider =
-    FutureProvider.family<List<ExerciseModel>, String>((ref, planId) {
-  return _exerciseRepo.getByPlan(planId);
+final planExercisesProvider =
+    FutureProvider.family<List<PlanExerciseModel>, String>((ref, planId) {
+  return ref.watch(planExerciseRepositoryProvider).getByPlan(planId);
 });
 
 class WorkoutPlanNotifier extends AsyncNotifier<List<WorkoutPlanModel>> {
-  final _repo = WorkoutPlanRepository();
+  WorkoutPlanRepository get _repo => ref.read(workoutPlanRepositoryProvider);
 
   @override
   Future<List<WorkoutPlanModel>> build() => _repo.getAll();
@@ -38,35 +37,31 @@ class WorkoutPlanNotifier extends AsyncNotifier<List<WorkoutPlanModel>> {
   Future<void> create({required String name, required int dayOfWeek}) async {
     await _repo.create(name: name, dayOfWeek: dayOfWeek);
     ref.invalidateSelf();
+    // The streak depends on which weekdays have a plan.
+    ref.invalidate(streakProvider);
   }
 
   Future<void> updatePlan(WorkoutPlanModel plan) async {
     await _repo.update(plan);
     ref.invalidateSelf();
+    // The streak depends on which weekdays have a plan.
+    ref.invalidate(streakProvider);
   }
 
   Future<void> deletePlan(String id) async {
     await _repo.delete(id);
     ref.invalidateSelf();
+    // The streak depends on which weekdays have a plan.
+    ref.invalidate(streakProvider);
   }
 
   Future<void> updateName(String id, String name) async {
     await _repo.updateName(id, name);
     ref.invalidateSelf();
+    // The streak depends on which weekdays have a plan.
+    ref.invalidate(streakProvider);
   }
 }
-
-final allExercisesProvider = FutureProvider<List<ExerciseModel>>((ref) async {
-  final plans = await ref.watch(workoutPlanNotifierProvider.future);
-  final all = <ExerciseModel>[];
-  for (final plan in plans) {
-    final exercises = await ExerciseRepository().getByPlan(plan.id);
-    all.addAll(exercises);
-  }
-  // Uzmi samo jednu vjezbu po nazivu (case insensitive)
-  final seen = <String>{};
-  return all.where((ex) => seen.add(ex.name.toLowerCase())).toList();
-});
 
 final workoutPlanNotifierProvider =
     AsyncNotifierProvider<WorkoutPlanNotifier, List<WorkoutPlanModel>>(

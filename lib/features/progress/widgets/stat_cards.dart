@@ -48,8 +48,8 @@ class StatCards extends StatelessWidget {
     if (logs.length < 2) return null;
 
     final sorted = [...logs]..sort((a, b) => a.logDate.compareTo(b.logDate));
-    final oldest = _maxForLog(sorted.first); // najstariji
-    final newest = _maxForLog(sorted.last); // najnoviji
+    final oldest = _maxForLog(sorted.first); // oldest
+    final newest = _maxForLog(sorted.last); // newest
 
     if (oldest == 0) return null;
     return ((newest - oldest) / oldest) * 100;

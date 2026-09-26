@@ -1,7 +1,8 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
-import 'package:fit_forge/data/repositories/exercise_repository.dart';
+import 'package:fit_forge/data/providers.dart';
+import 'package:fit_forge/features/progress/providers/progress_provider.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
 import 'package:fit_forge/features/workout_plan/widgets/exercise_image_widget.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,7 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
   late final TextEditingController _urlCtrl;
   bool _saving = false;
   late String _muscleGroup;
+  int _planCount = 1;
 
   @override
   void initState() {
@@ -29,6 +31,12 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
     _descCtrl = TextEditingController(text: widget.exercise.description ?? '');
     _urlCtrl = TextEditingController(text: widget.exercise.youTubeUrl ?? '');
     _muscleGroup = widget.exercise.muscleGroup;
+    ref
+        .read(exerciseRepositoryProvider)
+        .countPlans(widget.exercise.id)
+        .then((n) {
+      if (mounted) setState(() => _planCount = n);
+    });
   }
 
   @override
@@ -40,17 +48,53 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
 
   Future<void> _save() async {
     setState(() => _saving = true);
-    await ExerciseRepository().updateDescriptionAndUrl(
+    final repo = ref.read(exerciseRepositoryProvider);
+    await repo.updateDescriptionAndUrl(
       widget.exercise.id,
       _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
       _urlCtrl.text.trim().isEmpty ? null : _urlCtrl.text.trim(),
     );
 
-    await ExerciseRepository().updateMuscleGroup(
+    await repo.updateMuscleGroup(
       widget.exercise.id,
       _muscleGroup,
     );
-    ref.invalidate(exercisesProvider(widget.exercise.planId));
+    ref.invalidate(planExercisesProvider);
+    ref.invalidate(exercisesWithLogsProvider);
+    if (mounted) Navigator.pop(context);
+  }
+
+  Future<void> _confirmDeleteEverywhere() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.bg2,
+        title: Text(context.l10n.exercise_delete_title,
+            style: const TextStyle(color: AppColors.text1)),
+        content: Text(
+            context.l10n
+                .exercise_delete_everywhere_confirm(widget.exercise.name),
+            style: const TextStyle(color: AppColors.text2)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(context.l10n.btn_cancel,
+                style: const TextStyle(color: AppColors.text2)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(context.l10n.btn_delete,
+                style: const TextStyle(color: AppColors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    await ref.read(exerciseRepositoryProvider).delete(widget.exercise);
+    ref.invalidate(planExercisesProvider);
+    ref.invalidate(exercisesWithLogsProvider);
+    ref.invalidate(exerciseHistoryProvider(widget.exercise.id));
     if (mounted) Navigator.pop(context);
   }
 
@@ -69,7 +113,7 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
           16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 24),
       child: Column(
@@ -87,7 +131,7 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
           ),
           const SizedBox(height: 16),
 
-          // Naziv
+          // Name
           Text(widget.exercise.name,
               style: const TextStyle(
                   fontSize: 18,
@@ -96,6 +140,21 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
           const SizedBox(height: 4),
           Text(widget.exercise.muscleGroup,
               style: const TextStyle(fontSize: 13, color: AppColors.text2)),
+          if (_planCount > 1) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.info_outline,
+                    size: 14, color: AppColors.amber),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(context.l10n.exercise_shared_hint(_planCount),
+                      style: const TextStyle(
+                          fontSize: 12, color: AppColors.amber)),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 20),
 
           ExerciseImageWidget(
@@ -147,7 +206,7 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
             ),
           ),
 
-          // Opis
+          // Description
           Text(context.l10n.exercise_description_label,
               style: const TextStyle(fontSize: 12, color: AppColors.text2)),
           const SizedBox(height: 6),
@@ -175,7 +234,7 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
             ),
           ),
 
-          // YouTube dugme ako postoji URL
+          // YouTube button when a link is set
           if (widget.exercise.youTubeUrl != null) ...[
             const SizedBox(height: 12),
             SizedBox(
@@ -209,6 +268,17 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
                   : Text(context.l10n.btn_save),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton.icon(
+              onPressed: _saving ? null : _confirmDeleteEverywhere,
+              icon: const Icon(Icons.delete_forever_outlined,
+                  color: AppColors.red, size: 20),
+              label: Text(context.l10n.exercise_delete_everywhere,
+                  style: const TextStyle(color: AppColors.red)),
             ),
           ),
         ],

@@ -1,7 +1,8 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
-import 'package:fit_forge/data/models/exercise_model.dart';
+import 'package:fit_forge/data/models/plan_exercise_model.dart';
 import 'package:fit_forge/data/models/workout_plan_model.dart';
+import 'package:fit_forge/features/settings/providers/quote_provider.dart';
 import 'package:fit_forge/features/settings/widgets/motivational_banner.dart';
 import 'package:fit_forge/features/workout_log/pages/log_session_page.dart';
 import 'package:fit_forge/features/workout_log/providers/streak_provider.dart';
@@ -77,12 +78,12 @@ class _PlansContent extends ConsumerWidget {
           ),
         ),
 
-        // Motivaciona poruka
+        // Motivational quote
         const SliverToBoxAdapter(
-          child: MotivationBanner(planName: ''),
+          child: MotivationBanner(),
         ),
 
-        // Jedan ili vise planova
+        // One section per plan
         ...plans.map((plan) => _PlanSection(
               planId: plan.id,
               planName: plan.name,
@@ -128,16 +129,16 @@ class _PlanSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final exercises = ref.watch(exercisesProvider(planId));
+    final exercises = ref.watch(planExercisesProvider(planId));
 
     return exercises.when(
       loading: () => const SliverToBoxAdapter(
           child: Center(child: CircularProgressIndicator())),
       error: (e, _) => SliverToBoxAdapter(
-          child: ErrorState(onRetry: () => ref.invalidate(exercisesProvider))),
+          child: ErrorState(
+              onRetry: () => ref.invalidate(planExercisesProvider(planId)))),
       data: (list) {
-        final exerciseIds = list.map((e) => e.id).toList();
-        final joined = exerciseIds.join(',');
+        final joined = list.map((pe) => pe.id).join(',');
         final completedAsync = ref.watch(completedSetsTodayProvider(joined));
 
         return completedAsync.when(
@@ -146,7 +147,7 @@ class _PlanSection extends ConsumerWidget {
           error: (e, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
           data: (completed) => SliverList(
             delegate: SliverChildListDelegate([
-              // Plan naziv header ako ima vise planova
+              // Plan name header
               Padding(
                 padding: const EdgeInsets.fromLTRB(18, 8, 18, 4),
                 child: Text(planName,
@@ -155,20 +156,20 @@ class _PlanSection extends ConsumerWidget {
                         fontWeight: FontWeight.w600,
                         color: AppColors.text2)),
               ),
-              ...list.map((ex) {
-                final completedSets = completed[ex.id] ?? 0;
-                final totalSets = ex.defaultSets.length;
+              ...list.map((pe) {
+                final completedSets = completed[pe.id] ?? 0;
+                final totalSets = pe.defaultSets.length;
                 final isDone = completedSets >= totalSets && completedSets > 0;
                 final isActive = completedSets > 0 && !isDone;
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: ExerciseHeroCard(
-                    exercise: ex,
+                    exercise: pe.exercise,
                     completedSets: completedSets,
                     totalSets: totalSets,
                     isActive: isActive,
-                    onTap: () => _openLogSession(context, ref, ex, joined),
+                    onTap: () => _openLogSession(context, ref, pe, joined),
                   ),
                 );
               }),
@@ -180,14 +181,16 @@ class _PlanSection extends ConsumerWidget {
   }
 
   void _openLogSession(BuildContext context, WidgetRef ref,
-      ExerciseModel exercise, String joined) {
+      PlanExerciseModel planExercise, String joined) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => LogSessionPage(exerciseId: exercise.id),
+        builder: (_) => LogSessionPage(planExerciseId: planExercise.id),
       ),
     ).then((_) {
       ref.invalidate(completedSetsTodayProvider(joined));
+      // Home is visible again: time for a new quote.
+      ref.read(quoteRotationProvider.notifier).next();
     });
   }
 }
@@ -234,9 +237,10 @@ class _StreakBadge extends ConsumerWidget {
           : Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.amber.withOpacity(0.15),
+                color: AppColors.amber.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.amber.withOpacity(0.4)),
+                border:
+                    Border.all(color: AppColors.amber.withValues(alpha: 0.4)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

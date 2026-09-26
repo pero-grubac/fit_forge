@@ -1,31 +1,16 @@
-import 'package:fit_forge/data/local/dao/default_set_dao.dart';
 import 'package:fit_forge/data/local/database_helper.dart';
-import 'package:fit_forge/data/models/default_set_model.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
+import 'package:fit_forge/data/models/plan_exercise_model.dart';
 import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:sqflite/sqflite.dart';
 
+/// The global exercise catalogue.
 class ExerciseDao {
-  Database get _db => DatabaseHelper.instance.database;
-  final _defaultSetDao = DefaultSetDao();
+  ExerciseDao(this._helper);
 
-  Future<List<ExerciseModel>> getByPlan(String planId) async {
-    final exerciseRows = await _db.query(
-      ExerciseModel.tableName,
-      where: 'plan_id = ?',
-      whereArgs: [planId],
-      orderBy: 'sort_order ASC',
-    );
+  final DatabaseHelper _helper;
 
-    final exercises = <ExerciseModel>[];
-    for (final row in exerciseRows) {
-      final defaultSets =
-          await _defaultSetDao.getDefaultSets(row['id'] as String);
-      exercises
-          .add(ExerciseModel.fromMap(row).copyWith(defaultSets: defaultSets));
-    }
-    return exercises;
-  }
+  Database get _db => _helper.database;
 
   Future<ExerciseModel?> getById(String id) async {
     final rows = await _db.query(
@@ -34,49 +19,52 @@ class ExerciseDao {
       whereArgs: [id],
       limit: 1,
     );
-    if (rows.isEmpty) return null;
-    final defaultSets = await _defaultSetDao.getDefaultSets(id);
-    return ExerciseModel.fromMap(rows.first).copyWith(defaultSets: defaultSets);
+    return rows.isEmpty ? null : ExerciseModel.fromMap(rows.first);
+  }
+
+  /// Case-insensitive lookup; names are unique.
+  Future<ExerciseModel?> findByName(String name) async {
+    final rows = await _db.query(
+      ExerciseModel.tableName,
+      where: 'name = ? COLLATE NOCASE',
+      whereArgs: [name.trim()],
+      limit: 1,
+    );
+    return rows.isEmpty ? null : ExerciseModel.fromMap(rows.first);
+  }
+
+  Future<List<ExerciseModel>> getAll() async {
+    final rows = await _db.query(
+      ExerciseModel.tableName,
+      orderBy: 'name COLLATE NOCASE',
+    );
+    return rows.map(ExerciseModel.fromMap).toList();
+  }
+
+  /// Exercises with at least one logged workout.
+  Future<List<ExerciseModel>> getWithLogs() async {
+    final rows = await _db.rawQuery('''
+      SELECT e.* FROM ${ExerciseModel.tableName} e
+      WHERE EXISTS (
+        SELECT 1 FROM ${WorkoutLogModel.tableName} l WHERE l.exercise_id = e.id
+      )
+      ORDER BY e.name COLLATE NOCASE
+    ''');
+    return rows.map(ExerciseModel.fromMap).toList();
+  }
+
+  /// Number of plans that include the exercise.
+  Future<int> countPlans(String id) async {
+    final rows = await _db.rawQuery(
+      'SELECT COUNT(*) AS n FROM ${PlanExerciseModel.tableName} '
+      'WHERE exercise_id = ?',
+      [id],
+    );
+    return rows.first['n'] as int;
   }
 
   Future<void> insert(ExerciseModel exercise) async {
-    await _db.transaction((txn) async {
-      await txn.insert(
-        ExerciseModel.tableName,
-        exercise.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-      for (final s in exercise.defaultSets) {
-        await txn.insert(
-          DefaultSetModel.tableName,
-          s.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-      }
-    });
-  }
-
-  Future<void> update(ExerciseModel exercise) async {
-    await _db.transaction((txn) async {
-      await txn.update(
-        ExerciseModel.tableName,
-        exercise.toMap(),
-        where: 'id = ?',
-        whereArgs: [exercise.id],
-      );
-      await txn.delete(
-        DefaultSetModel.tableName,
-        where: 'exercise_id = ?',
-        whereArgs: [exercise.id],
-      );
-      for (final s in exercise.defaultSets) {
-        await txn.insert(
-          DefaultSetModel.tableName,
-          s.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-      }
-    });
+    await _db.insert(ExerciseModel.tableName, exercise.toMap());
   }
 
   Future<void> updateImagePath(String id, String? imagePath) async {
@@ -86,30 +74,6 @@ class ExerciseDao {
       where: 'id = ?',
       whereArgs: [id],
     );
-  }
-
-  Future<void> updateSortOrder(String id, int sortOrder) async {
-    await _db.update(
-      ExerciseModel.tableName,
-      {'sort_order': sortOrder},
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<void> delete(String id) async {
-    await _db.transaction((txn) async {
-      await txn.delete(
-        WorkoutLogModel.tableName,
-        where: 'exercise_id = ?',
-        whereArgs: [id],
-      );
-      await txn.delete(
-        ExerciseModel.tableName,
-        where: 'id = ?',
-        whereArgs: [id],
-      );
-    });
   }
 
   Future<void> updateDescriptionAndUrl(
@@ -129,5 +93,47 @@ class ExerciseDao {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  /// Deletes the exercise everywhere: its history, its place in every plan
+  /// (default sets cascade) and the exercise itself.
+  Future<void> delete(String id) async {
+    await _db.transaction((txn) async {
+      await txn.delete(
+        WorkoutLogModel.tableName,
+        where: 'exercise_id = ?',
+        whereArgs: [id],
+      );
+      await txn.delete(
+        PlanExerciseModel.tableName,
+        where: 'exercise_id = ?',
+        whereArgs: [id],
+      );
+      await txn.delete(
+        ExerciseModel.tableName,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    });
+  }
+
+  /// Removes exercises that are in no plan and have no history. Returns the
+  /// image paths of the removed exercises so the files can be deleted.
+  Future<List<String>> deleteUnused() async {
+    const unused = '''
+      NOT EXISTS (SELECT 1 FROM ${PlanExerciseModel.tableName} pe
+                  WHERE pe.exercise_id = ${ExerciseModel.tableName}.id)
+      AND NOT EXISTS (SELECT 1 FROM ${WorkoutLogModel.tableName} l
+                      WHERE l.exercise_id = ${ExerciseModel.tableName}.id)
+    ''';
+    return _db.transaction((txn) async {
+      final rows = await txn.query(
+        ExerciseModel.tableName,
+        columns: ['image_path'],
+        where: '$unused AND image_path IS NOT NULL',
+      );
+      await txn.delete(ExerciseModel.tableName, where: unused);
+      return [for (final r in rows) r['image_path'] as String];
+    });
   }
 }

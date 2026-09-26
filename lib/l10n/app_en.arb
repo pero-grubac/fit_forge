@@ -13,7 +13,7 @@
   "greeting_afternoon": "Good afternoon",
   "greeting_evening": "Good evening",
 
-  "motivationTitle": "Motivation of the day",
+  "motivationTitle": "Motivation",
 
   "days_monday": "Monday",
   "days_tuesday": "Tuesday",
@@ -82,9 +82,17 @@
   "log_save": "Save workout",
   "log_add_set": "Add set",
   "log_notes_hint": "e.g. good pump, increase next time...",
-  "log_notes_label": "Note (optional)",
+  "log_notes_label": "Notes for this session",
   "log_volume": "Total volume",
   "log_progression_title": "Progression suggestion",
+  "log_progression_increase": "Great work! Increasing by {increment} kg",
+  "@log_progression_increase": {
+    "placeholders": {
+      "increment": { "type": "String" }
+    }
+  },
+  "log_progression_hold": "Hold the weight — you are almost there",
+  "log_progression_reduce": "Focus on technique — reducing the weight slightly",
 
   "progress_title": "Progress",
   "progress_no_data": "No data for selected period",
@@ -166,5 +174,109 @@
   "exercise_sets_count_label": "Sets",
   "exercise_type_weighted": "Weighted",
   "exercise_type_bodyweight": "Bodyweight",
-  "exercise_type_timed": "Timed"
+  "exercise_type_timed": "Timed",
+  "btn_remove": "Remove",
+  "exercise_remove_title": "Remove from plan",
+  "exercise_remove_confirm": "Remove \"{name}\" from this plan? Its workout history is kept.",
+  "@exercise_remove_confirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "exercise_delete_everywhere": "Delete exercise and history",
+  "exercise_delete_everywhere_confirm": "Delete \"{name}\" from all plans together with its whole workout history? This cannot be undone.",
+  "@exercise_delete_everywhere_confirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "exercise_shared_hint": "Used in {count} plans — changes apply to all of them.",
+  "@exercise_shared_hint": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "exercise_already_in_plan": "This exercise is already in the plan",
+  "exercise_in_plan": "Already in plan",
+  "exercise_create_custom": "Create \"{name}\"",
+  "@exercise_create_custom": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "progress_one_rep_max": "Est. 1RM",
+  "log_progression_increase_reps": "{count, plural, =1{Great work! Adding 1 rep per set} other{Great work! Adding {count} reps per set}}",
+  "@log_progression_increase_reps": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "log_progression_increase_seconds": "Great work! Adding {count} s per set",
+  "@log_progression_increase_seconds": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "log_progression_hold_reps": "Keep the same targets — you're almost there",
+  "log_progression_reduce_reps": "Focus on technique — easing off a little",
+  "settings_data_section": "DATA",
+  "settings_export": "Export data",
+  "settings_export_sub": "Save plans, exercises and history to a file",
+  "settings_export_done": "Backup saved",
+  "settings_import": "Import data",
+  "settings_import_sub": "Restore from a backup file",
+  "settings_import_confirm": "Importing replaces all your current plans, exercises and workout history with the backup. Exercise images are not part of the backup. Continue?",
+  "settings_import_btn": "Import",
+  "settings_import_done": "Backup restored",
+  "settings_import_invalid": "This file is not a valid FitForge backup",
+  "rest_title": "Rest",
+  "rest_skip": "Skip",
+  "rest_notification_title": "Resting",
+  "rest_done_title": "Rest is over",
+  "rest_done_body": "Time for your next set of {exercise}",
+  "@rest_done_body": {
+    "placeholders": {
+      "exercise": { "type": "String" }
+    }
+  },
+  "settings_rest_section": "REST TIMER",
+  "settings_rest": "Rest between sets",
+  "settings_rest_sub": "Starts after each completed set",
+  "settings_rest_off": "Off",
+  "nav_home": "Home",
+  "nav_progress": "Progress",
+  "nav_plans": "Plans",
+  "nav_settings": "Settings",
+  "exercise_edit": "Edit exercise",
+  "exercise_add_description": "Add description",
+  "log_show_more": "Show more",
+  "log_show_less": "Show less",
+  "log_last_note": "Last time ({date})",
+  "@log_last_note": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "plan_edit": "Edit plan",
+  "settings_demo": "Load demo data",
+  "settings_demo_sub": "Sample plans and 8 weeks of workouts to try the app",
+  "settings_demo_confirm": "This replaces all your plans, exercises and workout history with sample data. Export your data first if you want to keep it.",
+  "settings_demo_btn": "Load",
+  "settings_demo_done": "Demo data loaded",
+  "settings_version": "FitForge {version}",
+  "@settings_version": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "settings_dev_section": "DEVELOPER",
+  "settings_dev_unlocked": "Developer options enabled",
+  "settings_dev_taps_left": "{count, plural, =1{1 more tap to enable developer options} other{{count} more taps to enable developer options}}",
+  "@settings_dev_taps_left": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "settings_dev_hide": "Hide developer options",
+  "settings_dev_hide_sub": "Tap the version 7 times to show them again"
 }
