@@ -189,19 +189,7 @@ class AppLocalizationsSr extends AppLocalizations {
   String get log_volume => 'Ukupni volumen';
 
   @override
-  String get log_progression_title => 'Prijedlog progresije';
-
-  @override
-  String log_progression_increase(String increment) {
-    return 'Odlično! Povećavamo za $increment kg';
-  }
-
-  @override
-  String get log_progression_hold => 'Zadrži težinu — skoro si spreman';
-
-  @override
-  String get log_progression_reduce =>
-      'Fokusiraj se na tehniku — malo smanjujemo težinu';
+  String get log_progression_title => 'Progresija';
 
   @override
   String get progress_title => 'Napredak';
@@ -241,25 +229,6 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get settings_progression_section => 'PRAVILA PROGRESIJE';
-
-  @override
-  String get settings_small_increment => 'Mali inkrement';
-
-  @override
-  String get settings_small_increment_sub => 'Za težine do 100 kg';
-
-  @override
-  String get settings_large_increment => 'Veliki inkrement';
-
-  @override
-  String get settings_large_increment_sub => 'Za težine iznad 100 kg';
-
-  @override
-  String get settings_threshold => 'Prag napretka';
-
-  @override
-  String get settings_threshold_sub =>
-      'Min. completion rate za povećanje težine';
 
   @override
   String get settings_general_section => 'OPŠTE';
@@ -472,30 +441,6 @@ class AppLocalizationsSr extends AppLocalizations {
   String get progress_one_rep_max => 'Proc. 1RM';
 
   @override
-  String log_progression_increase_reps(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Odlično! Dodajemo $count ponavljanja po setu',
-      one: 'Odlično! Dodajemo 1 ponavljanje po setu',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String log_progression_increase_seconds(int count) {
-    return 'Odlično! Dodajemo $count s po setu';
-  }
-
-  @override
-  String get log_progression_hold_reps =>
-      'Zadrži iste ciljeve — skoro si spreman';
-
-  @override
-  String get log_progression_reduce_reps =>
-      'Fokusiraj se na tehniku — malo smanjujemo';
-
-  @override
   String get settings_data_section => 'PODACI';
 
   @override
@@ -633,6 +578,91 @@ class AppLocalizationsSr extends AppLocalizations {
   @override
   String get settings_dev_hide_sub =>
       'Dodirni verziju 7 puta da ih ponovo prikažeš';
+
+  @override
+  String progression_counter(int done, int total, String current, String next) {
+    return '$done/$total setova sa $current — zatim $next';
+  }
+
+  @override
+  String progression_ready(String next) {
+    return 'Sljedeći set: $next — vrijeme je za povećanje!';
+  }
+
+  @override
+  String progression_reps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ponavljanja',
+      one: '1 ponavljanje',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settings_auto_progression => 'Automatsko povećanje';
+
+  @override
+  String get settings_auto_progression_sub =>
+      'Povećaj nakon dovoljno dobrih setova zaredom';
+
+  @override
+  String get settings_sets_to_progress => 'Setova prije povećanja';
+
+  @override
+  String get settings_sets_to_progress_sub =>
+      'Dobri setovi zaredom sa istom težinom';
+
+  @override
+  String get settings_default_increment => 'Podrazumijevano povećanje';
+
+  @override
+  String get settings_default_increment_sub => 'Za vježbe bez sopstvenog';
+
+  @override
+  String get targets_title => 'Ciljevi i progresija';
+
+  @override
+  String get targets_plan_section => 'U OVOM PLANU';
+
+  @override
+  String get targets_progression_section => 'PROGRESIJA (SVI PLANOVI)';
+
+  @override
+  String get targets_sets => 'Setovi';
+
+  @override
+  String get targets_reps => 'Ponavljanja';
+
+  @override
+  String get targets_seconds => 'Sekunde';
+
+  @override
+  String get targets_weight => 'Težina (kg)';
+
+  @override
+  String get targets_auto => 'Automatsko povećanje';
+
+  @override
+  String get targets_increment => 'Povećanje';
+
+  @override
+  String get targets_sets_to_progress => 'Setova prije povećanja';
+
+  @override
+  String targets_default(String value) {
+    return 'Podrazumijevano ($value)';
+  }
+
+  @override
+  String get targets_rule_hint =>
+      'Promašen set ili druga težina počinju brojanje ispočetka.';
+
+  @override
+  String progression_moving(String next, int done, int total) {
+    return 'Prelazak na $next: $done od $total setova na ovom treningu';
+  }
 }
 
 /// The translations for Serbian, using the Cyrillic script (`sr_Cyrl`).
@@ -820,19 +850,7 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get log_volume => 'Укупни волумен';
 
   @override
-  String get log_progression_title => 'Приједлог прогресије';
-
-  @override
-  String log_progression_increase(String increment) {
-    return 'Одлично! Повећавамо за $increment kg';
-  }
-
-  @override
-  String get log_progression_hold => 'Задржи тежину — скоро си спреман';
-
-  @override
-  String get log_progression_reduce =>
-      'Фокусирај се на технику — мало смањујемо тежину';
+  String get log_progression_title => 'Прогресија';
 
   @override
   String get progress_title => 'Напредак';
@@ -872,25 +890,6 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
 
   @override
   String get settings_progression_section => 'ПРАВИЛА ПРОГРЕСИЈЕ';
-
-  @override
-  String get settings_small_increment => 'Мали инкремент';
-
-  @override
-  String get settings_small_increment_sub => 'За тежине до 100 kg';
-
-  @override
-  String get settings_large_increment => 'Велики инкремент';
-
-  @override
-  String get settings_large_increment_sub => 'За тежине изнад 100 kg';
-
-  @override
-  String get settings_threshold => 'Праг напретка';
-
-  @override
-  String get settings_threshold_sub =>
-      'Мин. completion rate за повећање тежине';
 
   @override
   String get settings_general_section => 'ОПШТЕ';
@@ -1103,30 +1102,6 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get progress_one_rep_max => 'Проц. 1RM';
 
   @override
-  String log_progression_increase_reps(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Одлично! Додајемо $count понављања по сету',
-      one: 'Одлично! Додајемо 1 понављање по сету',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String log_progression_increase_seconds(int count) {
-    return 'Одлично! Додајемо $count s по сету';
-  }
-
-  @override
-  String get log_progression_hold_reps =>
-      'Задржи исте циљеве — скоро си спреман';
-
-  @override
-  String get log_progression_reduce_reps =>
-      'Фокусирај се на технику — мало смањујемо';
-
-  @override
   String get settings_data_section => 'ПОДАЦИ';
 
   @override
@@ -1264,4 +1239,89 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   @override
   String get settings_dev_hide_sub =>
       'Додирни верзију 7 пута да их поново прикажеш';
+
+  @override
+  String progression_counter(int done, int total, String current, String next) {
+    return '$done/$total сетова са $current — затим $next';
+  }
+
+  @override
+  String progression_ready(String next) {
+    return 'Сљедећи сет: $next — вријеме је за повећање!';
+  }
+
+  @override
+  String progression_reps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count понављања',
+      one: '1 понављање',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settings_auto_progression => 'Аутоматско повећање';
+
+  @override
+  String get settings_auto_progression_sub =>
+      'Повећај након довољно добрих сетова заредом';
+
+  @override
+  String get settings_sets_to_progress => 'Сетова прије повећања';
+
+  @override
+  String get settings_sets_to_progress_sub =>
+      'Добри сетови заредом са истом тежином';
+
+  @override
+  String get settings_default_increment => 'Подразумијевано повећање';
+
+  @override
+  String get settings_default_increment_sub => 'За вјежбе без сопственог';
+
+  @override
+  String get targets_title => 'Циљеви и прогресија';
+
+  @override
+  String get targets_plan_section => 'У ОВОМ ПЛАНУ';
+
+  @override
+  String get targets_progression_section => 'ПРОГРЕСИЈА (СВИ ПЛАНОВИ)';
+
+  @override
+  String get targets_sets => 'Сетови';
+
+  @override
+  String get targets_reps => 'Понављања';
+
+  @override
+  String get targets_seconds => 'Секунде';
+
+  @override
+  String get targets_weight => 'Тежина (kg)';
+
+  @override
+  String get targets_auto => 'Аутоматско повећање';
+
+  @override
+  String get targets_increment => 'Повећање';
+
+  @override
+  String get targets_sets_to_progress => 'Сетова прије повећања';
+
+  @override
+  String targets_default(String value) {
+    return 'Подразумијевано ($value)';
+  }
+
+  @override
+  String get targets_rule_hint =>
+      'Промашен сет или друга тежина почињу бројање испочетка.';
+
+  @override
+  String progression_moving(String next, int done, int total) {
+    return 'Прелазак на $next: $done од $total сетова на овом тренингу';
+  }
 }

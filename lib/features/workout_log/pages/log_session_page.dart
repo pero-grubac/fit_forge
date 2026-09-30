@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/models/progression_suggestion.dart';
+import '../../../core/utils/set_progression.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/exercise_model.dart';
 import '../../../data/models/plan_exercise_model.dart';
@@ -37,6 +37,47 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
 
   /// The most recent earlier session of this exercise that has a note.
   WorkoutLogModel? _lastNoteLog;
+
+  /// Set-count progression for this plan exercise; null if unavailable.
+  ProgressionInfo? _progression;
+
+  bool get _progressionOn => _progression?.enabled ?? false;
+
+  bool get _byReps =>
+      _progression != null && _progression!.unit != ProgressionUnit.kg;
+
+  /// Where the counter stands after earlier sessions plus the sets ticked so
+  /// far today (in list order). Null while moving up to a new level: that
+  /// workout's sets are fixed.
+  ProgressionState? get _currentProgression {
+    final p = _progression;
+    if (p == null || p.status.isMoving) return null;
+    return p.rule.replay(p.status.counting, [
+      for (final s in _sets)
+        if (s.isDone)
+          (
+            level: _byReps ? s.plannedReps.toDouble() : s.actualWeight,
+            success: s.actualReps >= s.plannedReps,
+          ),
+    ]);
+  }
+
+  /// Re-plans the sets not done yet from the current counter, e.g. after a
+  /// set was ticked. Values the user typed are kept.
+  void _applyProgression() {
+    final state = _currentProgression;
+    if (!_progressionOn || state == null) return;
+    final open = _sets.where((s) => !s.isDone).toList();
+    final levels = _progression!.rule.plan(state, open.length);
+    for (final (i, set) in open.indexed) {
+      if (_byReps) {
+        set.setTarget(reps: levels[i].round());
+      } else {
+        set.setTarget(weight: levels[i]);
+      }
+    }
+  }
+
   final _notesCtrl = TextEditingController();
   final _sets = <SetRow>[];
   bool _saving = false;
@@ -53,15 +94,14 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
   void dispose() {
     _notesCtrl.dispose();
     for (final s in _sets) {
-      s.weightCtrl.dispose();
-      s.repsCtrl.dispose();
+      s.dispose();
     }
     super.dispose();
   }
 
   /// Loads the plan exercise and fills the sets from the first available
-  /// source: today's log, progression suggestion, the last log from this plan
-  /// slot, then the default sets.
+  /// source: today's log, the plan targets with progression applied, the last
+  /// log from this plan slot, then the plan targets as they are.
   Future<void> _init() async {
     final logRepo = ref.read(workoutLogRepositoryProvider);
     final planExercise = await ref
@@ -85,16 +125,18 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
             l.logDate.toIso8601String().substring(0, 10) != today)
         .firstOrNull;
 
-    ProgressionSuggestion? suggestion;
+    ProgressionInfo? progression;
     try {
-      suggestion =
+      progression =
           await ref.read(progressionProvider(widget.planExerciseId).future);
     } catch (_) {
-      // Fall back to the last log or default sets.
+      // Without progression the sets come from the last log or the plan.
     }
 
     if (!mounted) return;
 
+    final byReps =
+        progression != null && progression.unit != ProgressionUnit.kg;
     final List<SetRow> sets;
     if (todayLog != null && todayLog.sets.isNotEmpty) {
       if (todayLog.notes != null) _notesCtrl.text = todayLog.notes!;
@@ -102,18 +144,25 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
         for (final s in todayLog.sets)
           SetRow(
             setNumber: s.setNumber,
-            plannedWeight: s.actualWeight,
-            plannedReps: s.actualReps,
+            plannedWeight: s.plannedWeight,
+            plannedReps: s.plannedReps,
             isDone: s.isCompleted,
-          ),
+          )
+            ..weightCtrl.text = s.actualWeight.toString()
+            ..repsCtrl.text = s.actualReps.toString(),
       ];
-    } else if (suggestion != null && suggestion.hasData) {
+    } else if (progression != null &&
+        progression.enabled &&
+        planExercise.defaultSets.isNotEmpty) {
+      // Plan targets, with the level of each set from the progression rule.
+      final levels = progression.rule
+          .planSession(progression.status, planExercise.defaultSets.length);
       sets = [
-        for (var i = 0; i < suggestion.suggestedWeights.length; i++)
+        for (final (i, ds) in planExercise.defaultSets.indexed)
           SetRow(
             setNumber: i + 1,
-            plannedWeight: suggestion.suggestedWeights[i],
-            plannedReps: suggestion.suggestedReps[i],
+            plannedWeight: byReps ? ds.weight : levels[i],
+            plannedReps: byReps ? levels[i].round() : ds.reps,
           ),
       ];
     } else if (lastSlotLog != null) {
@@ -122,7 +171,7 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
           SetRow(
             setNumber: s.setNumber,
             plannedWeight: s.actualWeight,
-            plannedReps: s.actualReps,
+            plannedReps: s.plannedReps,
           ),
       ];
     } else {
@@ -138,6 +187,7 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
 
     setState(() {
       _planExercise = planExercise;
+      _progression = progression;
       _lastNoteLog = lastNoteLog;
       _sets.addAll(sets);
       _loadingExercise = false;
@@ -178,8 +228,6 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
-
-    final suggestion = ref.watch(progressionProvider(widget.planExerciseId));
 
     return Scaffold(
       appBar: AppBar(
@@ -250,15 +298,16 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
               ),
             ),
           // Progression banner
-          SliverToBoxAdapter(
-            child: suggestion.when(
-              loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
-              data: (s) => s.hasData
-                  ? ProgressionBanner(suggestion: s)
-                  : const SizedBox.shrink(),
+          if (_progressionOn)
+            SliverToBoxAdapter(
+              child: ProgressionBanner(
+                rule: _progression!.rule,
+                state: _currentProgression ?? _progression!.status.counting,
+                transition: _progression!.status.transition,
+                setsInWorkout: _sets.length,
+                unit: _progression!.unit,
+              ),
             ),
-          ),
 
           // Sets table
           SliverToBoxAdapter(
@@ -266,15 +315,18 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
               sets: _sets,
               onToggle: _toggleSet,
               onDelete: (i) => setState(() {
-                _sets.removeAt(i);
-                for (int j = 0; j < _sets.length; j++) {
-                  _sets[j] = SetRow(
-                    setNumber: j + 1,
-                    plannedWeight: _sets[j].plannedWeight,
-                    plannedReps: _sets[j].plannedReps,
-                    isDone: _sets[j].isDone,
-                  );
+                final replaced = [_sets.removeAt(i)];
+                for (int j = i; j < _sets.length; j++) {
+                  replaced.add(_sets[j]);
+                  _sets[j] = _sets[j].renumbered(j + 1);
                 }
+                _applyProgression();
+                // Their text fields are still mounted until this rebuild.
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  for (final row in replaced) {
+                    row.dispose();
+                  }
+                });
               }),
               exerciseType: _exercise?.exerciseType ?? 'weighted',
             ),
@@ -365,7 +417,10 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
   }
 
   void _toggleSet(int i) {
-    setState(() => _sets[i].isDone = !_sets[i].isDone);
+    setState(() {
+      _sets[i].isDone = !_sets[i].isDone;
+      _applyProgression();
+    });
     if (_sets[i].isDone) _startRest();
   }
 
@@ -396,6 +451,7 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
         plannedWeight: last?.actualWeight ?? 0,
         plannedReps: last?.plannedReps ?? 10,
       ));
+      _applyProgression();
     });
   }
 

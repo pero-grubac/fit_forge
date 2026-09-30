@@ -3,9 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppSettings {
-  final double smallIncrement;
-  final double largeIncrement;
-  final double progressionThreshold;
+  /// Raise the weight (or reps/seconds) automatically after enough
+  /// successful sets in a row.
+  final bool autoProgression;
+
+  /// Default for exercises without their own "sets before increase".
+  final int setsToProgress;
+
+  /// Default kg step for weighted exercises without their own increment.
+  final double defaultIncrement;
 
   /// Rest between sets in seconds; 0 turns the rest timer off.
   final int restSeconds;
@@ -16,9 +22,9 @@ class AppSettings {
   final String locale;
 
   const AppSettings({
-    this.smallIncrement = 2.5,
-    this.largeIncrement = 5.0,
-    this.progressionThreshold = 0.95,
+    this.autoProgression = true,
+    this.setsToProgress = 8,
+    this.defaultIncrement = 2.5,
     this.restSeconds = 90,
     this.isSetupDone = false,
     this.devMode = false,
@@ -26,18 +32,18 @@ class AppSettings {
   });
 
   AppSettings copyWith({
-    double? smallIncrement,
-    double? largeIncrement,
-    double? progressionThreshold,
+    bool? autoProgression,
+    int? setsToProgress,
+    double? defaultIncrement,
     int? restSeconds,
     bool? isSetupDone,
     bool? devMode,
     String? locale,
   }) {
     return AppSettings(
-      smallIncrement: smallIncrement ?? this.smallIncrement,
-      largeIncrement: largeIncrement ?? this.largeIncrement,
-      progressionThreshold: progressionThreshold ?? this.progressionThreshold,
+      autoProgression: autoProgression ?? this.autoProgression,
+      setsToProgress: setsToProgress ?? this.setsToProgress,
+      defaultIncrement: defaultIncrement ?? this.defaultIncrement,
       restSeconds: restSeconds ?? this.restSeconds,
       isSetupDone: isSetupDone ?? this.isSetupDone,
       devMode: devMode ?? this.devMode,
@@ -47,9 +53,12 @@ class AppSettings {
 }
 
 class SettingsNotifier extends AsyncNotifier<AppSettings> {
-  static const _keySmall = 'small_increment';
-  static const _keyLarge = 'large_increment';
-  static const _keyThreshold = 'progression_threshold';
+  static const _keyAuto = 'auto_progression';
+  static const _keySetsToProgress = 'sets_to_progress';
+  static const _keyIncrement = 'default_increment';
+
+  /// Before v1.4 the small increment was the usual step; keep the user's value.
+  static const _keyLegacySmall = 'small_increment';
   static const _keyRest = 'rest_seconds';
   static const _keySetup = 'is_setup_done';
   static const _keyDevMode = 'dev_mode';
@@ -59,9 +68,11 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
   Future<AppSettings> build() async {
     final prefs = await SharedPreferences.getInstance();
     return AppSettings(
-      smallIncrement: prefs.getDouble(_keySmall) ?? 2.5,
-      largeIncrement: prefs.getDouble(_keyLarge) ?? 5.0,
-      progressionThreshold: prefs.getDouble(_keyThreshold) ?? 0.95,
+      autoProgression: prefs.getBool(_keyAuto) ?? true,
+      setsToProgress: prefs.getInt(_keySetsToProgress) ?? 8,
+      defaultIncrement: prefs.getDouble(_keyIncrement) ??
+          prefs.getDouble(_keyLegacySmall) ??
+          2.5,
       restSeconds: prefs.getInt(_keyRest) ?? 90,
       isSetupDone: prefs.getBool(_keySetup) ?? false,
       devMode: prefs.getBool(_keyDevMode) ?? false,
@@ -69,22 +80,22 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
     );
   }
 
-  Future<void> setSmallIncrement(double v) async {
+  Future<void> setAutoProgression(bool v) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(_keySmall, v);
-    state = AsyncData(state.value!.copyWith(smallIncrement: v));
+    await prefs.setBool(_keyAuto, v);
+    state = AsyncData(state.value!.copyWith(autoProgression: v));
   }
 
-  Future<void> setLargeIncrement(double v) async {
+  Future<void> setSetsToProgress(int v) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(_keyLarge, v);
-    state = AsyncData(state.value!.copyWith(largeIncrement: v));
+    await prefs.setInt(_keySetsToProgress, v);
+    state = AsyncData(state.value!.copyWith(setsToProgress: v));
   }
 
-  Future<void> setProgressionThreshold(double v) async {
+  Future<void> setDefaultIncrement(double v) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(_keyThreshold, v);
-    state = AsyncData(state.value!.copyWith(progressionThreshold: v));
+    await prefs.setDouble(_keyIncrement, v);
+    state = AsyncData(state.value!.copyWith(defaultIncrement: v));
   }
 
   Future<void> setRestSeconds(int v) async {

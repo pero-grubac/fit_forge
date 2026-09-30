@@ -8,7 +8,7 @@ class DatabaseHelper {
 
   static final DatabaseHelper instance = DatabaseHelper._();
 
-  static const version = 3;
+  static const version = 4;
 
   Database? _db;
   String? _path;
@@ -52,6 +52,9 @@ class DatabaseHelper {
     if (oldVersion < 3) {
       await _migrateToV3(db);
     }
+    if (oldVersion < 4) {
+      await _migrateToV4(db);
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -68,6 +71,7 @@ class DatabaseHelper {
     await _createExercisesTable(db, 'exercises');
     await _createPlanExercisesTable(db);
     await _createDefaultSetsTable(db, 'default_sets');
+    await _migrateToV4(db);
 
     await db.execute('''
       CREATE TABLE workout_logs (
@@ -224,6 +228,38 @@ class DatabaseHelper {
     }
   }
 
+  /// Set-count progression settings per exercise. Null values fall back to
+  /// the defaults from Settings.
+  Future<void> _migrateToV4(Database db) async {
+    final columns = {
+      for (final c in await db.rawQuery('PRAGMA table_info(exercises)'))
+        c['name'] as String,
+    };
+    const added = {
+      'increment': 'REAL',
+      'sets_to_progress': 'INTEGER',
+      'auto_progress': 'INTEGER NOT NULL DEFAULT 1',
+    };
+    for (final MapEntry(key: name, value: type) in added.entries) {
+      if (!columns.contains(name)) {
+        await db.execute('ALTER TABLE exercises ADD COLUMN $name $type');
+      }
+    }
+    await fillExerciseIncrements(db);
+  }
+
+  /// Takes each weighted exercise's increment from the per-set increments
+  /// used before v4 (the largest, if plans differ).
+  static Future<void> fillExerciseIncrements(DatabaseExecutor db) =>
+      db.execute('''
+        UPDATE exercises SET increment = (
+          SELECT MAX(ds.increment) FROM default_sets ds
+          JOIN plan_exercises pe ON pe.id = ds.plan_exercise_id
+          WHERE pe.exercise_id = exercises.id AND ds.increment > 0
+        )
+        WHERE increment IS NULL AND exercise_type = 'weighted'
+      ''');
+
   Future<void> _createExercisesTable(Database db, String name) => db.execute('''
         CREATE TABLE $name (
           id            TEXT PRIMARY KEY,
@@ -255,7 +291,7 @@ class DatabaseHelper {
           set_number       INTEGER NOT NULL,
           reps             INTEGER NOT NULL DEFAULT 10,
           weight           REAL NOT NULL DEFAULT 0,
-          increment        REAL NOT NULL DEFAULT 2.5,
+          increment        REAL NOT NULL DEFAULT 2.5, -- unused since v4
           UNIQUE(plan_exercise_id, set_number)
         )
       ''');

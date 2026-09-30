@@ -34,7 +34,7 @@ A personal fitness tracker built with Flutter — plan your workouts, log your s
 - Pick from 230+ predefined exercises or create your own
 - Muscle groups: Chest, Back, Shoulders, Biceps, Triceps, Legs, Core, Forearms, Bodyweight
 - Exercise types: weighted, bodyweight (reps) and timed (seconds)
-- Each plan has its own targets (sets, reps, starting weight, increment) — e.g. heavy 5×5 on Monday
+- Each plan has its own targets (sets, reps, starting weight), editable anytime — e.g. heavy 5×5 on Monday
   and a lighter 3×10 on Thursday for the same exercise
 - One exercise, one history: an exercise used in several plans shares its workout history
 - Add exercise descriptions, YouTube tutorial links and custom images
@@ -50,12 +50,15 @@ A personal fitness tracker built with Flutter — plan your workouts, log your s
 - Auto-fills from today's session, the progression suggestion or your last session in that plan
 
 ### 📈 Automatic Progression
-- Suggests the next targets based on your last 3 sessions
-- Weighted exercises: add weight (per-exercise increment, or small/large increment from Settings)
-- Bodyweight exercises: +1 rep per set; timed exercises: +5 seconds per set
-- Holds or eases off when you fall short; reduced weights are rounded to loadable plates
-- Configurable threshold: the share of planned reps you must complete to progress
-- Progression banner shown before your sets when a suggestion is available
+- Set-count rule: after N good sets in a row at the same weight (default 8), the next set goes up,
+  then one more set moves up each workout until all sets are at the new weight —
+  e.g. 10·10·10 / 10·10·10 / 10·10·**12.5** / 10·**12.5·12.5** / **12.5·12.5·12.5** (count starts again: 3/8)
+- A missed set (fewer reps than planned) or a different weight starts the count again
+- While moving up, a missed set at the new weight repeats that week until it's clean
+- Increment and "sets before increase" per exercise (e.g. +2.5 kg curls, +10 kg deadlift)
+- Bodyweight exercises go up in reps, timed exercises in seconds
+- Live while logging: ticking a set updates the remaining sets and the banner ("6/8 sets at 10 kg — then 12.5 kg")
+- Can be turned off for the whole app or per exercise
 
 ### 📊 Progress Tracking
 - Line chart showing max weight per session, with **estimated 1RM** (Epley formula)
@@ -81,8 +84,7 @@ A personal fitness tracker built with Flutter — plan your workouts, log your s
 - All UI strings fully translated
 
 ### ⚙️ Settings
-- Small and large weight increments
-- Progression threshold slider
+- Automatic increase on/off, default sets before increase and default increment
 - Rest timer length (or off)
 - Export / import data
 - Language selection

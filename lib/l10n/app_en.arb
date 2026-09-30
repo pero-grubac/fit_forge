@@ -84,15 +84,7 @@
   "log_notes_hint": "e.g. good pump, increase next time...",
   "log_notes_label": "Notes for this session",
   "log_volume": "Total volume",
-  "log_progression_title": "Progression suggestion",
-  "log_progression_increase": "Great work! Increasing by {increment} kg",
-  "@log_progression_increase": {
-    "placeholders": {
-      "increment": { "type": "String" }
-    }
-  },
-  "log_progression_hold": "Hold the weight — you are almost there",
-  "log_progression_reduce": "Focus on technique — reducing the weight slightly",
+  "log_progression_title": "Progression",
 
   "progress_title": "Progress",
   "progress_no_data": "No data for selected period",
@@ -108,12 +100,6 @@
 
   "settings_title": "Settings",
   "settings_progression_section": "PROGRESSION RULES",
-  "settings_small_increment": "Small increment",
-  "settings_small_increment_sub": "For weights up to 100 kg",
-  "settings_large_increment": "Large increment",
-  "settings_large_increment_sub": "For weights above 100 kg",
-  "settings_threshold": "Progress threshold",
-  "settings_threshold_sub": "Min. completion rate to increase weight",
   "settings_general_section": "GENERAL",
   "settings_reset": "Reset all data",
   "settings_reset_sub": "Deletes all plans, exercises and workouts",
@@ -205,20 +191,6 @@
     }
   },
   "progress_one_rep_max": "Est. 1RM",
-  "log_progression_increase_reps": "{count, plural, =1{Great work! Adding 1 rep per set} other{Great work! Adding {count} reps per set}}",
-  "@log_progression_increase_reps": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
-  "log_progression_increase_seconds": "Great work! Adding {count} s per set",
-  "@log_progression_increase_seconds": {
-    "placeholders": {
-      "count": { "type": "int" }
-    }
-  },
-  "log_progression_hold_reps": "Keep the same targets — you're almost there",
-  "log_progression_reduce_reps": "Focus on technique — easing off a little",
   "settings_data_section": "DATA",
   "settings_export": "Export data",
   "settings_export_sub": "Save plans, exercises and history to a file",
@@ -278,5 +250,57 @@
     }
   },
   "settings_dev_hide": "Hide developer options",
-  "settings_dev_hide_sub": "Tap the version 7 times to show them again"
+  "settings_dev_hide_sub": "Tap the version 7 times to show them again",
+  "progression_counter": "{done}/{total} sets at {current} — then {next}",
+  "@progression_counter": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" },
+      "current": { "type": "String" },
+      "next": { "type": "String" }
+    }
+  },
+  "progression_ready": "Next set: {next} — time to go up!",
+  "@progression_ready": {
+    "placeholders": {
+      "next": { "type": "String" }
+    }
+  },
+  "progression_reps": "{count, plural, =1{1 rep} other{{count} reps}}",
+  "@progression_reps": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "settings_auto_progression": "Automatic increase",
+  "settings_auto_progression_sub": "Go up after enough good sets in a row",
+  "settings_sets_to_progress": "Sets before increase",
+  "settings_sets_to_progress_sub": "Good sets in a row at the same weight",
+  "settings_default_increment": "Default increment",
+  "settings_default_increment_sub": "For exercises without their own",
+  "targets_title": "Targets & progression",
+  "targets_plan_section": "IN THIS PLAN",
+  "targets_progression_section": "PROGRESSION (ALL PLANS)",
+  "targets_sets": "Sets",
+  "targets_reps": "Reps",
+  "targets_seconds": "Seconds",
+  "targets_weight": "Weight (kg)",
+  "targets_auto": "Automatic increase",
+  "targets_increment": "Increment",
+  "targets_sets_to_progress": "Sets before increase",
+  "targets_default": "Default ({value})",
+  "@targets_default": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "targets_rule_hint": "A missed set or a different weight starts the count again.",
+  "progression_moving": "Moving up to {next}: {done} of {total} sets this workout",
+  "@progression_moving": {
+    "placeholders": {
+      "next": { "type": "String" },
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  }
 }

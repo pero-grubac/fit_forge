@@ -73,6 +73,21 @@ class PlanExerciseDao {
     });
   }
 
+  /// Replaces the plan's target sets for this exercise.
+  Future<void> replaceDefaultSets(
+      String planExerciseId, List<DefaultSetModel> sets) async {
+    await _db.transaction((txn) async {
+      await txn.delete(
+        DefaultSetModel.tableName,
+        where: 'plan_exercise_id = ?',
+        whereArgs: [planExerciseId],
+      );
+      for (final s in sets) {
+        await txn.insert(DefaultSetModel.tableName, s.toMap());
+      }
+    });
+  }
+
   Future<void> updateSortOrder(String id, int sortOrder) async {
     await _db.update(
       PlanExerciseModel.tableName,

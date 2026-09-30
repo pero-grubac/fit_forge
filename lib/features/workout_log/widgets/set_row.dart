@@ -4,9 +4,14 @@ import 'package:flutter/material.dart';
 
 class SetRow {
   final int setNumber;
-  final double plannedWeight;
-  final int plannedReps;
+  double plannedWeight;
+  int plannedReps;
   bool isDone;
+
+  /// Set once the user types a value; automatic progression then leaves that
+  /// field alone.
+  bool weightEdited = false;
+  bool repsEdited = false;
   late final TextEditingController weightCtrl;
   late final TextEditingController repsCtrl;
 
@@ -23,6 +28,39 @@ class SetRow {
   double get actualWeight => double.tryParse(weightCtrl.text) ?? plannedWeight;
 
   int get actualReps => int.tryParse(repsCtrl.text) ?? plannedReps;
+
+  /// The same set under a new number, keeping what was typed. The caller
+  /// disposes this row once it is off screen.
+  SetRow renumbered(int number) {
+    final copy = SetRow(
+      setNumber: number,
+      plannedWeight: plannedWeight,
+      plannedReps: plannedReps,
+      isDone: isDone,
+    )
+      ..weightEdited = weightEdited
+      ..repsEdited = repsEdited;
+    copy.weightCtrl.text = weightCtrl.text;
+    copy.repsCtrl.text = repsCtrl.text;
+    return copy;
+  }
+
+  void dispose() {
+    weightCtrl.dispose();
+    repsCtrl.dispose();
+  }
+
+  /// Updates the target (and the fields) unless the user typed their own.
+  void setTarget({double? weight, int? reps}) {
+    if (weight != null && !weightEdited) {
+      plannedWeight = weight;
+      weightCtrl.text = weight.toString();
+    }
+    if (reps != null && !repsEdited) {
+      plannedReps = reps;
+      repsCtrl.text = reps.toString();
+    }
+  }
 }
 
 class SetRowWidget extends StatelessWidget {
@@ -81,7 +119,9 @@ class SetRowWidget extends StatelessWidget {
                 if (exerciseType == 'weighted') ...[
                   Expanded(
                     child: TextField(
+                      key: Key('set_weight_${set.setNumber}'),
                       controller: set.weightCtrl,
+                      onChanged: (_) => set.weightEdited = true,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       textAlign: TextAlign.center,
@@ -111,7 +151,9 @@ class SetRowWidget extends StatelessWidget {
                 // Reps or seconds
                 Expanded(
                   child: TextField(
+                    key: Key('set_reps_${set.setNumber}'),
                     controller: set.repsCtrl,
+                    onChanged: (_) => set.repsEdited = true,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     style:

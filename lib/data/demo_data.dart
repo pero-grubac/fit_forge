@@ -1,4 +1,6 @@
+import 'package:fit_forge/core/utils/set_progression.dart';
 import 'package:fit_forge/data/local/database_helper.dart';
+import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:fit_forge/data/models/plan_exercise_model.dart';
 import 'package:fit_forge/data/repositories/exercise_repository.dart';
 import 'package:fit_forge/data/repositories/plan_exercise_repository.dart';
@@ -8,6 +10,9 @@ import 'package:fit_forge/data/repositories/workout_plan_repository.dart';
 
 /// Fills the app with sample plans and a few weeks of workout history, so
 /// every screen has something to show. Replaces all existing data.
+///
+/// The history follows the set-count progression rule, so what the app
+/// suggests next matches what was "done" before.
 class DemoData {
   DemoData({
     required DatabaseHelper helper,
@@ -32,6 +37,10 @@ class DemoData {
 
   static const weeks = 8;
 
+  /// Sets before increase for demo exercises that don't set their own; the
+  /// same as the default in Settings.
+  static const defaultSetsToProgress = 8;
+
   static const _notes = [
     'Felt strong today',
     'Left shoulder a bit tight, kept the form strict',
@@ -53,26 +62,30 @@ class DemoData {
             sets: 3,
             reps: 5,
             start: 60,
+            setsToProgress: 6,
             description: 'Feet flat, shoulder blades squeezed together. '
                 'Lower the bar to mid-chest and press up in a slight arc.',
             youTubeUrl: 'https://www.youtube.com/watch?v=rT7DgCr-3pg'),
         _DemoExercise('Incline Dumbbell Press', 'Chest',
             sets: 3, reps: 10, start: 20, increment: 2),
-        // Stalls in the last sessions, so it shows a "hold" suggestion.
+        // Keeps missing the last set lately, so its counter stays low.
         _DemoExercise('Overhead Press', 'Shoulders',
-            sets: 3, reps: 8, start: 35, stallRecently: true),
+            sets: 3, reps: 8, start: 35, strugglingLately: true),
         _DemoExercise('Tricep Pushdown', 'Triceps',
-            sets: 3, reps: 12, start: 25),
+            sets: 3, reps: 12, start: 25, increment: 5),
       ]),
       const _DemoPlan('Pull', DateTime.wednesday, [
         _DemoExercise('Pull Up', 'Bodyweight',
             type: 'bodyweight',
             sets: 3,
             reps: 5,
+            setsToProgress: 6,
             description: 'Full hang at the bottom, chin over the bar at the '
                 'top. No kipping.'),
         _DemoExercise('Barbell Row', 'Back', sets: 3, reps: 8, start: 50),
-        _DemoExercise('Barbell Curl', 'Biceps', sets: 3, reps: 10, start: 25),
+        // Auto increase turned off: the user raises it by hand.
+        _DemoExercise('Barbell Curl', 'Biceps',
+            sets: 3, reps: 10, start: 25, autoProgress: false),
       ]),
       const _DemoPlan('Legs', DateTime.friday, [
         _DemoExercise('Squat', 'Legs',
@@ -80,11 +93,12 @@ class DemoData {
             reps: 5,
             start: 80,
             increment: 5,
+            setsToProgress: 6,
             description: 'Brace before each rep, break at hips and knees '
                 'together, hit depth and drive up through mid-foot.',
             youTubeUrl: 'https://www.youtube.com/watch?v=ultWZbUMPL8'),
         _DemoExercise('Romanian Deadlift', 'Back',
-            sets: 3, reps: 8, start: 70, increment: 5),
+            sets: 3, reps: 8, start: 70, increment: 10),
         _DemoExercise('Plank', 'Core', type: 'timed', sets: 3, reps: 30),
       ]),
     ];
@@ -93,12 +107,12 @@ class DemoData {
     // screen is never empty. Bench Press and Squat are shared with the other
     // plans (lighter targets here) and show one combined history.
     if (!plans.any((p) => p.weekday == day.weekday)) {
-      plans.add(_DemoPlan('Full Body', day.weekday, [
-        const _DemoExercise('Bench Press', 'Chest',
-            sets: 3, reps: 10, start: 50),
-        const _DemoExercise('Squat', 'Legs',
-            sets: 3, reps: 10, start: 60, increment: 5),
-        const _DemoExercise('Plank', 'Core', type: 'timed', sets: 2, reps: 30),
+      plans.add(_DemoPlan('Full Body', day.weekday, const [
+        _DemoExercise('Bench Press', 'Chest',
+            sets: 3, reps: 10, start: 50, setsToProgress: 6),
+        _DemoExercise('Squat', 'Legs',
+            sets: 3, reps: 10, start: 60, increment: 5, setsToProgress: 6),
+        _DemoExercise('Plank', 'Core', type: 'timed', sets: 2, reps: 30),
       ]));
     }
 
@@ -118,25 +132,22 @@ class DemoData {
           await _exercises.updateDescriptionAndUrl(
               exercise.id, ex.description, ex.youTubeUrl);
         }
+        await _exercises.updateProgression(
+          exercise.id,
+          autoProgress: ex.autoProgress,
+          increment: ex.increment,
+          setsToProgress: ex.setsToProgress,
+        );
         final slot = await _planExercises.add(
           planId: created.id,
           exercise: exercise,
           sets: [
             for (var i = 0; i < ex.sets; i++)
-              (
-                reps: ex.reps,
-                weight: ex.start,
-                increment: ex.type == 'weighted' ? ex.increment : 0.0,
-              ),
+              (reps: ex.reps, weight: ex.start, increment: 0.0),
           ],
         );
 
-        for (final (k, date) in sessions.indexed) {
-          final note = (k + noteIndex) % 4 == 0
-              ? _notes[(k + noteIndex) % _notes.length]
-              : null;
-          await _logSession(slot!, ex, k, sessions.length, date, note);
-        }
+        await _logHistory(slot!, ex, sessions, noteIndex);
         noteIndex++;
       }
     }
@@ -158,46 +169,59 @@ class DemoData {
     ];
   }
 
-  /// Session [k] of [total]: targets go up every other session; every fifth
-  /// session misses a couple of reps on the last set.
-  Future<void> _logSession(PlanExerciseModel slot, _DemoExercise ex, int k,
-      int total, DateTime date, String? note) async {
-    final stalled = ex.stallRecently && k >= total - 3;
-    final level = stalled ? (total - 4) ~/ 2 : k ~/ 2;
-    final missLastSet = stalled || k % 5 == 4;
-
-    final double weight;
-    final int reps;
-    switch (ex.type) {
-      case 'bodyweight':
-        weight = 0;
-        reps = ex.reps + level;
-      case 'timed':
-        weight = 0;
-        reps = ex.reps + 5 * level;
-      default:
-        weight = ex.start + ex.increment * level;
-        reps = ex.reps;
-    }
-
-    await _logs.createOrReplace(
-      exerciseId: slot.exerciseId,
-      planExerciseId: slot.id,
-      logDate: date,
-      notes: note,
-      sets: [
-        for (var i = 0; i < ex.sets; i++)
-          (
-            plannedReps: reps,
-            actualReps: missLastSet && i == ex.sets - 1
-                ? (reps - 2).clamp(1, reps)
-                : reps,
-            plannedWeight: weight,
-            actualWeight: weight,
-            isCompleted: true,
-          ),
-      ],
+  /// Logs one session per date, following the progression rule. Every fifth
+  /// session misses two reps on the last set (which resets the counter);
+  /// "struggling" exercises miss it in the last three sessions too.
+  Future<void> _logHistory(PlanExerciseModel slot, _DemoExercise ex,
+      List<DateTime> dates, int noteOffset) async {
+    final byReps = ex.type != 'weighted';
+    final rule = SetProgression(
+      setsToProgress: ex.setsToProgress ?? defaultSetsToProgress,
+      increment: ex.increment ?? ExerciseModel.defaultIncrementFor(ex.type),
     );
+    final start = byReps ? ex.reps.toDouble() : ex.start;
+    final history = <Session>[];
+    var manualLevel = start;
+
+    for (final (k, date) in dates.indexed) {
+      final missLast =
+          k % 5 == 4 || (ex.strugglingLately && k >= dates.length - 3);
+      // Without auto increase, the user bumps the weight every 3rd session.
+      if (!ex.autoProgress && k > 0 && k % 3 == 0) {
+        manualLevel += rule.increment;
+      }
+      final levels = ex.autoProgress
+          ? rule.planSession(
+              rule.status(history, start: start, plannedSets: ex.sets), ex.sets)
+          : List.filled(ex.sets, manualLevel);
+
+      final sets = <LoggedSet>[];
+      final session = <PerformedSet>[];
+      for (final (i, level) in levels.indexed) {
+        final planned = byReps ? level.round() : ex.reps;
+        final missed = missLast && i == ex.sets - 1;
+        final done = missed ? (planned - 2).clamp(0, planned) : planned;
+        sets.add((
+          plannedReps: planned,
+          actualReps: done,
+          plannedWeight: byReps ? 0.0 : level,
+          actualWeight: byReps ? 0.0 : level,
+          isCompleted: true,
+        ));
+        session.add((level: level, success: !missed));
+      }
+      history.add(session);
+
+      await _logs.createOrReplace(
+        exerciseId: slot.exerciseId,
+        planExerciseId: slot.id,
+        logDate: date,
+        notes: (k + noteOffset) % 4 == 0
+            ? _notes[(k + noteOffset) % _notes.length]
+            : null,
+        sets: sets,
+      );
+    }
   }
 }
 
@@ -217,8 +241,10 @@ class _DemoExercise {
     required this.sets,
     required this.reps,
     this.start = 0,
-    this.increment = 2.5,
-    this.stallRecently = false,
+    this.increment,
+    this.setsToProgress,
+    this.autoProgress = true,
+    this.strugglingLately = false,
     this.description,
     this.youTubeUrl,
   });
@@ -233,8 +259,12 @@ class _DemoExercise {
 
   /// Starting weight in kg (weighted exercises).
   final double start;
-  final double increment;
-  final bool stallRecently;
+
+  /// Null uses the default (2.5 kg / 1 rep / 5 s).
+  final double? increment;
+  final int? setsToProgress;
+  final bool autoProgress;
+  final bool strugglingLately;
   final String? description;
   final String? youTubeUrl;
 }

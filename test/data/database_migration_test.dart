@@ -200,6 +200,15 @@ void main() {
       expect(await db.rawQuery('PRAGMA foreign_key_check'), isEmpty);
     });
 
+    test('v4: the increment moves from the sets to the exercise', () async {
+      final db = await openV2AndSeed();
+
+      final rows = await db.query('exercises', orderBy: 'name');
+      expect(rows.map((e) => e['increment']), [2.5, 2.5]);
+      expect(rows.map((e) => e['auto_progress']), [1, 1]);
+      expect(rows.map((e) => e['sets_to_progress']), [null, null]);
+    });
+
     test('enables foreign keys after the upgrade', () async {
       final db = await openV2AndSeed();
       expect(_firstInt(await db.rawQuery('PRAGMA foreign_keys')), 1);

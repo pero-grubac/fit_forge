@@ -288,4 +288,170 @@ void main() {
       expect(find.text('Notes for this session'), findsOneWidget);
     });
   });
+
+  group('set-count progression while logging', () {
+    /// Today's plan with Barbell Curl 3×8 @ 10 kg, +2.5 kg after 8 good sets,
+    /// and two earlier sessions of 3 good sets (6 so far).
+    Future<void> seed(
+      WidgetTester tester, {
+      bool auto = true,
+      bool missLastSet = false,
+      List<List<double>> history = const [
+        [10, 10, 10],
+        [10, 10, 10],
+      ],
+    }) async {
+      SharedPreferences.setMockInitialValues(
+          {'is_setup_done': true, 'rest_seconds': 0});
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      await tester.runAsync(() async {
+        final plan = await container
+            .read(workoutPlanRepositoryProvider)
+            .create(name: 'Arms', dayOfWeek: DateTime.now().weekday);
+        final exercises = container.read(exerciseRepositoryProvider);
+        final curl = await exercises.findOrCreate(
+            name: 'Barbell Curl', muscleGroup: 'Biceps');
+        await exercises.updateProgression(curl.id,
+            autoProgress: auto, increment: 2.5, setsToProgress: 8);
+        final pe = await container.read(planExerciseRepositoryProvider).add(
+              planId: plan.id,
+              exercise: curl,
+              sets: List.filled(3, (reps: 8, weight: 10.0, increment: 0.0)),
+            );
+        for (final (i, weights) in history.indexed) {
+          final weeksAgo = history.length - i;
+          await container.read(workoutLogRepositoryProvider).createOrReplace(
+            exerciseId: curl.id,
+            planExerciseId: pe!.id,
+            logDate: DateTime.now().subtract(Duration(days: 7 * weeksAgo)),
+            sets: [
+              for (final (j, w) in weights.indexed)
+                (
+                  plannedReps: 8,
+                  // Optionally miss the last set of the last workout.
+                  actualReps: missLastSet &&
+                          i == history.length - 1 &&
+                          j == weights.length - 1
+                      ? 6
+                      : 8,
+                  plannedWeight: w,
+                  actualWeight: w,
+                  isCompleted: true,
+                ),
+            ],
+          );
+        }
+      });
+      await startApp(tester);
+      await tester.tap(find.text('Barbell Curl'));
+      await settle(tester);
+    }
+
+    String weight(WidgetTester tester, int set) => tester
+        .widget<TextField>(find.byKey(Key('set_weight_$set')))
+        .controller!
+        .text;
+
+    /// Ticks a set, then scrolls back up so the banner is built again.
+    Future<void> tick(WidgetTester tester, int set) async {
+      await tester.ensureVisible(find.byKey(Key('set_toggle_$set')));
+      await tester.tap(find.byKey(Key('set_toggle_$set')));
+      await tester.pump();
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('progression_message')),
+        -200,
+        scrollable: find
+            .descendant(
+                of: find.byType(CustomScrollView),
+                matching: find.byType(Scrollable))
+            .first,
+      );
+    }
+
+    testWidgets('the 9th set is pre-filled heavier', (tester) async {
+      await seed(tester);
+
+      expect([weight(tester, 1), weight(tester, 2), weight(tester, 3)],
+          ['10.0', '10.0', '12.5']);
+      expect(find.text('6/8 sets at 10 kg — then 12.5 kg'), findsOneWidget);
+
+      await tick(tester, 1);
+      expect(find.text('7/8 sets at 10 kg — then 12.5 kg'), findsOneWidget);
+    });
+
+    testWidgets('after an increase one more set moves up each week',
+        (tester) async {
+      await seed(tester, history: const [
+        [10, 10, 10],
+        [10, 10, 10],
+        [10, 10, 12.5],
+      ]);
+
+      expect([weight(tester, 1), weight(tester, 2), weight(tester, 3)],
+          ['10.0', '12.5', '12.5']);
+      expect(find.text('Moving up to 12.5 kg: 2 of 3 sets this workout'),
+          findsOneWidget);
+    });
+
+    testWidgets('a missed heavy set repeats the same week', (tester) async {
+      await seed(tester, missLastSet: true, history: const [
+        [10, 10, 10],
+        [10, 10, 10],
+        [10, 10, 12.5],
+        [10, 12.5, 12.5],
+      ]);
+
+      expect([weight(tester, 1), weight(tester, 2), weight(tester, 3)],
+          ['10.0', '12.5', '12.5']);
+      expect(find.text('Moving up to 12.5 kg: 2 of 3 sets this workout'),
+          findsOneWidget);
+    });
+
+    testWidgets('the first full workout at the new weight starts the count',
+        (tester) async {
+      await seed(tester, history: const [
+        [10, 10, 10],
+        [10, 10, 10],
+        [10, 10, 12.5],
+        [10, 12.5, 12.5],
+        [12.5, 12.5, 12.5],
+      ]);
+
+      expect([weight(tester, 1), weight(tester, 2), weight(tester, 3)],
+          ['12.5', '12.5', '12.5']);
+      expect(find.text('3/8 sets at 12.5 kg — then 15 kg'), findsOneWidget);
+    });
+
+    testWidgets('a missed set resets the count and the next sets',
+        (tester) async {
+      await seed(tester);
+
+      await tester.enterText(find.byKey(const Key('set_reps_1')), '6');
+      await tick(tester, 1);
+
+      expect(find.text('0/8 sets at 10 kg — then 12.5 kg'), findsOneWidget);
+      expect(weight(tester, 3), '10.0');
+    });
+
+    testWidgets('a manual increase resets and carries the new weight',
+        (tester) async {
+      await seed(tester);
+
+      await tester.enterText(find.byKey(const Key('set_weight_1')), '12.5');
+      await tick(tester, 1);
+
+      expect(find.text('1/8 sets at 12.5 kg — then 15 kg'), findsOneWidget);
+      expect([weight(tester, 2), weight(tester, 3)], ['12.5', '12.5']);
+    });
+
+    testWidgets('turned off: last session as it was, no banner',
+        (tester) async {
+      await seed(tester, auto: false);
+
+      expect([weight(tester, 1), weight(tester, 2), weight(tester, 3)],
+          ['10.0', '10.0', '10.0']);
+      expect(find.byKey(const Key('progression_message')), findsNothing);
+    });
+  });
 }

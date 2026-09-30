@@ -4,6 +4,8 @@ class DefaultSetModel {
   final int setNumber;
   final int reps;
   final double weight;
+
+  /// Unused since v4: the increment is set per exercise.
   final double increment;
 
   static const tableName = 'default_sets';

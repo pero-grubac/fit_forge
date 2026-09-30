@@ -450,26 +450,8 @@ abstract class AppLocalizations {
   /// No description provided for @log_progression_title.
   ///
   /// In en, this message translates to:
-  /// **'Progression suggestion'**
+  /// **'Progression'**
   String get log_progression_title;
-
-  /// No description provided for @log_progression_increase.
-  ///
-  /// In en, this message translates to:
-  /// **'Great work! Increasing by {increment} kg'**
-  String log_progression_increase(String increment);
-
-  /// No description provided for @log_progression_hold.
-  ///
-  /// In en, this message translates to:
-  /// **'Hold the weight — you are almost there'**
-  String get log_progression_hold;
-
-  /// No description provided for @log_progression_reduce.
-  ///
-  /// In en, this message translates to:
-  /// **'Focus on technique — reducing the weight slightly'**
-  String get log_progression_reduce;
 
   /// No description provided for @progress_title.
   ///
@@ -548,42 +530,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'PROGRESSION RULES'**
   String get settings_progression_section;
-
-  /// No description provided for @settings_small_increment.
-  ///
-  /// In en, this message translates to:
-  /// **'Small increment'**
-  String get settings_small_increment;
-
-  /// No description provided for @settings_small_increment_sub.
-  ///
-  /// In en, this message translates to:
-  /// **'For weights up to 100 kg'**
-  String get settings_small_increment_sub;
-
-  /// No description provided for @settings_large_increment.
-  ///
-  /// In en, this message translates to:
-  /// **'Large increment'**
-  String get settings_large_increment;
-
-  /// No description provided for @settings_large_increment_sub.
-  ///
-  /// In en, this message translates to:
-  /// **'For weights above 100 kg'**
-  String get settings_large_increment_sub;
-
-  /// No description provided for @settings_threshold.
-  ///
-  /// In en, this message translates to:
-  /// **'Progress threshold'**
-  String get settings_threshold;
-
-  /// No description provided for @settings_threshold_sub.
-  ///
-  /// In en, this message translates to:
-  /// **'Min. completion rate to increase weight'**
-  String get settings_threshold_sub;
 
   /// No description provided for @settings_general_section.
   ///
@@ -975,30 +921,6 @@ abstract class AppLocalizations {
   /// **'Est. 1RM'**
   String get progress_one_rep_max;
 
-  /// No description provided for @log_progression_increase_reps.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{Great work! Adding 1 rep per set} other{Great work! Adding {count} reps per set}}'**
-  String log_progression_increase_reps(int count);
-
-  /// No description provided for @log_progression_increase_seconds.
-  ///
-  /// In en, this message translates to:
-  /// **'Great work! Adding {count} s per set'**
-  String log_progression_increase_seconds(int count);
-
-  /// No description provided for @log_progression_hold_reps.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep the same targets — you\'re almost there'**
-  String get log_progression_hold_reps;
-
-  /// No description provided for @log_progression_reduce_reps.
-  ///
-  /// In en, this message translates to:
-  /// **'Focus on technique — easing off a little'**
-  String get log_progression_reduce_reps;
-
   /// No description provided for @settings_data_section.
   ///
   /// In en, this message translates to:
@@ -1238,6 +1160,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap the version 7 times to show them again'**
   String get settings_dev_hide_sub;
+
+  /// No description provided for @progression_counter.
+  ///
+  /// In en, this message translates to:
+  /// **'{done}/{total} sets at {current} — then {next}'**
+  String progression_counter(int done, int total, String current, String next);
+
+  /// No description provided for @progression_ready.
+  ///
+  /// In en, this message translates to:
+  /// **'Next set: {next} — time to go up!'**
+  String progression_ready(String next);
+
+  /// No description provided for @progression_reps.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 rep} other{{count} reps}}'**
+  String progression_reps(int count);
+
+  /// No description provided for @settings_auto_progression.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic increase'**
+  String get settings_auto_progression;
+
+  /// No description provided for @settings_auto_progression_sub.
+  ///
+  /// In en, this message translates to:
+  /// **'Go up after enough good sets in a row'**
+  String get settings_auto_progression_sub;
+
+  /// No description provided for @settings_sets_to_progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets before increase'**
+  String get settings_sets_to_progress;
+
+  /// No description provided for @settings_sets_to_progress_sub.
+  ///
+  /// In en, this message translates to:
+  /// **'Good sets in a row at the same weight'**
+  String get settings_sets_to_progress_sub;
+
+  /// No description provided for @settings_default_increment.
+  ///
+  /// In en, this message translates to:
+  /// **'Default increment'**
+  String get settings_default_increment;
+
+  /// No description provided for @settings_default_increment_sub.
+  ///
+  /// In en, this message translates to:
+  /// **'For exercises without their own'**
+  String get settings_default_increment_sub;
+
+  /// No description provided for @targets_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Targets & progression'**
+  String get targets_title;
+
+  /// No description provided for @targets_plan_section.
+  ///
+  /// In en, this message translates to:
+  /// **'IN THIS PLAN'**
+  String get targets_plan_section;
+
+  /// No description provided for @targets_progression_section.
+  ///
+  /// In en, this message translates to:
+  /// **'PROGRESSION (ALL PLANS)'**
+  String get targets_progression_section;
+
+  /// No description provided for @targets_sets.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets'**
+  String get targets_sets;
+
+  /// No description provided for @targets_reps.
+  ///
+  /// In en, this message translates to:
+  /// **'Reps'**
+  String get targets_reps;
+
+  /// No description provided for @targets_seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Seconds'**
+  String get targets_seconds;
+
+  /// No description provided for @targets_weight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight (kg)'**
+  String get targets_weight;
+
+  /// No description provided for @targets_auto.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic increase'**
+  String get targets_auto;
+
+  /// No description provided for @targets_increment.
+  ///
+  /// In en, this message translates to:
+  /// **'Increment'**
+  String get targets_increment;
+
+  /// No description provided for @targets_sets_to_progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets before increase'**
+  String get targets_sets_to_progress;
+
+  /// No description provided for @targets_default.
+  ///
+  /// In en, this message translates to:
+  /// **'Default ({value})'**
+  String targets_default(String value);
+
+  /// No description provided for @targets_rule_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'A missed set or a different weight starts the count again.'**
+  String get targets_rule_hint;
+
+  /// No description provided for @progression_moving.
+  ///
+  /// In en, this message translates to:
+  /// **'Moving up to {next}: {done} of {total} sets this workout'**
+  String progression_moving(String next, int done, int total);
 }
 
 class _AppLocalizationsDelegate

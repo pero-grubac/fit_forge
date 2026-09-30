@@ -95,6 +95,24 @@ class ExerciseDao {
     );
   }
 
+  Future<void> updateProgression(
+    String id, {
+    required bool autoProgress,
+    required double? increment,
+    required int? setsToProgress,
+  }) async {
+    await _db.update(
+      ExerciseModel.tableName,
+      {
+        'auto_progress': autoProgress ? 1 : 0,
+        'increment': increment,
+        'sets_to_progress': setsToProgress,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   /// Deletes the exercise everywhere: its history, its place in every plan
   /// (default sets cascade) and the exercise itself.
   Future<void> delete(String id) async {

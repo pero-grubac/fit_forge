@@ -51,7 +51,7 @@ class BackupRepository {
   /// Replaces all data with the backup. Nothing changes if the backup is
   /// invalid.
   Future<void> importJson(String json) async {
-    final tablesData = _parse(json);
+    final (version, tablesData) = _parse(json);
 
     try {
       await _helper.database.transaction((txn) async {
@@ -62,6 +62,10 @@ class BackupRepository {
           for (final row in tablesData[table]!) {
             await txn.insert(table, _fixImagePath(table, row));
           }
+        }
+        if (version < 4) {
+          // v3 backups kept the increment per set; move it to the exercise.
+          await DatabaseHelper.fillExerciseIncrements(txn);
         }
         final violations = await txn.rawQuery('PRAGMA foreign_key_check');
         if (violations.isNotEmpty) {
@@ -77,7 +81,10 @@ class BackupRepository {
     }
   }
 
-  Map<String, List<Map<String, Object?>>> _parse(String json) {
+  /// Oldest backup format that can still be imported (v1.3.0).
+  static const oldestSupportedVersion = 3;
+
+  (int, Map<String, List<Map<String, Object?>>>) _parse(String json) {
     final Object? decoded;
     try {
       decoded = jsonDecode(json);
@@ -92,7 +99,7 @@ class BackupRepository {
       throw const BackupFormatException(
           'Backup is from a newer version of the app');
     }
-    if (version < DatabaseHelper.version) {
+    if (version < oldestSupportedVersion) {
       throw const BackupFormatException(
           'Backup is from an older version of the app');
     }
@@ -100,16 +107,19 @@ class BackupRepository {
     if (tablesData is! Map<String, Object?>) {
       throw const BackupFormatException('Backup has no data');
     }
-    return {
-      for (final table in tables)
-        table: [
-          for (final row in (tablesData[table] as List<Object?>?) ?? const [])
-            if (row is Map<String, Object?>)
-              row
-            else
-              throw BackupFormatException('Invalid row in $table'),
-        ],
-    };
+    return (
+      version,
+      {
+        for (final table in tables)
+          table: [
+            for (final row in (tablesData[table] as List<Object?>?) ?? const [])
+              if (row is Map<String, Object?>)
+                row
+              else
+                throw BackupFormatException('Invalid row in $table'),
+          ],
+      }
+    );
   }
 
   Map<String, Object?> _fixImagePath(String table, Map<String, Object?> row) {

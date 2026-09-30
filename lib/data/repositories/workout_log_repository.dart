@@ -23,6 +23,13 @@ class WorkoutLogRepository {
   }) =>
       _logDao.getByExercise(exerciseId, limit: limit);
 
+  /// Logs recorded from one plan slot, newest first.
+  Future<List<WorkoutLogModel>> getByPlanExercise(
+    String planExerciseId, {
+    int limit = 50,
+  }) =>
+      _logDao.getByPlanExercise(planExerciseId, limit: limit);
+
   Future<void> delete(String id) => _logDao.delete(id);
 
   /// Distinct dates (yyyy-MM-dd) with at least one logged workout.

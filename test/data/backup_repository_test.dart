@@ -94,6 +94,26 @@ void main() {
     expect((await db().query('workout_plans')).map((p) => p['name']), ['Push']);
   });
 
+  test('a backup from 1.3.0 (schema v3) can still be imported', () async {
+    final data = jsonDecode(await backup().exportJson());
+    // Shape of a v3 backup: no progression columns, increment per set.
+    data['schema_version'] = 3;
+    for (final e in data['tables']['exercises'] as List) {
+      (e as Map)
+        ..remove('increment')
+        ..remove('sets_to_progress')
+        ..remove('auto_progress');
+    }
+    for (final s in data['tables']['default_sets'] as List) {
+      (s as Map)['increment'] = 5.0;
+    }
+
+    await backup().importJson(jsonEncode(data));
+    final bench = (await db().query('exercises')).single;
+    expect(bench['increment'], 5.0);
+    expect(bench['auto_progress'], 1);
+  });
+
   group('invalid files are rejected and nothing changes', () {
     Future<void> expectRejected(String json) async {
       final before = await counts();

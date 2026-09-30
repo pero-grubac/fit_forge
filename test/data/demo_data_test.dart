@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:fit_forge/core/models/progression_suggestion.dart';
+import 'package:fit_forge/core/utils/set_progression.dart';
 import 'package:fit_forge/data/demo_data.dart';
 import 'package:fit_forge/data/local/database_helper.dart';
 import 'package:fit_forge/data/providers.dart';
@@ -86,25 +86,44 @@ void main() {
         isEmpty);
   });
 
-  test('shows the different progression suggestions', () async {
+  test('history follows the set-count rule', () async {
     await container.read(demoDataProvider).load(today: saturday);
 
-    Future<ProgressionSuggestion> suggestion(String plan, String ex) async =>
-        container.read(progressionProvider(await slotId(plan, ex)).future);
+    Future<ProgressionInfo> info(String plan, String ex) async {
+      final id = await slotId(plan, ex);
+      final result = await container.read(progressionProvider(id).future);
+      return result!;
+    }
 
-    final bench = await suggestion('Push', 'Bench Press');
-    expect(bench.action, ProgressionAction.increase);
+    // Bench (6 sets to go up, +2.5 kg, 3×5 from 60 kg): 60 → 62.5 → 65
+    // (a miss in session 5 resets) → 67.5, with 3 good sets done at 67.5.
+    // Each increase landed on the first set of a workout, so there was no
+    // moving-up week.
+    final bench = await info('Push', 'Bench Press');
+    expect(bench.enabled, isTrue);
     expect(bench.unit, ProgressionUnit.kg);
+    expect(bench.status.isMoving, isFalse);
+    expect(
+        bench.status.counting, const ProgressionState(level: 67.5, streak: 3));
+    expect(bench.rule.planSession(bench.status, 3), [67.5, 67.5, 67.5]);
 
-    final press = await suggestion('Push', 'Overhead Press');
-    expect(press.action, ProgressionAction.hold);
+    // Fully moved up to 37.5 kg by week 5, then kept missing the last set:
+    // counting at 37.5, with the counter back at 0.
+    final press = await info('Push', 'Overhead Press');
+    expect(press.status.isMoving, isFalse);
+    expect(
+        press.status.counting, const ProgressionState(level: 37.5, streak: 0));
 
-    final pullUp = await suggestion('Pull', 'Pull Up');
-    expect(pullUp.action, ProgressionAction.increase);
+    final curl = await info('Pull', 'Barbell Curl');
+    expect(curl.enabled, isFalse);
+
+    final pullUp = await info('Pull', 'Pull Up');
     expect(pullUp.unit, ProgressionUnit.reps);
+    expect(pullUp.rule.increment, 1);
 
-    final plank = await suggestion('Legs', 'Plank');
+    final plank = await info('Legs', 'Plank');
     expect(plank.unit, ProgressionUnit.seconds);
+    expect(plank.rule.increment, 5);
   });
 
   test('loading again replaces the data instead of duplicating it', () async {

@@ -25,6 +25,21 @@ class WorkoutLogDao {
     return _withSets(logRows);
   }
 
+  /// Logs recorded from one plan slot, newest first.
+  Future<List<WorkoutLogModel>> getByPlanExercise(
+    String planExerciseId, {
+    int limit = 50,
+  }) async {
+    final logRows = await _db.query(
+      WorkoutLogModel.tableName,
+      where: 'plan_exercise_id = ?',
+      whereArgs: [planExerciseId],
+      orderBy: 'log_date DESC, created_at DESC',
+      limit: limit,
+    );
+    return _withSets(logRows);
+  }
+
   Future<String> insert(WorkoutLogModel log) async {
     await _db.transaction((txn) async {
       await txn.insert(

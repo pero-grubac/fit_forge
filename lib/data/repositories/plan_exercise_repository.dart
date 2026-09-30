@@ -47,6 +47,23 @@ class PlanExerciseRepository {
     return planExercise;
   }
 
+  /// Sets the plan's targets for this exercise: one entry per set.
+  Future<void> updateTargets(
+    String planExerciseId,
+    List<({int reps, double weight})> sets,
+  ) =>
+      _dao.replaceDefaultSets(planExerciseId, [
+        for (final (i, s) in sets.indexed)
+          DefaultSetModel(
+            id: const Uuid().v4(),
+            planExerciseId: planExerciseId,
+            setNumber: i + 1,
+            reps: s.reps,
+            weight: s.weight,
+            increment: 0,
+          ),
+      ]);
+
   Future<void> updateSortOrder(String id, int sortOrder) =>
       _dao.updateSortOrder(id, sortOrder);
 

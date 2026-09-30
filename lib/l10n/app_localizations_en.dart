@@ -189,19 +189,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get log_volume => 'Total volume';
 
   @override
-  String get log_progression_title => 'Progression suggestion';
-
-  @override
-  String log_progression_increase(String increment) {
-    return 'Great work! Increasing by $increment kg';
-  }
-
-  @override
-  String get log_progression_hold => 'Hold the weight — you are almost there';
-
-  @override
-  String get log_progression_reduce =>
-      'Focus on technique — reducing the weight slightly';
+  String get log_progression_title => 'Progression';
 
   @override
   String get progress_title => 'Progress';
@@ -241,25 +229,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settings_progression_section => 'PROGRESSION RULES';
-
-  @override
-  String get settings_small_increment => 'Small increment';
-
-  @override
-  String get settings_small_increment_sub => 'For weights up to 100 kg';
-
-  @override
-  String get settings_large_increment => 'Large increment';
-
-  @override
-  String get settings_large_increment_sub => 'For weights above 100 kg';
-
-  @override
-  String get settings_threshold => 'Progress threshold';
-
-  @override
-  String get settings_threshold_sub =>
-      'Min. completion rate to increase weight';
 
   @override
   String get settings_general_section => 'GENERAL';
@@ -472,30 +441,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get progress_one_rep_max => 'Est. 1RM';
 
   @override
-  String log_progression_increase_reps(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Great work! Adding $count reps per set',
-      one: 'Great work! Adding 1 rep per set',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String log_progression_increase_seconds(int count) {
-    return 'Great work! Adding $count s per set';
-  }
-
-  @override
-  String get log_progression_hold_reps =>
-      'Keep the same targets — you\'re almost there';
-
-  @override
-  String get log_progression_reduce_reps =>
-      'Focus on technique — easing off a little';
-
-  @override
   String get settings_data_section => 'DATA';
 
   @override
@@ -634,4 +579,90 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settings_dev_hide_sub =>
       'Tap the version 7 times to show them again';
+
+  @override
+  String progression_counter(int done, int total, String current, String next) {
+    return '$done/$total sets at $current — then $next';
+  }
+
+  @override
+  String progression_ready(String next) {
+    return 'Next set: $next — time to go up!';
+  }
+
+  @override
+  String progression_reps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reps',
+      one: '1 rep',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settings_auto_progression => 'Automatic increase';
+
+  @override
+  String get settings_auto_progression_sub =>
+      'Go up after enough good sets in a row';
+
+  @override
+  String get settings_sets_to_progress => 'Sets before increase';
+
+  @override
+  String get settings_sets_to_progress_sub =>
+      'Good sets in a row at the same weight';
+
+  @override
+  String get settings_default_increment => 'Default increment';
+
+  @override
+  String get settings_default_increment_sub =>
+      'For exercises without their own';
+
+  @override
+  String get targets_title => 'Targets & progression';
+
+  @override
+  String get targets_plan_section => 'IN THIS PLAN';
+
+  @override
+  String get targets_progression_section => 'PROGRESSION (ALL PLANS)';
+
+  @override
+  String get targets_sets => 'Sets';
+
+  @override
+  String get targets_reps => 'Reps';
+
+  @override
+  String get targets_seconds => 'Seconds';
+
+  @override
+  String get targets_weight => 'Weight (kg)';
+
+  @override
+  String get targets_auto => 'Automatic increase';
+
+  @override
+  String get targets_increment => 'Increment';
+
+  @override
+  String get targets_sets_to_progress => 'Sets before increase';
+
+  @override
+  String targets_default(String value) {
+    return 'Default ($value)';
+  }
+
+  @override
+  String get targets_rule_hint =>
+      'A missed set or a different weight starts the count again.';
+
+  @override
+  String progression_moving(String next, int done, int total) {
+    return 'Moving up to $next: $done of $total sets this workout';
+  }
 }

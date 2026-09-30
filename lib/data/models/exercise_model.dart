@@ -11,6 +11,17 @@ class ExerciseModel {
   final String? youTubeUrl;
   final DateTime createdAt;
   final String exerciseType;
+
+  /// Progression step: kg for weighted, reps for bodyweight, seconds for
+  /// timed exercises. Null uses the default.
+  final double? increment;
+
+  /// Successful sets in a row at the same level before it goes up. Null
+  /// uses the default from Settings.
+  final int? setsToProgress;
+
+  /// Whether the next sets are raised automatically.
+  final bool autoProgress;
   static const tableName = 'exercises';
 
   const ExerciseModel({
@@ -22,6 +33,9 @@ class ExerciseModel {
     this.youTubeUrl,
     required this.createdAt,
     this.exerciseType = 'weighted',
+    this.increment,
+    this.setsToProgress,
+    this.autoProgress = true,
   });
 
   bool get hasCustomImage => imagePath != null;
@@ -38,6 +52,9 @@ class ExerciseModel {
       youTubeUrl: map['youtube_url'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
       exerciseType: map['exercise_type'] as String? ?? 'weighted',
+      increment: (map['increment'] as num?)?.toDouble(),
+      setsToProgress: map['sets_to_progress'] as int?,
+      autoProgress: (map['auto_progress'] as int? ?? 1) == 1,
     );
   }
 
@@ -51,6 +68,9 @@ class ExerciseModel {
       'youtube_url': youTubeUrl,
       'created_at': createdAt.toIso8601String(),
       'exercise_type': exerciseType,
+      'increment': increment,
+      'sets_to_progress': setsToProgress,
+      'auto_progress': autoProgress ? 1 : 0,
     };
   }
 
@@ -71,6 +91,9 @@ class ExerciseModel {
       youTubeUrl: youTubeUrl ?? this.youTubeUrl,
       createdAt: createdAt,
       exerciseType: exerciseType ?? this.exerciseType,
+      increment: increment,
+      setsToProgress: setsToProgress,
+      autoProgress: autoProgress,
     );
   }
 
@@ -79,4 +102,8 @@ class ExerciseModel {
   bool get isBodyweight => exerciseType == 'bodyweight';
 
   bool get isTimed => exerciseType == 'timed';
+
+  /// Built-in step when neither the exercise nor Settings define one.
+  static double defaultIncrementFor(String exerciseType) =>
+      switch (exerciseType) { 'bodyweight' => 1, 'timed' => 5, _ => 2.5 };
 }

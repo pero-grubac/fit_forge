@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../widgets/exercise_info_sheet.dart';
+import '../widgets/targets_sheet.dart';
 
 class PlanDetailPage extends ConsumerWidget {
   const PlanDetailPage(
@@ -126,6 +127,22 @@ class _ExerciseList extends StatelessWidget {
                                 fontSize: 12, color: AppColors.text2),
                           ),
                         ],
+                      ),
+                    ),
+                    IconButton(
+                      key: Key('targets_${ex.name}'),
+                      tooltip: context.l10n.targets_title,
+                      icon: const Icon(Icons.tune_rounded,
+                          color: AppColors.accent, size: 20),
+                      onPressed: () => showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: AppColors.bg2,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20)),
+                        ),
+                        builder: (_) => TargetsSheet(planExercise: pe),
                       ),
                     ),
                     IconButton(

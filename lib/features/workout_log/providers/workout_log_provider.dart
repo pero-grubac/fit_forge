@@ -3,6 +3,7 @@ import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:fit_forge/data/providers.dart';
 import 'package:fit_forge/data/repositories/workout_log_repository.dart';
 import 'package:fit_forge/features/progress/providers/progress_provider.dart';
+import 'package:fit_forge/features/workout_log/providers/progression_provider.dart';
 import 'package:fit_forge/features/workout_log/providers/streak_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -51,6 +52,7 @@ class WorkoutLogNotifier extends AsyncNotifier<void> {
     ref.invalidate(exerciseHistoryProvider(planExercise.exerciseId));
     ref.invalidate(exercisesWithLogsProvider);
     ref.invalidate(streakProvider);
+    ref.invalidate(progressionProvider(planExercise.id));
 
     return log.value;
   }

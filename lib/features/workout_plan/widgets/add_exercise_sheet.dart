@@ -4,6 +4,7 @@ import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:fit_forge/data/models/plan_exercise_model.dart';
 import 'package:fit_forge/data/providers.dart';
+import 'package:fit_forge/features/settings/providers/settings_provider.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
 import 'package:fit_forge/shared/widgets/stepper_field.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,10 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
   int _seconds = 30;
   double _weight = 0;
   double _increment = 2.5;
+
+  /// Only an increment the user changed is saved on the exercise; otherwise
+  /// it keeps its own (or the default from Settings).
+  bool _incrementTouched = false;
   bool _loading = false;
 
   /// Exercises already in the catalogue (from any plan).
@@ -191,8 +196,7 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
                       _selectedExercise = null;
                     }),
                     onSearchChanged: (q) => setState(() => _searchQuery = q),
-                    onExerciseSelected: (ex) =>
-                        setState(() => _selectedExercise = ex),
+                    onExerciseSelected: _selectExercise,
                     scrollController: controller,
                   )
                 : _ExerciseForm(
@@ -207,7 +211,10 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
                     onRepsChanged: (v) => setState(() => _reps = v),
                     onSecondsChanged: (v) => setState(() => _seconds = v),
                     onWeightChanged: (v) => setState(() => _weight = v),
-                    onIncrementChanged: (v) => setState(() => _increment = v),
+                    onIncrementChanged: (v) => setState(() {
+                      _increment = v;
+                      _incrementTouched = true;
+                    }),
                     onSave: _save,
                     scrollController: controller,
                   ),
@@ -215,6 +222,21 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
         ],
       ),
     );
+  }
+
+  /// Shows the increment the exercise already uses in other plans, or the
+  /// default from Settings.
+  void _selectExercise(ExerciseDefinition ex) {
+    final existing = _catalogue
+        .where((e) => e.name.toLowerCase() == ex.name.toLowerCase())
+        .firstOrNull;
+    final settings = widget.ref.read(settingsProvider).valueOrNull;
+    setState(() {
+      _selectedExercise = ex;
+      _increment =
+          existing?.increment ?? settings?.defaultIncrement ?? _increment;
+      _incrementTouched = false;
+    });
   }
 
   Future<void> _save() async {
@@ -239,10 +261,18 @@ class AddExerciseSheetState extends State<AddExerciseSheet> {
             (_) => (
               reps: isWeighted || isBodyweight ? _reps : _seconds,
               weight: isWeighted ? _weight : 0.0,
-              increment: isWeighted ? _increment : 0.0,
+              increment: 0.0,
             ),
           ),
         );
+    if (isWeighted && _incrementTouched) {
+      await widget.ref.read(exerciseRepositoryProvider).updateProgression(
+            exercise.id,
+            autoProgress: exercise.autoProgress,
+            increment: _increment,
+            setsToProgress: exercise.setsToProgress,
+          );
+    }
 
     if (!mounted) return;
     if (added == null) {

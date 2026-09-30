@@ -74,6 +74,18 @@ class ExerciseRepository {
   Future<void> updateMuscleGroup(String id, String muscleGroup) =>
       _exerciseDao.updateMuscleGroup(id, muscleGroup);
 
+  /// Progression settings, shared by every plan with this exercise.
+  Future<void> updateProgression(
+    String id, {
+    required bool autoProgress,
+    required double? increment,
+    required int? setsToProgress,
+  }) =>
+      _exerciseDao.updateProgression(id,
+          autoProgress: autoProgress,
+          increment: increment,
+          setsToProgress: setsToProgress);
+
   /// Deletes the exercise from every plan, together with its history.
   Future<void> delete(ExerciseModel exercise) async {
     await _exerciseDao.delete(exercise.id);

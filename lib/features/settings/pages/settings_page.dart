@@ -70,35 +70,39 @@ class _SettingsContent extends ConsumerWidget {
         // Progression rules
         _SectionLabel(context.l10n.settings_progression_section),
         _SettingsCard(children: [
-          _IncrementRow(
-            label: context.l10n.settings_small_increment,
-            subtitle: context.l10n.settings_small_increment_sub,
-            value: settings.smallIncrement,
-            min: 0.5,
-            max: 10.0,
-            step: 0.5,
+          _SwitchRow(
+            label: context.l10n.settings_auto_progression,
+            subtitle: context.l10n.settings_auto_progression_sub,
+            value: settings.autoProgression,
             onChanged: (v) =>
-                ref.read(settingsProvider.notifier).setSmallIncrement(v),
+                ref.read(settingsProvider.notifier).setAutoProgression(v),
           ),
-          const _Divider(),
-          _IncrementRow(
-            label: context.l10n.settings_large_increment,
-            subtitle: context.l10n.settings_large_increment_sub,
-            value: settings.largeIncrement,
-            min: 1.0,
-            max: 20.0,
-            step: 1.0,
-            onChanged: (v) =>
-                ref.read(settingsProvider.notifier).setLargeIncrement(v),
-          ),
-          const _Divider(),
-          _SliderRow(
-            label: context.l10n.settings_threshold,
-            subtitle: context.l10n.settings_threshold_sub,
-            value: settings.progressionThreshold,
-            onChanged: (v) =>
-                ref.read(settingsProvider.notifier).setProgressionThreshold(v),
-          ),
+          if (settings.autoProgression) ...[
+            const _Divider(),
+            _IncrementRow(
+              label: context.l10n.settings_sets_to_progress,
+              subtitle: context.l10n.settings_sets_to_progress_sub,
+              value: settings.setsToProgress.toDouble(),
+              min: 1,
+              max: 30,
+              step: 1,
+              format: (v) => '${v.toInt()}',
+              onChanged: (v) => ref
+                  .read(settingsProvider.notifier)
+                  .setSetsToProgress(v.toInt()),
+            ),
+            const _Divider(),
+            _IncrementRow(
+              label: context.l10n.settings_default_increment,
+              subtitle: context.l10n.settings_default_increment_sub,
+              value: settings.defaultIncrement,
+              min: 0.5,
+              max: 20.0,
+              step: 0.5,
+              onChanged: (v) =>
+                  ref.read(settingsProvider.notifier).setDefaultIncrement(v),
+            ),
+          ],
         ]),
         const SizedBox(height: 20),
 
@@ -585,8 +589,8 @@ class _IncrementRow extends StatelessWidget {
   }
 }
 
-class _SliderRow extends StatelessWidget {
-  const _SliderRow({
+class _SwitchRow extends StatelessWidget {
+  const _SwitchRow({
     required this.label,
     required this.subtitle,
     required this.value,
@@ -595,53 +599,33 @@ class _SliderRow extends StatelessWidget {
 
   final String label;
   final String subtitle;
-  final double value;
-  final ValueChanged<double> onChanged;
+  final bool value;
+  final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+      child: Row(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label,
-                      style: const TextStyle(
-                          fontSize: 14, color: AppColors.text1)),
-                  const SizedBox(height: 2),
-                  Text(subtitle,
-                      style: const TextStyle(
-                          fontSize: 12, color: AppColors.text3)),
-                ],
-              ),
-              Text('${(value * 100).toInt()}%',
-                  style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.text1)),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style:
+                        const TextStyle(fontSize: 14, color: AppColors.text1)),
+                const SizedBox(height: 2),
+                Text(subtitle,
+                    style:
+                        const TextStyle(fontSize: 12, color: AppColors.text3)),
+              ],
+            ),
           ),
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              activeTrackColor: AppColors.accent,
-              inactiveTrackColor: AppColors.bg4,
-              thumbColor: AppColors.accent,
-              overlayColor: AppColors.accent.withValues(alpha: 0.1),
-              trackHeight: 3,
-            ),
-            child: Slider(
-              value: value,
-              min: 0.70,
-              max: 1.00,
-              divisions: 6,
-              onChanged: onChanged,
-            ),
+          Switch(
+            value: value,
+            activeThumbColor: AppColors.accent,
+            onChanged: onChanged,
           ),
         ],
       ),
