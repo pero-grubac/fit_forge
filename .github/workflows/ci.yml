@@ -1,0 +1,52 @@
+# Analyze and test on every push/PR that changes code.
+# Docs-only changes (README, images, .gitignore, ...) don't trigger it.
+name: CI
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'android/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'analysis_options.yaml'
+      - 'l10n.yaml'
+      - '.github/workflows/**'
+  pull_request:
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'android/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'analysis_options.yaml'
+      - 'l10n.yaml'
+      - '.github/workflows/**'
+
+# A newer push to the same branch cancels the run still in progress.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.41.7
+          channel: stable
+          cache: true
+
+      # The database tests run against a real SQLite (sqflite_common_ffi).
+      - name: Install SQLite
+        run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
