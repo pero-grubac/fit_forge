@@ -14,7 +14,7 @@
 A personal fitness tracker built with Flutter — plan your workouts, log your sets, and watch your strength grow over time.
 
 
-<img src="readme_assets/demo.gif" alt="FitForge demo" width="300">
+<img src="readme_assets/demo.gif" alt="FitForge demo with sample data: logging three sets of bench press with the rest timer until the progression says to go up to 60 kg, saving the workout, the bench press progress charts and the weekly plans" width="300">
 </div>
 
 ---
