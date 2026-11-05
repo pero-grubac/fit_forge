@@ -209,6 +209,22 @@ void main() {
       expect(rows.map((e) => e['sets_to_progress']), [null, null]);
     });
 
+    test('v6: plan exercises date from their first log; moves table exists',
+        () async {
+      final db = await openV2AndSeed();
+
+      final firstLogs = {
+        for (final r in await db.rawQuery(
+            'SELECT plan_exercise_id AS id, MIN(log_date) AS d '
+            'FROM workout_logs GROUP BY plan_exercise_id'))
+          r['id']: r['d'],
+      };
+      for (final slot in await db.query('plan_exercises')) {
+        expect(slot['created_at'], firstLogs[slot['id']], reason: '${slot['id']}');
+      }
+      expect(await db.query('plan_reschedules'), isEmpty);
+    });
+
     test('enables foreign keys after the upgrade', () async {
       final db = await openV2AndSeed();
       expect(_firstInt(await db.rawQuery('PRAGMA foreign_keys')), 1);
@@ -296,6 +312,7 @@ void main() {
           plannedWeight: 100.0,
           actualWeight: 100.0,
           isCompleted: true,
+          feeling: null,
         ),
       ];
 

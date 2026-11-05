@@ -8,7 +8,7 @@ class DatabaseHelper {
 
   static final DatabaseHelper instance = DatabaseHelper._();
 
-  static const version = 4;
+  static const version = 6;
 
   Database? _db;
   String? _path;
@@ -55,6 +55,12 @@ class DatabaseHelper {
     if (oldVersion < 4) {
       await _migrateToV4(db);
     }
+    if (oldVersion < 5) {
+      await db.execute('ALTER TABLE workout_sets ADD COLUMN feeling TEXT');
+    }
+    if (oldVersion < 6) {
+      await _migrateToV6(db);
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -95,6 +101,7 @@ class DatabaseHelper {
         planned_weight REAL NOT NULL,
         actual_weight  REAL NOT NULL,
         is_completed   INTEGER NOT NULL DEFAULT 0,
+        feeling        TEXT,
         UNIQUE(log_id, set_number)
       )
     ''');
@@ -114,6 +121,7 @@ class DatabaseHelper {
         'CREATE INDEX idx_logs_date      ON workout_logs(log_date DESC)');
     await db.execute('CREATE INDEX idx_sets_log       ON workout_sets(log_id)');
     await _createV3Indexes(db);
+    await _migrateToV6(db);
   }
 
   /// Exercises become a global catalogue shared by all plans. Plan-specific
@@ -247,6 +255,43 @@ class DatabaseHelper {
     }
     await fillExerciseIncrements(db);
   }
+
+  /// One-off moves of a plan's workout to another day, and when each plan
+  /// exercise was added (so a newly added exercise isn't required on days
+  /// before it existed).
+  Future<void> _migrateToV6(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS plan_reschedules (
+        id         TEXT PRIMARY KEY,
+        plan_id    TEXT NOT NULL REFERENCES workout_plans(id) ON DELETE CASCADE,
+        from_date  TEXT NOT NULL,
+        to_date    TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        UNIQUE(plan_id, from_date)
+      )
+    ''');
+    final columns = {
+      for (final c in await db.rawQuery('PRAGMA table_info(plan_exercises)'))
+        c['name'] as String,
+    };
+    if (!columns.contains('created_at')) {
+      await db.execute('ALTER TABLE plan_exercises ADD COLUMN created_at TEXT');
+    }
+    await fillPlanExerciseCreatedAt(db);
+  }
+
+  /// Plan exercises from before v6 have no `created_at`: use the day they
+  /// were first logged, or now if never (when they were added is unknown,
+  /// so they're not held against past days).
+  static Future<void> fillPlanExerciseCreatedAt(DatabaseExecutor db) =>
+      db.rawUpdate('''
+        UPDATE plan_exercises SET created_at = COALESCE(
+          (SELECT MIN(log_date) FROM workout_logs
+           WHERE plan_exercise_id = plan_exercises.id),
+          ?
+        )
+        WHERE created_at IS NULL
+      ''', [DateTime.now().toIso8601String()]);
 
   /// Takes each weighted exercise's increment from the per-set increments
   /// used before v4 (the largest, if plans differ).

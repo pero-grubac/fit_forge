@@ -71,7 +71,8 @@ void main() {
 
   testWidgets('logging a workout from the home screen saves it',
       (tester) async {
-    SharedPreferences.setMockInitialValues({'is_setup_done': true});
+    SharedPreferences.setMockInitialValues(
+        {'is_setup_done': true, 'show_set_feeling': false});
 
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -137,6 +138,57 @@ void main() {
     expect(history.single.totalVolume, 600);
   });
 
+  testWidgets('today\'s workout can be moved to tomorrow and back',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({'is_setup_done': true});
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    late String planId;
+    await tester.runAsync(() async {
+      final plan = await container
+          .read(workoutPlanRepositoryProvider)
+          .create(name: 'Push', dayOfWeek: DateTime.now().weekday);
+      planId = plan.id;
+      final bench = await container
+          .read(exerciseRepositoryProvider)
+          .findOrCreate(name: 'Bench Press', muscleGroup: 'Chest');
+      await container.read(planExerciseRepositoryProvider).add(
+            planId: plan.id,
+            exercise: bench,
+            sets: const [(reps: 5, weight: 60.0, increment: 2.5)],
+          );
+    });
+    final now = DateTime.now();
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+    final tomorrowKey = tomorrow.toIso8601String().substring(0, 10);
+
+    await startApp(tester);
+    expect(find.text('Bench Press'), findsOneWidget);
+
+    await tester.tap(find.byKey(Key('move_$planId')));
+    await settle(tester);
+    await tester.tap(find.byKey(Key('move_to_$tomorrowKey')));
+    await settle(tester);
+
+    // Off today, shown as moved, and coming up tomorrow.
+    expect(find.text('Bench Press'), findsNothing);
+    expect(find.byKey(Key('moved_away_$planId')), findsOneWidget);
+    expect(find.text('COMING UP'), findsOneWidget);
+
+    // Back to today from the strip.
+    await tester.tap(find.byKey(Key('moved_away_$planId')));
+    await settle(tester);
+    final todayKey = DateTime(now.year, now.month, now.day)
+        .toIso8601String()
+        .substring(0, 10);
+    expect(find.text('Back to its own day'), findsOneWidget);
+    await tester.tap(find.byKey(Key('move_to_$todayKey')));
+    await settle(tester);
+
+    expect(find.text('Bench Press'), findsOneWidget);
+    expect(find.byKey(Key('moved_away_$planId')), findsNothing);
+  });
+
   testWidgets('a plan can be moved to another day', (tester) async {
     SharedPreferences.setMockInitialValues({'is_setup_done': true});
     final today = DateTime.now().weekday;
@@ -182,10 +234,17 @@ void main() {
 
     final version = find.byKey(const Key('app_version'));
     await tester.scrollUntilVisible(version, 200);
+    // Center it in the viewport rather than flush with the bottom edge: the
+    // minimal scroll above can otherwise leave it overlapping the bottom
+    // navigation bar, so taps land on a nav item instead.
+    await Scrollable.ensureVisible(tester.element(version), alignment: 0.5);
+    await tester.pumpAndSettle();
     expect(find.text('FitForge 1.3.0 (5)'), findsOneWidget);
     for (var i = 0; i < 7; i++) {
       await tester.tap(version);
-      await tester.pump();
+      // Let the "N taps left" snackbar (800 ms) fully clear before the next
+      // tap — otherwise it stays on screen, overlapping the version text.
+      await tester.pump(const Duration(milliseconds: 900));
     }
     await settle(tester);
 
@@ -239,6 +298,18 @@ void main() {
       expect(find.text('Keep your back flat'), findsOneWidget);
     });
 
+    testWidgets('the Home tab leaves the log screen', (tester) async {
+      await seed(tester);
+      await openBenchFromHome(tester);
+      expect(find.text('Save workout'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.home_rounded));
+      await settle(tester);
+
+      expect(find.text('Save workout'), findsNothing);
+      expect(find.text('Bench Press'), findsOneWidget);
+    });
+
     testWidgets('editing while logging updates the shared exercise',
         (tester) async {
       await seed(tester);
@@ -279,6 +350,7 @@ void main() {
                     plannedWeight: 60.0,
                     actualWeight: 60.0,
                     isCompleted: true,
+                    feeling: null,
                   ),
                 ],
               ));
@@ -301,8 +373,11 @@ void main() {
         [10, 10, 10],
       ],
     }) async {
-      SharedPreferences.setMockInitialValues(
-          {'is_setup_done': true, 'rest_seconds': 0});
+      SharedPreferences.setMockInitialValues({
+        'is_setup_done': true,
+        'rest_seconds': 0,
+        'show_set_feeling': false,
+      });
       final container = ProviderContainer();
       addTearDown(container.dispose);
       await tester.runAsync(() async {
@@ -338,6 +413,7 @@ void main() {
                   plannedWeight: w,
                   actualWeight: w,
                   isCompleted: true,
+                  feeling: null,
                 ),
             ],
           );

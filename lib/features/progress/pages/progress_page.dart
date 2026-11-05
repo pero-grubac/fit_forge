@@ -1,11 +1,13 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
+import 'package:fit_forge/core/utils/set_progression.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:fit_forge/features/progress/providers/progress_provider.dart';
 import 'package:fit_forge/features/progress/widgets/exercise_dropdown.dart';
 import 'package:fit_forge/features/progress/widgets/period_filter.dart';
 import 'package:fit_forge/features/progress/widgets/personal_records.dart';
+import 'package:fit_forge/features/progress/widgets/session_history_list.dart';
 import 'package:fit_forge/features/progress/widgets/stat_cards.dart';
 import 'package:fit_forge/features/progress/widgets/volume_bar_chart.dart';
 import 'package:fit_forge/features/progress/widgets/weight_line_chart.dart';
@@ -129,24 +131,40 @@ class _ProgressContent extends ConsumerWidget {
           );
         }
 
-        final maxWeight = _maxWeight(filtered);
+        final unit = exercise.progressionUnit;
+        final bestMetric = _bestMetric(filtered, unit);
         final totalSessions = filtered.length;
 
         return SliverList(
           delegate: SliverChildListDelegate([
             // Stat cards
             StatCards(
-              maxWeight: maxWeight,
+              bestMetric: bestMetric,
+              unit: unit,
               totalSessions: totalSessions,
               logs: filtered,
             ),
             // Line chart
-            WeightLineChart(logs: filtered, exercise: exercise),
+            WeightLineChart(
+              logs: filtered,
+              exercise: exercise,
+              onPointTap: (log) {
+                final ctx = historyRowKey(log.id).currentContext;
+                if (ctx != null) {
+                  Scrollable.ensureVisible(ctx,
+                      alignment: 0.5,
+                      duration: const Duration(milliseconds: 300));
+                }
+              },
+            ),
+            // Past sessions — swipe to edit/clear a note
+            SessionHistoryList(logs: filtered, exercise: exercise),
             // Bar chart
             VolumeBarChart(logs: filtered),
             // Personal records
             PersonalRecords(
               logs: allLogs,
+              unit: unit,
               showOneRepMax: exercise.isWeighted,
             ),
           ]),
@@ -155,13 +173,14 @@ class _ProgressContent extends ConsumerWidget {
     );
   }
 
-  double _maxWeight(List<WorkoutLogModel> logs) {
-    if (logs.isEmpty) return 0;
-    return logs
-        .expand((l) => l.sets)
-        .where((s) => s.isCompleted)
-        .map((s) => s.actualWeight)
-        .fold(0.0, (max, w) => w > max ? w : max);
+  double _bestMetric(List<WorkoutLogModel> logs, ProgressionUnit unit) {
+    final completed = logs.expand((l) => l.sets).where((s) => s.isCompleted);
+    if (completed.isEmpty) return 0;
+    return unit == ProgressionUnit.kg
+        ? completed.map((s) => s.actualWeight).fold(0.0, (m, w) => w > m ? w : m)
+        : completed
+            .map((s) => s.actualReps.toDouble())
+            .fold(0.0, (m, w) => w > m ? w : m);
   }
 }
 

@@ -1,3 +1,7 @@
+/// How a completed set felt: 'easy', 'ok', or 'hard'. Optional, off by
+/// default in Settings.
+typedef SetFeeling = String;
+
 class WorkoutSetModel {
   final String id;
   final String logId;
@@ -7,6 +11,7 @@ class WorkoutSetModel {
   final double plannedWeight;
   final double actualWeight;
   final bool isCompleted;
+  final SetFeeling? feeling;
 
   static const tableName = 'workout_sets';
 
@@ -19,6 +24,7 @@ class WorkoutSetModel {
     required this.plannedWeight,
     required this.actualWeight,
     required this.isCompleted,
+    this.feeling,
   });
 
   factory WorkoutSetModel.fromMap(Map<String, dynamic> map) {
@@ -31,6 +37,7 @@ class WorkoutSetModel {
       plannedWeight: (map['planned_weight'] as num).toDouble(),
       actualWeight: (map['actual_weight'] as num).toDouble(),
       isCompleted: (map['is_completed'] as int) == 1,
+      feeling: map['feeling'] as String?,
     );
   }
 
@@ -44,6 +51,7 @@ class WorkoutSetModel {
       'planned_weight': plannedWeight,
       'actual_weight': actualWeight,
       'is_completed': isCompleted ? 1 : 0,
+      'feeling': feeling,
     };
   }
 
@@ -51,6 +59,7 @@ class WorkoutSetModel {
     int? actualReps,
     double? actualWeight,
     bool? isCompleted,
+    SetFeeling? feeling,
   }) {
     return WorkoutSetModel(
       id: id,
@@ -61,6 +70,7 @@ class WorkoutSetModel {
       plannedWeight: plannedWeight,
       actualWeight: actualWeight ?? this.actualWeight,
       isCompleted: isCompleted ?? this.isCompleted,
+      feeling: feeling ?? this.feeling,
     );
   }
 }

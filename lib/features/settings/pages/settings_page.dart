@@ -125,6 +125,19 @@ class _SettingsContent extends ConsumerWidget {
         ]),
         const SizedBox(height: 20),
 
+        // Logging
+        _SectionLabel(context.l10n.settings_logging_section),
+        _SettingsCard(children: [
+          _SwitchRow(
+            label: context.l10n.settings_show_feeling,
+            subtitle: context.l10n.settings_show_feeling_sub,
+            value: settings.showSetFeeling,
+            onChanged: (v) =>
+                ref.read(settingsProvider.notifier).setShowSetFeeling(v),
+          ),
+        ]),
+        const SizedBox(height: 20),
+
         // Data
         _SectionLabel(context.l10n.settings_data_section),
         _SettingsCard(children: [
@@ -312,6 +325,7 @@ class _SettingsContent extends ConsumerWidget {
   /// Everything cached from the database is stale after a reset or import.
   void _invalidateData(WidgetRef ref) {
     ref.invalidate(workoutPlanNotifierProvider);
+    ref.invalidate(planReschedulesProvider);
     ref.invalidate(planExercisesProvider);
     ref.invalidate(exercisesWithLogsProvider);
     ref.invalidate(exerciseHistoryProvider);

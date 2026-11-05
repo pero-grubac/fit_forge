@@ -50,10 +50,14 @@ void main() {
           plannedWeight: 100.0,
           actualWeight: 100.0,
           isCompleted: true,
+          feeling: 'hard',
         ),
       ],
     );
     await container.read(quoteRepositoryProvider).create('Why not you?');
+    await container
+        .read(planRescheduleRepositoryProvider)
+        .move(plan.id, DateTime(2026, 9, 28), DateTime(2026, 9, 30));
   });
 
   tearDown(() async {
@@ -76,6 +80,8 @@ void main() {
     expect(await counts(), before);
     final log = (await db().query('workout_logs')).single;
     expect(log['total_volume'], 500.0);
+    final set = (await db().query('workout_sets')).single;
+    expect(set['feeling'], 'hard');
   });
 
   test('image paths to missing files are cleared on import', () async {

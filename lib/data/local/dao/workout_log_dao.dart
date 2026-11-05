@@ -58,6 +58,15 @@ class WorkoutLogDao {
     return log.id;
   }
 
+  Future<void> updateNotes(String id, String? notes) async {
+    await _db.update(
+      WorkoutLogModel.tableName,
+      {'notes': notes},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   Future<void> delete(String id) async {
     await _db.delete(
       WorkoutLogModel.tableName,
@@ -66,12 +75,27 @@ class WorkoutLogDao {
     );
   }
 
-  /// Distinct dates (yyyy-MM-dd) with at least one logged workout.
-  Future<Set<String>> getLoggedDates() async {
-    final rows =
-        await _db.rawQuery('SELECT DISTINCT substr(log_date, 1, 10) AS d '
-            'FROM ${WorkoutLogModel.tableName}');
-    return {for (final r in rows) r['d'] as String};
+  /// For every plan exercise and day it was logged: how many sets were
+  /// saved and how many of them were ticked done.
+  Future<List<({String planExerciseId, String day, int sets, int done})>>
+      getSlotDaySummaries() async {
+    final rows = await _db.rawQuery('''
+      SELECT l.plan_exercise_id AS pe, substr(l.log_date, 1, 10) AS d,
+             COUNT(s.id) AS sets, COALESCE(SUM(s.is_completed), 0) AS done
+      FROM ${WorkoutLogModel.tableName} l
+      LEFT JOIN ${WorkoutSetModel.tableName} s ON s.log_id = l.id
+      WHERE l.plan_exercise_id IS NOT NULL
+      GROUP BY l.plan_exercise_id, d
+    ''');
+    return [
+      for (final r in rows)
+        (
+          planExerciseId: r['pe'] as String,
+          day: r['d'] as String,
+          sets: r['sets'] as int,
+          done: r['done'] as int,
+        ),
+    ];
   }
 
   /// Completed sets logged today, keyed by plan exercise id.

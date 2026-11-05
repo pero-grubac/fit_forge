@@ -25,6 +25,30 @@
 
   "home_noplan": "No plan for today",
   "home_noplan_sub": "Create a plan in Plan editor",
+  "home_move": "Move workout",
+  "home_move_title": "Move \"{plan}\" to",
+  "@home_move_title": { "placeholders": { "plan": { "type": "String" } } },
+  "home_move_today": "Today",
+  "home_move_original": "Back to its own day",
+  "home_move_limit": "Latest on {weekday, select, mon{Monday} tue{Tuesday} wed{Wednesday} thu{Thursday} fri{Friday} sat{Saturday} other{Sunday}} {date} — the next one is on {nextWeekday, select, mon{Monday} tue{Tuesday} wed{Wednesday} thu{Thursday} fri{Friday} sat{Saturday} other{Sunday}} {nextDate}",
+  "@home_move_limit": {
+    "placeholders": {
+      "weekday": { "type": "String" },
+      "date": { "type": "String" },
+      "nextWeekday": { "type": "String" },
+      "nextDate": { "type": "String" }
+    }
+  },
+  "home_moved_to": "moved to {weekday, select, mon{Monday} tue{Tuesday} wed{Wednesday} thu{Thursday} fri{Friday} sat{Saturday} other{Sunday}} {date}",
+  "@home_moved_to": {
+    "placeholders": { "weekday": { "type": "String" }, "date": { "type": "String" } }
+  },
+  "home_moved_from": "from {weekday, select, mon{Monday} tue{Tuesday} wed{Wednesday} thu{Thursday} fri{Friday} sat{Saturday} other{Sunday}} {date}",
+  "@home_moved_from": {
+    "placeholders": { "weekday": { "type": "String" }, "date": { "type": "String" } }
+  },
+  "home_moved_tag": "moved",
+  "home_upcoming": "COMING UP",
   "home_sets": "{completed}/{total} sets",
   "@home_sets": {
     "placeholders": {
@@ -81,6 +105,14 @@
 
   "log_save": "Save workout",
   "log_add_set": "Add set",
+  "log_repeat_last": "Repeat identical",
+  "log_best_ever_hint": "Personal best: {value} ({date})",
+  "@log_best_ever_hint": {
+    "placeholders": {
+      "value": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
   "log_notes_hint": "e.g. good pump, increase next time...",
   "log_notes_label": "Notes for this session",
   "log_volume": "Total volume",
@@ -91,11 +123,18 @@
   "progress_no_workouts": "You have no workouts yet",
   "progress_no_workouts_sub": "Start a workout on the Home screen",
   "progress_max_weight": "Max weight",
+  "progress_max_reps": "Max reps",
+  "progress_max_seconds": "Max time",
   "progress_sessions": "Sessions",
   "progress_growth": "Strength growth",
   "progress_chart_weight": "Max weight per session",
+  "progress_chart_reps": "Max reps per session",
+  "progress_chart_seconds": "Max time per session",
   "progress_chart_volume": "Volume per session",
   "progress_personal_record": "Personal record",
+  "progress_history_title": "History",
+  "progress_history_no_note": "No note — swipe right to add one",
+  "progress_history_edit_note": "Edit note",
   "progress_period_all":"All",
 
   "settings_title": "Settings",
@@ -215,6 +254,26 @@
   "settings_rest": "Rest between sets",
   "settings_rest_sub": "Starts after each completed set",
   "settings_rest_off": "Off",
+  "settings_logging_section": "LOGGING",
+  "settings_show_feeling": "Ask how each set felt",
+  "settings_show_feeling_sub": "Quick easy/ok/hard prompt when you tick a set done",
+  "log_feeling_prompt": "How did that set feel?",
+  "log_feeling_hard": "Hard",
+  "log_feeling_ok": "Ok",
+  "log_feeling_easy": "Easy",
+  "weekly_summary_title": "This week",
+  "weekly_summary_volume": "{change} volume vs the same days last week",
+  "@weekly_summary_volume": {
+    "placeholders": {
+      "change": { "type": "String" }
+    }
+  },
+  "weekly_summary_new_prs": "{count, plural, =1{1 new personal record} other{{count} new personal records}}",
+  "@weekly_summary_new_prs": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "nav_home": "Home",
   "nav_progress": "Progress",
   "nav_plans": "Plans",
@@ -264,6 +323,12 @@
   "@progression_ready": {
     "placeholders": {
       "next": { "type": "String" }
+    }
+  },
+  "progression_plateau": "Stuck at {current} for a few sessions — try a lighter weight or change the reps",
+  "@progression_plateau": {
+    "placeholders": {
+      "current": { "type": "String" }
     }
   },
   "progression_reps": "{count, plural, =1{1 rep} other{{count} reps}}",

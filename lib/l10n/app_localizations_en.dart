@@ -66,6 +66,90 @@ class AppLocalizationsEn extends AppLocalizations {
   String get home_noplan_sub => 'Create a plan in Plan editor';
 
   @override
+  String get home_move => 'Move workout';
+
+  @override
+  String home_move_title(String plan) {
+    return 'Move \"$plan\" to';
+  }
+
+  @override
+  String get home_move_today => 'Today';
+
+  @override
+  String get home_move_original => 'Back to its own day';
+
+  @override
+  String home_move_limit(
+      String weekday, String date, String nextWeekday, String nextDate) {
+    String _temp0 = intl.Intl.selectLogic(
+      weekday,
+      {
+        'mon': 'Monday',
+        'tue': 'Tuesday',
+        'wed': 'Wednesday',
+        'thu': 'Thursday',
+        'fri': 'Friday',
+        'sat': 'Saturday',
+        'other': 'Sunday',
+      },
+    );
+    String _temp1 = intl.Intl.selectLogic(
+      nextWeekday,
+      {
+        'mon': 'Monday',
+        'tue': 'Tuesday',
+        'wed': 'Wednesday',
+        'thu': 'Thursday',
+        'fri': 'Friday',
+        'sat': 'Saturday',
+        'other': 'Sunday',
+      },
+    );
+    return 'Latest on $_temp0 $date — the next one is on $_temp1 $nextDate';
+  }
+
+  @override
+  String home_moved_to(String weekday, String date) {
+    String _temp0 = intl.Intl.selectLogic(
+      weekday,
+      {
+        'mon': 'Monday',
+        'tue': 'Tuesday',
+        'wed': 'Wednesday',
+        'thu': 'Thursday',
+        'fri': 'Friday',
+        'sat': 'Saturday',
+        'other': 'Sunday',
+      },
+    );
+    return 'moved to $_temp0 $date';
+  }
+
+  @override
+  String home_moved_from(String weekday, String date) {
+    String _temp0 = intl.Intl.selectLogic(
+      weekday,
+      {
+        'mon': 'Monday',
+        'tue': 'Tuesday',
+        'wed': 'Wednesday',
+        'thu': 'Thursday',
+        'fri': 'Friday',
+        'sat': 'Saturday',
+        'other': 'Sunday',
+      },
+    );
+    return 'from $_temp0 $date';
+  }
+
+  @override
+  String get home_moved_tag => 'moved';
+
+  @override
+  String get home_upcoming => 'COMING UP';
+
+  @override
   String home_sets(int completed, int total) {
     return '$completed/$total sets';
   }
@@ -180,6 +264,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get log_add_set => 'Add set';
 
   @override
+  String get log_repeat_last => 'Repeat identical';
+
+  @override
+  String log_best_ever_hint(String value, String date) {
+    return 'Personal best: $value ($date)';
+  }
+
+  @override
   String get log_notes_hint => 'e.g. good pump, increase next time...';
 
   @override
@@ -207,6 +299,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get progress_max_weight => 'Max weight';
 
   @override
+  String get progress_max_reps => 'Max reps';
+
+  @override
+  String get progress_max_seconds => 'Max time';
+
+  @override
   String get progress_sessions => 'Sessions';
 
   @override
@@ -216,10 +314,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get progress_chart_weight => 'Max weight per session';
 
   @override
+  String get progress_chart_reps => 'Max reps per session';
+
+  @override
+  String get progress_chart_seconds => 'Max time per session';
+
+  @override
   String get progress_chart_volume => 'Volume per session';
 
   @override
   String get progress_personal_record => 'Personal record';
+
+  @override
+  String get progress_history_title => 'History';
+
+  @override
+  String get progress_history_no_note => 'No note — swipe right to add one';
+
+  @override
+  String get progress_history_edit_note => 'Edit note';
 
   @override
   String get progress_period_all => 'All';
@@ -503,6 +616,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_rest_off => 'Off';
 
   @override
+  String get settings_logging_section => 'LOGGING';
+
+  @override
+  String get settings_show_feeling => 'Ask how each set felt';
+
+  @override
+  String get settings_show_feeling_sub =>
+      'Quick easy/ok/hard prompt when you tick a set done';
+
+  @override
+  String get log_feeling_prompt => 'How did that set feel?';
+
+  @override
+  String get log_feeling_hard => 'Hard';
+
+  @override
+  String get log_feeling_ok => 'Ok';
+
+  @override
+  String get log_feeling_easy => 'Easy';
+
+  @override
+  String get weekly_summary_title => 'This week';
+
+  @override
+  String weekly_summary_volume(String change) {
+    return '$change volume vs the same days last week';
+  }
+
+  @override
+  String weekly_summary_new_prs(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new personal records',
+      one: '1 new personal record',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get nav_home => 'Home';
 
   @override
@@ -588,6 +742,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String progression_ready(String next) {
     return 'Next set: $next — time to go up!';
+  }
+
+  @override
+  String progression_plateau(String current) {
+    return 'Stuck at $current for a few sessions — try a lighter weight or change the reps';
   }
 
   @override

@@ -207,6 +207,7 @@ class DemoData {
           plannedWeight: byReps ? 0.0 : level,
           actualWeight: byReps ? 0.0 : level,
           isCompleted: true,
+          feeling: null,
         ));
         session.add((level: level, success: !missed));
       }

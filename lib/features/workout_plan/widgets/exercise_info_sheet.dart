@@ -120,16 +120,30 @@ class _ExerciseInfoSheetState extends ConsumerState<ExerciseInfoSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                  color: AppColors.bg4, borderRadius: BorderRadius.circular(2)),
-            ),
+          // Handle + close button
+          Row(
+            children: [
+              const SizedBox(width: 40),
+              Expanded(
+                child: Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                        color: AppColors.bg4,
+                        borderRadius: BorderRadius.circular(2)),
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close, color: AppColors.text2),
+                tooltip: context.l10n.btn_cancel,
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
 
           // Name
           Text(widget.exercise.name,

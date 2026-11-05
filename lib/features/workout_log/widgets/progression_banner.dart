@@ -14,6 +14,8 @@ class ProgressionBanner extends StatelessWidget {
     required this.unit,
     this.transition,
     this.setsInWorkout = 0,
+    this.stuckSessions = 0,
+    this.improved = false,
   });
 
   final SetProgression rule;
@@ -22,21 +24,38 @@ class ProgressionBanner extends StatelessWidget {
   final Transition? transition;
   final int setsInWorkout;
 
+  /// Consecutive recent sessions stuck at [state.level] (see
+  /// [ProgressionInfo.stuckSessions]). At or above [_plateauThreshold] while
+  /// not moving up, the banner flags a plateau instead of just counting.
+  final int stuckSessions;
+
+  /// This session already beat the last one at this slot (more weight/reps,
+  /// or an extra set). Colors the banner amber for the rest of the session,
+  /// on top of whatever it would otherwise say.
+  final bool improved;
+
+  static const _plateauThreshold = 3;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final moving = transition;
+    final plateau = moving == null && stuckSessions >= _plateauThreshold;
     final ready = moving != null || rule.setsLeft(state) == 0;
-    final color = ready ? AppColors.green : AppColors.accent;
+    final color = improved || plateau
+        ? AppColors.amber
+        : (ready ? AppColors.green : AppColors.accent);
     final current = formatLevel(context, state.level, unit);
     final next = formatLevel(context, state.level + rule.increment, unit);
     final message = moving != null
         ? l10n.progression_moving(formatLevel(context, moving.to, unit),
             moving.heavySets, setsInWorkout)
-        : ready
-            ? l10n.progression_ready(next)
-            : l10n.progression_counter(
-                state.streak, rule.setsToProgress, current, next);
+        : plateau
+            ? l10n.progression_plateau(current)
+            : ready
+                ? l10n.progression_ready(next)
+                : l10n.progression_counter(
+                    state.streak, rule.setsToProgress, current, next);
     final progress = moving != null
         ? (setsInWorkout == 0 ? 1.0 : moving.heavySets / setsInWorkout)
         : rule.setsToProgress == 0
@@ -53,7 +72,8 @@ class ProgressionBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.trending_up_rounded, color: color, size: 22),
+          Icon(plateau ? Icons.warning_amber_rounded : Icons.trending_up_rounded,
+              color: color, size: 22),
           const SizedBox(width: 10),
           Expanded(
             child: Column(

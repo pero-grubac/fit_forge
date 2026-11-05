@@ -1,31 +1,40 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/core/utils/one_rep_max.dart';
+import 'package:fit_forge/core/utils/set_progression.dart';
 import 'package:fit_forge/data/models/workout_log_model.dart';
+import 'package:fit_forge/features/workout_log/widgets/progression_banner.dart';
 import 'package:flutter/material.dart';
 
 class PersonalRecords extends StatelessWidget {
   const PersonalRecords({
     super.key,
     required this.logs,
+    required this.unit,
     this.showOneRepMax = false,
   });
 
   final List<WorkoutLogModel> logs;
+  final ProgressionUnit unit;
 
   /// Also show the best estimated one-rep max (weighted exercises).
   final bool showOneRepMax;
 
   @override
   Widget build(BuildContext context) {
-    // Find the max weight and its date
+    // Find the best set (weight, reps, or seconds depending on [unit]) and
+    // its date.
     WorkoutLogModel? bestLog;
-    double bestWeight = 0;
+    double bestValue = 0;
 
     for (final log in logs) {
       for (final s in log.sets) {
-        if (s.isCompleted && s.actualWeight > bestWeight) {
-          bestWeight = s.actualWeight;
+        if (!s.isCompleted) continue;
+        final value = unit == ProgressionUnit.kg
+            ? s.actualWeight
+            : s.actualReps.toDouble();
+        if (value > bestValue) {
+          bestValue = value;
           bestLog = log;
         }
       }
@@ -66,7 +75,7 @@ class PersonalRecords extends StatelessWidget {
                     style:
                         const TextStyle(fontSize: 12, color: AppColors.text2)),
                 const SizedBox(height: 2),
-                Text('${bestWeight.toStringAsFixed(1)} kg',
+                Text(formatLevel(context, bestValue, unit),
                     style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,

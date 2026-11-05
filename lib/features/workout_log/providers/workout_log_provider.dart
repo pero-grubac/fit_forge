@@ -56,6 +56,17 @@ class WorkoutLogNotifier extends AsyncNotifier<void> {
 
     return log.value;
   }
+
+  /// Edits or clears the note on a past session (its sets are untouched).
+  Future<void> updateNotes({
+    required String logId,
+    required String exerciseId,
+    String? notes,
+  }) async {
+    await _repo.updateNotes(logId, notes);
+    ref.invalidate(exerciseLogsProvider(exerciseId));
+    ref.invalidate(exerciseHistoryProvider(exerciseId));
+  }
 }
 
 final workoutLogNotifierProvider =

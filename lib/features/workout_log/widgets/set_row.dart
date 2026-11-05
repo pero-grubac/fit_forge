@@ -1,12 +1,23 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
+import 'package:fit_forge/data/models/workout_set_model.dart';
 import 'package:flutter/material.dart';
+
+/// The three feeling values a set can be tagged with. Asked and saved, but
+/// not currently shown anywhere in the UI.
+const feelingHard = 'hard';
+const feelingOk = 'ok';
+const feelingEasy = 'easy';
 
 class SetRow {
   final int setNumber;
   double plannedWeight;
   int plannedReps;
   bool isDone;
+
+  /// How this set felt ('easy'/'ok'/'hard'), asked when it's ticked done.
+  /// Null if the user skipped the prompt or the setting is off.
+  SetFeeling? feeling;
 
   /// Set once the user types a value; automatic progression then leaves that
   /// field alone.
@@ -20,6 +31,7 @@ class SetRow {
     required this.plannedWeight,
     required this.plannedReps,
     this.isDone = false,
+    this.feeling,
   }) {
     weightCtrl = TextEditingController(text: plannedWeight.toString());
     repsCtrl = TextEditingController(text: plannedReps.toString());
@@ -37,6 +49,7 @@ class SetRow {
       plannedWeight: plannedWeight,
       plannedReps: plannedReps,
       isDone: isDone,
+      feeling: feeling,
     )
       ..weightEdited = weightEdited
       ..repsEdited = repsEdited;
@@ -81,6 +94,12 @@ class SetRowWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The feeling ("kako je islo") is still asked and saved — it just
+    // doesn't change how the checkbox itself looks.
+    final checkContent = set.isDone
+        ? const Icon(Icons.check, size: 16, color: AppColors.green)
+        : null;
+
     return Column(
       children: [
         Dismissible(
@@ -192,10 +211,7 @@ class SetRowWidget extends StatelessWidget {
                         color: set.isDone ? AppColors.green : AppColors.border2,
                       ),
                     ),
-                    child: set.isDone
-                        ? const Icon(Icons.check,
-                            size: 16, color: AppColors.green)
-                        : null,
+                    child: checkContent,
                   ),
                 ),
               ],

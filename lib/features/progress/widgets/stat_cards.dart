@@ -1,23 +1,33 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
+import 'package:fit_forge/core/utils/set_progression.dart';
 import 'package:fit_forge/data/models/workout_log_model.dart';
+import 'package:fit_forge/features/workout_log/widgets/progression_banner.dart';
 import 'package:flutter/material.dart';
 
 class StatCards extends StatelessWidget {
   const StatCards({
     super.key,
-    required this.maxWeight,
+    required this.bestMetric,
+    required this.unit,
     required this.totalSessions,
     required this.logs,
   });
 
-  final double maxWeight;
+  /// Max weight (kg), reps, or seconds for the period, matching [unit].
+  final double bestMetric;
+  final ProgressionUnit unit;
   final int totalSessions;
   final List<WorkoutLogModel> logs;
 
   @override
   Widget build(BuildContext context) {
     final growth = _growthPercent();
+    final bestLabel = switch (unit) {
+      ProgressionUnit.kg => context.l10n.progress_max_weight,
+      ProgressionUnit.reps => context.l10n.progress_max_reps,
+      ProgressionUnit.seconds => context.l10n.progress_max_seconds,
+    };
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
@@ -25,8 +35,8 @@ class StatCards extends StatelessWidget {
         children: [
           Expanded(
               child: _StatCard(
-                  value: '${maxWeight.toStringAsFixed(1)} kg',
-                  label: context.l10n.progress_max_weight)),
+                  value: formatLevel(context, bestMetric, unit),
+                  label: bestLabel)),
           const SizedBox(width: 8),
           Expanded(
               child: _StatCard(
@@ -56,11 +66,13 @@ class StatCards extends StatelessWidget {
   }
 
   double _maxForLog(WorkoutLogModel log) {
-    if (log.sets.isEmpty) return 0;
-    return log.sets
-        .where((s) => s.isCompleted)
-        .map((s) => s.actualWeight)
-        .fold(0.0, (max, w) => w > max ? w : max);
+    final completed = log.sets.where((s) => s.isCompleted);
+    if (completed.isEmpty) return 0;
+    return unit == ProgressionUnit.kg
+        ? completed.map((s) => s.actualWeight).fold(0.0, (m, w) => w > m ? w : m)
+        : completed
+            .map((s) => s.actualReps.toDouble())
+            .fold(0.0, (m, w) => w > m ? w : m);
   }
 }
 

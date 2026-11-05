@@ -64,9 +64,29 @@ class PlanExerciseDao {
     return rows.first['next'] as int;
   }
 
+  /// Every plan exercise, with the day it was added to its plan.
+  Future<List<({String id, String planId, DateTime? createdAt})>>
+      getAllSlots() async {
+    final rows = await _db.query(PlanExerciseModel.tableName,
+        columns: ['id', 'plan_id', 'created_at']);
+    return [
+      for (final r in rows)
+        (
+          id: r['id'] as String,
+          planId: r['plan_id'] as String,
+          createdAt: r['created_at'] == null
+              ? null
+              : DateTime.parse(r['created_at'] as String),
+        ),
+    ];
+  }
+
   Future<void> insert(PlanExerciseModel planExercise) async {
     await _db.transaction((txn) async {
-      await txn.insert(PlanExerciseModel.tableName, planExercise.toMap());
+      await txn.insert(PlanExerciseModel.tableName, {
+        ...planExercise.toMap(),
+        'created_at': DateTime.now().toIso8601String(),
+      });
       for (final s in planExercise.defaultSets) {
         await txn.insert(DefaultSetModel.tableName, s.toMap());
       }

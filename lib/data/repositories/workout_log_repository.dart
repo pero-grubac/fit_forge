@@ -9,6 +9,7 @@ typedef LoggedSet = ({
   double plannedWeight,
   double actualWeight,
   bool isCompleted,
+  SetFeeling? feeling,
 });
 
 class WorkoutLogRepository {
@@ -32,8 +33,13 @@ class WorkoutLogRepository {
 
   Future<void> delete(String id) => _logDao.delete(id);
 
-  /// Distinct dates (yyyy-MM-dd) with at least one logged workout.
-  Future<Set<String>> getLoggedDates() => _logDao.getLoggedDates();
+  /// Edits or clears (null) the note on an already-saved session, without
+  /// touching its sets.
+  Future<void> updateNotes(String id, String? notes) =>
+      _logDao.updateNotes(id, notes);
+
+  Future<List<({String planExerciseId, String day, int sets, int done})>>
+      getSlotDaySummaries() => _logDao.getSlotDaySummaries();
 
   Future<Map<String, int>> getCompletedSetsToday(
           List<String> planExerciseIds) =>
@@ -76,6 +82,7 @@ class WorkoutLogRepository {
             plannedWeight: s.plannedWeight,
             actualWeight: s.actualWeight,
             isCompleted: s.isCompleted,
+            feeling: s.feeling,
           ),
       ],
     );

@@ -187,4 +187,47 @@ void main() {
       [11, 11, 11],
     ]);
   });
+
+  group('stuckSessions (plateau detection)', () {
+    test('no history is not stuck', () {
+      expect(SetProgression.stuckSessions([], 10), 0);
+    });
+
+    test('counts consecutive recent sessions at the same level with a miss', () {
+      final history = [
+        [ok(10), ok(10), ok(10)],
+        [ok(10), miss(10), ok(10)],
+        [ok(10), ok(10), miss(10)],
+      ];
+      expect(SetProgression.stuckSessions(history, 10), 2);
+    });
+
+    test('a fully clean session breaks the streak, even if older ones missed', () {
+      final history = [
+        [ok(10), miss(10), ok(10)],
+        [ok(10), ok(10), ok(10)],
+        [ok(10), ok(10), miss(10)],
+      ];
+      expect(SetProgression.stuckSessions(history, 10), 1);
+    });
+
+    test('a session at a different level stops the count', () {
+      final history = [
+        [ok(7.5), ok(7.5), ok(7.5)],
+        [ok(7.5), ok(10), ok(10)], // moving up to 10
+        [ok(10), ok(10), miss(10)],
+        [ok(10), miss(10), ok(10)],
+      ];
+      expect(SetProgression.stuckSessions(history, 10), 2);
+    });
+
+    test('an empty (skipped) session does not count and stops the streak', () {
+      final history = [
+        [ok(10), ok(10), miss(10)],
+        <PerformedSet>[],
+        [ok(10), miss(10), ok(10)],
+      ];
+      expect(SetProgression.stuckSessions(history, 10), 1);
+    });
+  });
 }

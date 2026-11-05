@@ -27,6 +27,7 @@ class BackupRepository {
   /// Tables in insert order (parents before children).
   static const tables = [
     'workout_plans',
+    'plan_reschedules',
     'exercises',
     'plan_exercises',
     'default_sets',
@@ -66,6 +67,9 @@ class BackupRepository {
         if (version < 4) {
           // v3 backups kept the increment per set; move it to the exercise.
           await DatabaseHelper.fillExerciseIncrements(txn);
+        }
+        if (version < 6) {
+          await DatabaseHelper.fillPlanExerciseCreatedAt(txn);
         }
         final violations = await txn.rawQuery('PRAGMA foreign_key_check');
         if (violations.isNotEmpty) {

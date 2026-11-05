@@ -1,6 +1,7 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
 import 'package:fit_forge/core/utils/one_rep_max.dart';
+import 'package:fit_forge/core/utils/set_progression.dart';
 import 'package:fit_forge/data/models/exercise_model.dart';
 import 'package:fit_forge/data/models/workout_log_model.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -8,25 +9,37 @@ import 'package:flutter/material.dart';
 
 class WeightLineChart extends StatelessWidget {
   const WeightLineChart(
-      {super.key, required this.logs, required this.exercise});
+      {super.key, required this.logs, required this.exercise, this.onPointTap});
 
   final List<WorkoutLogModel> logs;
   final ExerciseModel exercise;
+
+  /// Called with the session a chart point belongs to when it's tapped.
+  final ValueChanged<WorkoutLogModel>? onPointTap;
 
   @override
   Widget build(BuildContext context) {
     final color = AppColors.muscleGroupColor(exercise.muscleGroup);
     final sorted = [...logs]..sort((a, b) => a.logDate.compareTo(b.logDate));
+    final unit = exercise.progressionUnit;
 
     final spots = sorted.asMap().entries.map((e) {
-      final maxW = e.value.sets
-          .where((s) => s.isCompleted)
-          .map((s) => s.actualWeight)
-          .fold(0.0, (max, w) => w > max ? w : max);
-      return FlSpot(e.key.toDouble(), maxW);
+      final completed = e.value.sets.where((s) => s.isCompleted);
+      final best = unit == ProgressionUnit.kg
+          ? completed.map((s) => s.actualWeight).fold(0.0, (m, w) => w > m ? w : m)
+          : completed
+              .map((s) => s.actualReps.toDouble())
+              .fold(0.0, (m, w) => w > m ? w : m);
+      return FlSpot(e.key.toDouble(), best);
     }).toList();
 
     if (spots.isEmpty) return const SizedBox.shrink();
+
+    final chartTitle = switch (unit) {
+      ProgressionUnit.kg => context.l10n.progress_chart_weight,
+      ProgressionUnit.reps => context.l10n.progress_chart_reps,
+      ProgressionUnit.seconds => context.l10n.progress_chart_seconds,
+    };
 
     // Estimated 1RM only means something for weighted exercises.
     final oneRmSpots = exercise.isWeighted
@@ -51,7 +64,7 @@ class WeightLineChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(context.l10n.progress_chart_weight,
+          Text(chartTitle,
               style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -78,6 +91,33 @@ class WeightLineChart extends StatelessWidget {
               LineChartData(
                 minY: minY,
                 maxY: maxY,
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    // fl_chart's default tooltip, with the value rounded.
+                    getTooltipItems: (spots) => [
+                      for (final spot in spots)
+                        LineTooltipItem(
+                          _formatValue(spot.y),
+                          TextStyle(
+                            color: spot.bar.color ?? Colors.blueGrey,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                    ],
+                  ),
+                  touchCallback: (event, response) {
+                    if (event is! FlTapUpEvent) return;
+                    final spots = response?.lineBarSpots;
+                    if (spots == null || spots.isEmpty) return;
+                    final primary = spots.firstWhere(
+                        (s) => s.barIndex == 0, orElse: () => spots.first);
+                    final index = primary.spotIndex;
+                    if (index >= 0 && index < sorted.length) {
+                      onPointTap?.call(sorted[index]);
+                    }
+                  },
+                ),
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
@@ -147,6 +187,12 @@ class WeightLineChart extends StatelessWidget {
       ),
     );
   }
+}
+
+/// At most two decimals, without trailing zeros: 75.83, 67.5, 65.
+String _formatValue(double v) {
+  final s = v.toStringAsFixed(2);
+  return s.replaceFirst(RegExp(r'\.?0+$'), '');
 }
 
 class _LegendItem extends StatelessWidget {

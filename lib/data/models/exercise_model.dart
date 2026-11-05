@@ -1,4 +1,5 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
+import 'package:fit_forge/core/utils/set_progression.dart';
 import 'package:flutter/material.dart';
 
 /// A global exercise, shared by every plan that includes it.
@@ -102,6 +103,14 @@ class ExerciseModel {
   bool get isBodyweight => exerciseType == 'bodyweight';
 
   bool get isTimed => exerciseType == 'timed';
+
+  /// What progress charts and stats should measure: weight for weighted
+  /// exercises, reps for bodyweight, seconds for timed.
+  ProgressionUnit get progressionUnit => switch (exerciseType) {
+        'bodyweight' => ProgressionUnit.reps,
+        'timed' => ProgressionUnit.seconds,
+        _ => ProgressionUnit.kg,
+      };
 
   /// Built-in step when neither the exercise nor Settings define one.
   static double defaultIncrementFor(String exerciseType) =>

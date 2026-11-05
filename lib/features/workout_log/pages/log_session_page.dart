@@ -18,6 +18,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../data/models/exercise_model.dart';
 import '../../../data/models/plan_exercise_model.dart';
 import '../../../data/models/workout_log_model.dart';
+import '../../../data/models/workout_set_model.dart';
 import '../../workout_plan/widgets/exercise_info_sheet.dart';
 import '../providers/progression_provider.dart';
 import '../providers/workout_log_provider.dart';
@@ -38,6 +39,18 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
   /// The most recent earlier session of this exercise that has a note.
   WorkoutLogModel? _lastNoteLog;
 
+  /// The most recent earlier session logged from this exact plan slot, used
+  /// by "repeat identical" to refill today's sets.
+  WorkoutLogModel? _lastSlotLog;
+
+  /// Best weight/reps/seconds ever logged for this exercise, and when.
+  ({double value, DateTime date})? _bestEver;
+
+  /// Set once this session beats the last session at this slot (more
+  /// weight/reps, or an extra completed set). Stays true for the rest of
+  /// the session once triggered, even if that set is later unchecked.
+  bool _improvedThisSession = false;
+
   /// Set-count progression for this plan exercise; null if unavailable.
   ProgressionInfo? _progression;
 
@@ -45,6 +58,65 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
 
   bool get _byReps =>
       _progression != null && _progression!.unit != ProgressionUnit.kg;
+
+  /// The heaviest/highest value among today's sets as typed so far, in the
+  /// exercise's unit (weight, reps, or seconds).
+  double get _topSetValue {
+    if (_sets.isEmpty) return 0;
+    final unit = _exercise?.progressionUnit ?? ProgressionUnit.kg;
+    final values = unit == ProgressionUnit.kg
+        ? _sets.map((s) => s.actualWeight)
+        : _sets.map((s) => s.actualReps.toDouble());
+    return values.fold(0.0, (m, v) => v > m ? v : m);
+  }
+
+  /// Marks the session as improved if today's completed sets beat the last
+  /// session at this slot: a higher top weight/reps, or more completed sets.
+  /// A no-op once already flagged, or with nothing to compare against.
+  void _checkImprovement() {
+    if (_improvedThisSession) return;
+    final last = _lastSlotLog;
+    if (last == null) return;
+
+    final doneToday = _sets.where((s) => s.isDone);
+    if (doneToday.isEmpty) return;
+    final lastCompleted = last.sets.where((s) => s.isCompleted);
+
+    final unit = _exercise?.progressionUnit ?? ProgressionUnit.kg;
+    double best(Iterable<double> values) =>
+        values.fold(0.0, (m, v) => v > m ? v : m);
+    final todayBest = unit == ProgressionUnit.kg
+        ? best(doneToday.map((s) => s.actualWeight))
+        : best(doneToday.map((s) => s.actualReps.toDouble()));
+    final lastBest = unit == ProgressionUnit.kg
+        ? best(lastCompleted.map((s) => s.actualWeight))
+        : best(lastCompleted.map((s) => s.actualReps.toDouble()));
+
+    if (todayBest > lastBest + 1e-6 || doneToday.length > lastCompleted.length) {
+      _improvedThisSession = true;
+    }
+  }
+
+  /// Best weight/reps/seconds among completed sets of [logs], and its date.
+  static ({double value, DateTime date})? _bestEverFrom(
+    Iterable<WorkoutLogModel> logs,
+    ProgressionUnit unit,
+  ) {
+    double best = 0;
+    DateTime? bestDate;
+    for (final log in logs) {
+      for (final s in log.sets) {
+        if (!s.isCompleted) continue;
+        final value =
+            unit == ProgressionUnit.kg ? s.actualWeight : s.actualReps.toDouble();
+        if (value > best) {
+          best = value;
+          bestDate = log.logDate;
+        }
+      }
+    }
+    return bestDate == null ? null : (value: best, date: bestDate);
+  }
 
   /// Where the counter stands after earlier sessions plus the sets ticked so
   /// far today (in list order). Null while moving up to a new level: that
@@ -147,6 +219,7 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
             plannedWeight: s.plannedWeight,
             plannedReps: s.plannedReps,
             isDone: s.isCompleted,
+            feeling: s.feeling,
           )
             ..weightCtrl.text = s.actualWeight.toString()
             ..repsCtrl.text = s.actualReps.toString(),
@@ -189,6 +262,8 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
       _planExercise = planExercise;
       _progression = progression;
       _lastNoteLog = lastNoteLog;
+      _lastSlotLog = lastSlotLog;
+      _bestEver = _bestEverFrom(history, planExercise.exercise.progressionUnit);
       _sets.addAll(sets);
       _loadingExercise = false;
     });
@@ -306,6 +381,18 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
                 transition: _progression!.status.transition,
                 setsInWorkout: _sets.length,
                 unit: _progression!.unit,
+                stuckSessions: _progression!.stuckSessions,
+                improved: _improvedThisSession,
+              ),
+            ),
+
+          // Best-ever hint
+          if (_bestEver != null && _bestEver!.value > _topSetValue + 1e-6)
+            SliverToBoxAdapter(
+              child: _BestEverHint(
+                value: _bestEver!.value,
+                date: _bestEver!.date,
+                unit: _exercise!.progressionUnit,
               ),
             ),
 
@@ -332,20 +419,47 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
             ),
           ),
 
-          // Add set button
+          // Add set / repeat last session buttons
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-              child: OutlinedButton.icon(
-                onPressed: _addSet,
-                icon: const Icon(Icons.add, size: 18),
-                label: Text(context.l10n.log_add_set),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.accent,
-                  side: const BorderSide(color: AppColors.accent),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _addSet,
+                      icon: const Icon(Icons.add, size: 18),
+                      label: Text(context.l10n.log_add_set,
+                          overflow: TextOverflow.ellipsis),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.accent,
+                        side: const BorderSide(color: AppColors.accent),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  // Only before anything is ticked today — past that point
+                  // there is nothing left to "repeat", only to overwrite.
+                  if (_lastSlotLog != null &&
+                      _sets.every((s) => !s.isDone)) ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _repeatLastSession,
+                        icon: const Icon(Icons.replay_rounded, size: 18),
+                        label: Text(context.l10n.log_repeat_last,
+                            overflow: TextOverflow.ellipsis),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.text2,
+                          side: const BorderSide(color: AppColors.border2),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),
@@ -416,12 +530,56 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
     );
   }
 
-  void _toggleSet(int i) {
+  Future<void> _toggleSet(int i) async {
+    final turningDone = !_sets[i].isDone;
+    final askFeeling = turningDone &&
+        (ref.read(settingsProvider).valueOrNull?.showSetFeeling ?? true);
+    final feeling = askFeeling ? await _pickFeeling() : null;
+    if (!mounted) return;
+
     setState(() {
-      _sets[i].isDone = !_sets[i].isDone;
+      _sets[i].isDone = turningDone;
+      _sets[i].feeling = turningDone ? feeling : null;
       _applyProgression();
+      _checkImprovement();
     });
-    if (_sets[i].isDone) _startRest();
+    if (turningDone) _startRest();
+  }
+
+  /// Asks how a just-completed set felt. Null if dismissed.
+  Future<SetFeeling?> _pickFeeling() {
+    return showDialog<SetFeeling>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        backgroundColor: AppColors.bg2,
+        title: Text(
+          ctx.l10n.log_feeling_prompt,
+          style: const TextStyle(color: AppColors.text1, fontSize: 15),
+        ),
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _FeelingChoice(
+                emoji: '😣',
+                label: ctx.l10n.log_feeling_hard,
+                value: feelingHard,
+              ),
+              _FeelingChoice(
+                emoji: '😐',
+                label: ctx.l10n.log_feeling_ok,
+                value: feelingOk,
+              ),
+              _FeelingChoice(
+                emoji: '😄',
+                label: ctx.l10n.log_feeling_easy,
+                value: feelingEasy,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   /// Starts the rest timer after a completed set, unless it was the last one.
@@ -455,6 +613,32 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
     });
   }
 
+  /// Refills today's sets with the exact weight/reps from the last time this
+  /// plan slot was logged, replacing whatever is in the fields now. Marked
+  /// as user-edited so automatic progression doesn't overwrite them.
+  void _repeatLastSession() {
+    final last = _lastSlotLog;
+    if (last == null) return;
+    final ordered = [...last.sets]
+      ..sort((a, b) => a.setNumber.compareTo(b.setNumber));
+    setState(() {
+      for (final s in _sets) {
+        s.dispose();
+      }
+      _sets.clear();
+      _sets.addAll([
+        for (final (i, s) in ordered.indexed)
+          SetRow(
+            setNumber: i + 1,
+            plannedWeight: s.actualWeight,
+            plannedReps: s.actualReps,
+          )
+            ..weightEdited = true
+            ..repsEdited = true,
+      ]);
+    });
+  }
+
   Future<void> _save() async {
     final doneSets = _sets.where((s) => s.isDone).toList();
     if (doneSets.isEmpty || _planExercise == null) return;
@@ -472,6 +656,7 @@ class _LogSessionPageState extends ConsumerState<LogSessionPage> {
                     plannedWeight: s.plannedWeight,
                     actualWeight: s.actualWeight,
                     isCompleted: s.isDone,
+                    feeling: s.feeling,
                   ))
               .toList(),
         );
@@ -588,15 +773,142 @@ class _DescriptionCardState extends State<_DescriptionCard> {
   }
 }
 
+/// One emoji choice in the "how did that set feel" dialog.
+class _FeelingChoice extends StatelessWidget {
+  const _FeelingChoice({
+    required this.emoji,
+    required this.label,
+    required this.value,
+  });
+
+  final String emoji;
+  final String label;
+  final SetFeeling value;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () => Navigator.pop(context, value),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 28)),
+            const SizedBox(height: 4),
+            Text(label,
+                style: const TextStyle(fontSize: 12, color: AppColors.text2)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The best weight/reps/seconds ever logged for this exercise, shown when
+/// today's sets are lighter than that — a reminder to try to beat it again.
+class _BestEverHint extends StatelessWidget {
+  const _BestEverHint({
+    required this.value,
+    required this.date,
+    required this.unit,
+  });
+
+  final double value;
+  final DateTime date;
+  final ProgressionUnit unit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.amber.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.amber.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.emoji_events_rounded,
+              color: AppColors.amber, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              context.l10n.log_best_ever_hint(
+                formatLevel(context, value, unit),
+                '${date.day}.${date.month}.',
+              ),
+              key: const Key('best_ever_hint'),
+              style: const TextStyle(fontSize: 12, color: AppColors.text2),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// The note written in the previous session of this exercise.
-class _LastNote extends StatelessWidget {
+class _LastNote extends ConsumerStatefulWidget {
   const _LastNote({required this.log});
 
   final WorkoutLogModel log;
 
   @override
+  ConsumerState<_LastNote> createState() => _LastNoteState();
+}
+
+class _LastNoteState extends ConsumerState<_LastNote> {
+  late String? _notes = widget.log.notes?.trim();
+
+  Future<void> _edit() async {
+    final ctrl = TextEditingController(text: _notes ?? '');
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.bg2,
+        title: Text(ctx.l10n.progress_history_edit_note,
+            style: const TextStyle(color: AppColors.text1, fontSize: 16)),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          maxLines: 3,
+          style: const TextStyle(color: AppColors.text1),
+          decoration: InputDecoration(hintText: ctx.l10n.log_notes_hint),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(ctx.l10n.btn_cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
+            child: Text(ctx.l10n.btn_save),
+          ),
+        ],
+      ),
+    );
+    ctrl.dispose();
+    if (result == null) return;
+    await _save(result.isEmpty ? null : result);
+  }
+
+  Future<void> _delete() => _save(null);
+
+  Future<void> _save(String? notes) async {
+    await ref.read(workoutLogNotifierProvider.notifier).updateNotes(
+        logId: widget.log.id, exerciseId: widget.log.exerciseId, notes: notes);
+    if (mounted) setState(() => _notes = notes);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final date = log.logDate;
+    final notes = _notes;
+    if (notes == null || notes.isEmpty) return const SizedBox.shrink();
+
+    final date = widget.log.logDate;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -608,13 +920,35 @@ class _LastNote extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            context.l10n.log_last_note('${date.day}.${date.month}.'),
-            style: const TextStyle(fontSize: 11, color: AppColors.text3),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  context.l10n.log_last_note('${date.day}.${date.month}.'),
+                  style: const TextStyle(fontSize: 11, color: AppColors.text3),
+                ),
+              ),
+              GestureDetector(
+                onTap: _edit,
+                child: const Padding(
+                  padding: EdgeInsets.all(2),
+                  child: Icon(Icons.edit_outlined,
+                      size: 15, color: AppColors.accent),
+                ),
+              ),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: _delete,
+                child: const Padding(
+                  padding: EdgeInsets.all(2),
+                  child: Icon(Icons.delete_outline, size: 15, color: AppColors.red),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
           Text(
-            log.notes!.trim(),
+            notes,
             key: const Key('last_session_note'),
             style: const TextStyle(fontSize: 13, color: AppColors.text2),
           ),

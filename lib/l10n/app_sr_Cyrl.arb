@@ -25,6 +25,30 @@
 
   "home_noplan": "Немаш план за данас",
   "home_noplan_sub": "Креирај план у План едитору",
+  "home_move": "Помјери тренинг",
+  "home_move_title": "Помјери \"{plan}\" на",
+  "@home_move_title": { "placeholders": { "plan": { "type": "String" } } },
+  "home_move_today": "Данас",
+  "home_move_original": "Врати на његов дан",
+  "home_move_limit": "Најкасније у {weekday, select, mon{понедјељак} tue{уторак} wed{сриједу} thu{четвртак} fri{петак} sat{суботу} other{недјељу}} {date} — сљедећи је у {nextWeekday, select, mon{понедјељак} tue{уторак} wed{сриједу} thu{четвртак} fri{петак} sat{суботу} other{недјељу}} {nextDate}",
+  "@home_move_limit": {
+    "placeholders": {
+      "weekday": { "type": "String" },
+      "date": { "type": "String" },
+      "nextWeekday": { "type": "String" },
+      "nextDate": { "type": "String" }
+    }
+  },
+  "home_moved_to": "помјерено на {weekday, select, mon{понедјељак} tue{уторак} wed{сриједу} thu{четвртак} fri{петак} sat{суботу} other{недјељу}} {date}",
+  "@home_moved_to": {
+    "placeholders": { "weekday": { "type": "String" }, "date": { "type": "String" } }
+  },
+  "home_moved_from": "са {weekday, select, mon{понедјељка} tue{уторка} wed{сриједе} thu{четвртка} fri{петка} sat{суботе} other{недјеље}} {date}",
+  "@home_moved_from": {
+    "placeholders": { "weekday": { "type": "String" }, "date": { "type": "String" } }
+  },
+  "home_moved_tag": "помјерено",
+  "home_upcoming": "НАРЕДНИХ ДАНА",
   "home_sets": "{completed}/{total} сета",
   "@home_sets": {
     "placeholders": {
@@ -81,6 +105,14 @@
 
   "log_save": "Спреми тренинг",
   "log_add_set": "Додај сет",
+  "log_repeat_last": "Понови идентично",
+  "log_best_ever_hint": "Лични макс: {value} ({date})",
+  "@log_best_ever_hint": {
+    "placeholders": {
+      "value": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
   "log_notes_hint": "Нпр. добра пумпа, повећај сљедећи пут...",
   "log_notes_label": "Биљешка за овај тренинг",
   "log_volume": "Укупни волумен",
@@ -91,11 +123,18 @@
   "progress_no_workouts": "Немаш још ниједан тренинг",
   "progress_no_workouts_sub": "Покрени тренинг на почетној страници",
   "progress_max_weight": "Макс тежина",
+  "progress_max_reps": "Макс понављања",
+  "progress_max_seconds": "Макс вријеме",
   "progress_sessions": "Тренинга",
   "progress_growth": "Раст снаге",
   "progress_chart_weight": "Макс тежина по тренингу",
+  "progress_chart_reps": "Макс понављања по тренингу",
+  "progress_chart_seconds": "Макс вријеме по тренингу",
   "progress_chart_volume": "Волумен по тренингу",
   "progress_personal_record": "Лични рекорд",
+  "progress_history_title": "Историја",
+  "progress_history_no_note": "Нема напомене — превуци десно да додаш",
+  "progress_history_edit_note": "Измијени напомену",
   "progress_period_all":"Све",
 
   "settings_title": "Подешавања",
@@ -190,6 +229,26 @@
   "settings_rest": "Одмор између сетова",
   "settings_rest_sub": "Почиње након сваког завршеног сета",
   "settings_rest_off": "Искљ.",
+  "settings_logging_section": "БИЉЕЖЕЊЕ",
+  "settings_show_feeling": "Питај како је сет прошао",
+  "settings_show_feeling_sub": "Брзо лагано/ок/тешко питање кад означиш сет урађеним",
+  "log_feeling_prompt": "Како је тај сет прошао?",
+  "log_feeling_hard": "Тешко",
+  "log_feeling_ok": "Ок",
+  "log_feeling_easy": "Лагано",
+  "weekly_summary_title": "Ова сједмица",
+  "weekly_summary_volume": "{change} волумена у односу на исте дане прошле сједмице",
+  "@weekly_summary_volume": {
+    "placeholders": {
+      "change": { "type": "String" }
+    }
+  },
+  "weekly_summary_new_prs": "{count, plural, =1{1 нови лични рекорд} other{{count} нова лична рекорда}}",
+  "@weekly_summary_new_prs": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "nav_home": "Почетна",
   "nav_progress": "Напредак",
   "nav_plans": "Планови",
@@ -213,6 +272,12 @@
   "settings_dev_hide_sub": "Додирни верзију 7 пута да их поново прикажеш",
   "progression_counter": "{done}/{total} сетова са {current} — затим {next}",
   "progression_ready": "Сљедећи сет: {next} — вријеме је за повећање!",
+  "progression_plateau": "Запео си на {current} већ неколико тренинга — пробај лакшу тежину или промијени број понављања",
+  "@progression_plateau": {
+    "placeholders": {
+      "current": { "type": "String" }
+    }
+  },
   "progression_reps": "{count, plural, =1{1 понављање} other{{count} понављања}}",
   "settings_auto_progression": "Аутоматско повећање",
   "settings_auto_progression_sub": "Повећај након довољно добрих сетова заредом",

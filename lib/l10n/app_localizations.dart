@@ -213,6 +213,61 @@ abstract class AppLocalizations {
   /// **'Create a plan in Plan editor'**
   String get home_noplan_sub;
 
+  /// No description provided for @home_move.
+  ///
+  /// In en, this message translates to:
+  /// **'Move workout'**
+  String get home_move;
+
+  /// No description provided for @home_move_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Move \"{plan}\" to'**
+  String home_move_title(String plan);
+
+  /// No description provided for @home_move_today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get home_move_today;
+
+  /// No description provided for @home_move_original.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to its own day'**
+  String get home_move_original;
+
+  /// No description provided for @home_move_limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest on {weekday, select, mon{Monday} tue{Tuesday} wed{Wednesday} thu{Thursday} fri{Friday} sat{Saturday} other{Sunday}} {date} — the next one is on {nextWeekday, select, mon{Monday} tue{Tuesday} wed{Wednesday} thu{Thursday} fri{Friday} sat{Saturday} other{Sunday}} {nextDate}'**
+  String home_move_limit(
+      String weekday, String date, String nextWeekday, String nextDate);
+
+  /// No description provided for @home_moved_to.
+  ///
+  /// In en, this message translates to:
+  /// **'moved to {weekday, select, mon{Monday} tue{Tuesday} wed{Wednesday} thu{Thursday} fri{Friday} sat{Saturday} other{Sunday}} {date}'**
+  String home_moved_to(String weekday, String date);
+
+  /// No description provided for @home_moved_from.
+  ///
+  /// In en, this message translates to:
+  /// **'from {weekday, select, mon{Monday} tue{Tuesday} wed{Wednesday} thu{Thursday} fri{Friday} sat{Saturday} other{Sunday}} {date}'**
+  String home_moved_from(String weekday, String date);
+
+  /// No description provided for @home_moved_tag.
+  ///
+  /// In en, this message translates to:
+  /// **'moved'**
+  String get home_moved_tag;
+
+  /// No description provided for @home_upcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'COMING UP'**
+  String get home_upcoming;
+
   /// No description provided for @home_sets.
   ///
   /// In en, this message translates to:
@@ -429,6 +484,18 @@ abstract class AppLocalizations {
   /// **'Add set'**
   String get log_add_set;
 
+  /// No description provided for @log_repeat_last.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat identical'**
+  String get log_repeat_last;
+
+  /// No description provided for @log_best_ever_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal best: {value} ({date})'**
+  String log_best_ever_hint(String value, String date);
+
   /// No description provided for @log_notes_hint.
   ///
   /// In en, this message translates to:
@@ -483,6 +550,18 @@ abstract class AppLocalizations {
   /// **'Max weight'**
   String get progress_max_weight;
 
+  /// No description provided for @progress_max_reps.
+  ///
+  /// In en, this message translates to:
+  /// **'Max reps'**
+  String get progress_max_reps;
+
+  /// No description provided for @progress_max_seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Max time'**
+  String get progress_max_seconds;
+
   /// No description provided for @progress_sessions.
   ///
   /// In en, this message translates to:
@@ -501,6 +580,18 @@ abstract class AppLocalizations {
   /// **'Max weight per session'**
   String get progress_chart_weight;
 
+  /// No description provided for @progress_chart_reps.
+  ///
+  /// In en, this message translates to:
+  /// **'Max reps per session'**
+  String get progress_chart_reps;
+
+  /// No description provided for @progress_chart_seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Max time per session'**
+  String get progress_chart_seconds;
+
   /// No description provided for @progress_chart_volume.
   ///
   /// In en, this message translates to:
@@ -512,6 +603,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Personal record'**
   String get progress_personal_record;
+
+  /// No description provided for @progress_history_title.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get progress_history_title;
+
+  /// No description provided for @progress_history_no_note.
+  ///
+  /// In en, this message translates to:
+  /// **'No note — swipe right to add one'**
+  String get progress_history_no_note;
+
+  /// No description provided for @progress_history_edit_note.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit note'**
+  String get progress_history_edit_note;
 
   /// No description provided for @progress_period_all.
   ///
@@ -1035,6 +1144,66 @@ abstract class AppLocalizations {
   /// **'Off'**
   String get settings_rest_off;
 
+  /// No description provided for @settings_logging_section.
+  ///
+  /// In en, this message translates to:
+  /// **'LOGGING'**
+  String get settings_logging_section;
+
+  /// No description provided for @settings_show_feeling.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask how each set felt'**
+  String get settings_show_feeling;
+
+  /// No description provided for @settings_show_feeling_sub.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick easy/ok/hard prompt when you tick a set done'**
+  String get settings_show_feeling_sub;
+
+  /// No description provided for @log_feeling_prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'How did that set feel?'**
+  String get log_feeling_prompt;
+
+  /// No description provided for @log_feeling_hard.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard'**
+  String get log_feeling_hard;
+
+  /// No description provided for @log_feeling_ok.
+  ///
+  /// In en, this message translates to:
+  /// **'Ok'**
+  String get log_feeling_ok;
+
+  /// No description provided for @log_feeling_easy.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy'**
+  String get log_feeling_easy;
+
+  /// No description provided for @weekly_summary_title.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get weekly_summary_title;
+
+  /// No description provided for @weekly_summary_volume.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} volume vs the same days last week'**
+  String weekly_summary_volume(String change);
+
+  /// No description provided for @weekly_summary_new_prs.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new personal record} other{{count} new personal records}}'**
+  String weekly_summary_new_prs(int count);
+
   /// No description provided for @nav_home.
   ///
   /// In en, this message translates to:
@@ -1172,6 +1341,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next set: {next} — time to go up!'**
   String progression_ready(String next);
+
+  /// No description provided for @progression_plateau.
+  ///
+  /// In en, this message translates to:
+  /// **'Stuck at {current} for a few sessions — try a lighter weight or change the reps'**
+  String progression_plateau(String current);
 
   /// No description provided for @progression_reps.
   ///

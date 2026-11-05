@@ -16,6 +16,9 @@ class PlanExerciseRepository {
 
   Future<PlanExerciseModel?> getById(String id) => _dao.getById(id);
 
+  Future<List<({String id, String planId, DateTime? createdAt})>>
+      getAllSlots() => _dao.getAllSlots();
+
   /// Adds [exercise] to the plan with the given default sets. Returns null if
   /// the plan already contains the exercise.
   Future<PlanExerciseModel?> add({

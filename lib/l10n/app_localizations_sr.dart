@@ -66,6 +66,90 @@ class AppLocalizationsSr extends AppLocalizations {
   String get home_noplan_sub => 'Kreiraj plan u Plan editoru';
 
   @override
+  String get home_move => 'Pomjeri trening';
+
+  @override
+  String home_move_title(String plan) {
+    return 'Pomjeri \"$plan\" na';
+  }
+
+  @override
+  String get home_move_today => 'Danas';
+
+  @override
+  String get home_move_original => 'Vrati na njegov dan';
+
+  @override
+  String home_move_limit(
+      String weekday, String date, String nextWeekday, String nextDate) {
+    String _temp0 = intl.Intl.selectLogic(
+      weekday,
+      {
+        'mon': 'ponedjeljak',
+        'tue': 'utorak',
+        'wed': 'srijedu',
+        'thu': 'četvrtak',
+        'fri': 'petak',
+        'sat': 'subotu',
+        'other': 'nedjelju',
+      },
+    );
+    String _temp1 = intl.Intl.selectLogic(
+      nextWeekday,
+      {
+        'mon': 'ponedjeljak',
+        'tue': 'utorak',
+        'wed': 'srijedu',
+        'thu': 'četvrtak',
+        'fri': 'petak',
+        'sat': 'subotu',
+        'other': 'nedjelju',
+      },
+    );
+    return 'Najkasnije u $_temp0 $date — sljedeći je u $_temp1 $nextDate';
+  }
+
+  @override
+  String home_moved_to(String weekday, String date) {
+    String _temp0 = intl.Intl.selectLogic(
+      weekday,
+      {
+        'mon': 'ponedjeljak',
+        'tue': 'utorak',
+        'wed': 'srijedu',
+        'thu': 'četvrtak',
+        'fri': 'petak',
+        'sat': 'subotu',
+        'other': 'nedjelju',
+      },
+    );
+    return 'pomjereno na $_temp0 $date';
+  }
+
+  @override
+  String home_moved_from(String weekday, String date) {
+    String _temp0 = intl.Intl.selectLogic(
+      weekday,
+      {
+        'mon': 'ponedjeljka',
+        'tue': 'utorka',
+        'wed': 'srijede',
+        'thu': 'četvrtka',
+        'fri': 'petka',
+        'sat': 'subote',
+        'other': 'nedjelje',
+      },
+    );
+    return 'sa $_temp0 $date';
+  }
+
+  @override
+  String get home_moved_tag => 'pomjereno';
+
+  @override
+  String get home_upcoming => 'NAREDNIH DANA';
+
+  @override
   String home_sets(int completed, int total) {
     return '$completed/$total seta';
   }
@@ -180,6 +264,14 @@ class AppLocalizationsSr extends AppLocalizations {
   String get log_add_set => 'Dodaj set';
 
   @override
+  String get log_repeat_last => 'Ponovi identično';
+
+  @override
+  String log_best_ever_hint(String value, String date) {
+    return 'Lični max: $value ($date)';
+  }
+
+  @override
   String get log_notes_hint => 'Npr. dobra pumpa, povećaj sljedeći put...';
 
   @override
@@ -207,6 +299,12 @@ class AppLocalizationsSr extends AppLocalizations {
   String get progress_max_weight => 'Max težina';
 
   @override
+  String get progress_max_reps => 'Max ponavljanja';
+
+  @override
+  String get progress_max_seconds => 'Max vrijeme';
+
+  @override
   String get progress_sessions => 'Treninga';
 
   @override
@@ -216,10 +314,26 @@ class AppLocalizationsSr extends AppLocalizations {
   String get progress_chart_weight => 'Max težina po treningu';
 
   @override
+  String get progress_chart_reps => 'Max ponavljanja po treningu';
+
+  @override
+  String get progress_chart_seconds => 'Max vrijeme po treningu';
+
+  @override
   String get progress_chart_volume => 'Volumen po treningu';
 
   @override
   String get progress_personal_record => 'Osobni rekord';
+
+  @override
+  String get progress_history_title => 'Historija';
+
+  @override
+  String get progress_history_no_note =>
+      'Nema napomene — prevuci desno da dodaš';
+
+  @override
+  String get progress_history_edit_note => 'Izmijeni napomenu';
 
   @override
   String get progress_period_all => 'Sve';
@@ -502,6 +616,47 @@ class AppLocalizationsSr extends AppLocalizations {
   String get settings_rest_off => 'Isklj.';
 
   @override
+  String get settings_logging_section => 'BILJEŽENJE';
+
+  @override
+  String get settings_show_feeling => 'Pitaj kako je set prošao';
+
+  @override
+  String get settings_show_feeling_sub =>
+      'Brzo lagano/ok/teško pitanje kad označiš set urađenim';
+
+  @override
+  String get log_feeling_prompt => 'Kako je taj set prošao?';
+
+  @override
+  String get log_feeling_hard => 'Teško';
+
+  @override
+  String get log_feeling_ok => 'Ok';
+
+  @override
+  String get log_feeling_easy => 'Lagano';
+
+  @override
+  String get weekly_summary_title => 'Ova sedmica';
+
+  @override
+  String weekly_summary_volume(String change) {
+    return '$change volumena u odnosu na iste dane prošle sedmice';
+  }
+
+  @override
+  String weekly_summary_new_prs(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nova lična rekorda',
+      one: '1 novi lični rekord',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get nav_home => 'Početna';
 
   @override
@@ -587,6 +742,11 @@ class AppLocalizationsSr extends AppLocalizations {
   @override
   String progression_ready(String next) {
     return 'Sljedeći set: $next — vrijeme je za povećanje!';
+  }
+
+  @override
+  String progression_plateau(String current) {
+    return 'Zapeo si na $current već nekoliko treninga — probaj lakšu težinu ili promijeni broj ponavljanja';
   }
 
   @override
@@ -727,6 +887,90 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get home_noplan_sub => 'Креирај план у План едитору';
 
   @override
+  String get home_move => 'Помјери тренинг';
+
+  @override
+  String home_move_title(String plan) {
+    return 'Помјери \"$plan\" на';
+  }
+
+  @override
+  String get home_move_today => 'Данас';
+
+  @override
+  String get home_move_original => 'Врати на његов дан';
+
+  @override
+  String home_move_limit(
+      String weekday, String date, String nextWeekday, String nextDate) {
+    String _temp0 = intl.Intl.selectLogic(
+      weekday,
+      {
+        'mon': 'понедјељак',
+        'tue': 'уторак',
+        'wed': 'сриједу',
+        'thu': 'четвртак',
+        'fri': 'петак',
+        'sat': 'суботу',
+        'other': 'недјељу',
+      },
+    );
+    String _temp1 = intl.Intl.selectLogic(
+      nextWeekday,
+      {
+        'mon': 'понедјељак',
+        'tue': 'уторак',
+        'wed': 'сриједу',
+        'thu': 'четвртак',
+        'fri': 'петак',
+        'sat': 'суботу',
+        'other': 'недјељу',
+      },
+    );
+    return 'Најкасније у $_temp0 $date — сљедећи је у $_temp1 $nextDate';
+  }
+
+  @override
+  String home_moved_to(String weekday, String date) {
+    String _temp0 = intl.Intl.selectLogic(
+      weekday,
+      {
+        'mon': 'понедјељак',
+        'tue': 'уторак',
+        'wed': 'сриједу',
+        'thu': 'четвртак',
+        'fri': 'петак',
+        'sat': 'суботу',
+        'other': 'недјељу',
+      },
+    );
+    return 'помјерено на $_temp0 $date';
+  }
+
+  @override
+  String home_moved_from(String weekday, String date) {
+    String _temp0 = intl.Intl.selectLogic(
+      weekday,
+      {
+        'mon': 'понедјељка',
+        'tue': 'уторка',
+        'wed': 'сриједе',
+        'thu': 'четвртка',
+        'fri': 'петка',
+        'sat': 'суботе',
+        'other': 'недјеље',
+      },
+    );
+    return 'са $_temp0 $date';
+  }
+
+  @override
+  String get home_moved_tag => 'помјерено';
+
+  @override
+  String get home_upcoming => 'НАРЕДНИХ ДАНА';
+
+  @override
   String home_sets(int completed, int total) {
     return '$completed/$total сета';
   }
@@ -841,6 +1085,14 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get log_add_set => 'Додај сет';
 
   @override
+  String get log_repeat_last => 'Понови идентично';
+
+  @override
+  String log_best_ever_hint(String value, String date) {
+    return 'Лични макс: $value ($date)';
+  }
+
+  @override
   String get log_notes_hint => 'Нпр. добра пумпа, повећај сљедећи пут...';
 
   @override
@@ -868,6 +1120,12 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get progress_max_weight => 'Макс тежина';
 
   @override
+  String get progress_max_reps => 'Макс понављања';
+
+  @override
+  String get progress_max_seconds => 'Макс вријеме';
+
+  @override
   String get progress_sessions => 'Тренинга';
 
   @override
@@ -877,10 +1135,26 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get progress_chart_weight => 'Макс тежина по тренингу';
 
   @override
+  String get progress_chart_reps => 'Макс понављања по тренингу';
+
+  @override
+  String get progress_chart_seconds => 'Макс вријеме по тренингу';
+
+  @override
   String get progress_chart_volume => 'Волумен по тренингу';
 
   @override
   String get progress_personal_record => 'Лични рекорд';
+
+  @override
+  String get progress_history_title => 'Историја';
+
+  @override
+  String get progress_history_no_note =>
+      'Нема напомене — превуци десно да додаш';
+
+  @override
+  String get progress_history_edit_note => 'Измијени напомену';
 
   @override
   String get progress_period_all => 'Све';
@@ -1163,6 +1437,47 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   String get settings_rest_off => 'Искљ.';
 
   @override
+  String get settings_logging_section => 'БИЉЕЖЕЊЕ';
+
+  @override
+  String get settings_show_feeling => 'Питај како је сет прошао';
+
+  @override
+  String get settings_show_feeling_sub =>
+      'Брзо лагано/ок/тешко питање кад означиш сет урађеним';
+
+  @override
+  String get log_feeling_prompt => 'Како је тај сет прошао?';
+
+  @override
+  String get log_feeling_hard => 'Тешко';
+
+  @override
+  String get log_feeling_ok => 'Ок';
+
+  @override
+  String get log_feeling_easy => 'Лагано';
+
+  @override
+  String get weekly_summary_title => 'Ова сједмица';
+
+  @override
+  String weekly_summary_volume(String change) {
+    return '$change волумена у односу на исте дане прошле сједмице';
+  }
+
+  @override
+  String weekly_summary_new_prs(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count нова лична рекорда',
+      one: '1 нови лични рекорд',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get nav_home => 'Почетна';
 
   @override
@@ -1248,6 +1563,11 @@ class AppLocalizationsSrCyrl extends AppLocalizationsSr {
   @override
   String progression_ready(String next) {
     return 'Сљедећи сет: $next — вријеме је за повећање!';
+  }
+
+  @override
+  String progression_plateau(String current) {
+    return 'Запео си на $current већ неколико тренинга — пробај лакшу тежину или промијени број понављања';
   }
 
   @override

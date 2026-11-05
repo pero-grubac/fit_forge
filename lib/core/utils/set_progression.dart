@@ -219,6 +219,25 @@ class SetProgression {
           ],
       ];
 
+  /// How many of the most recent sessions, each entirely at [level], ended
+  /// with at least one missed set, counting back from the latest. Stops at
+  /// the first fully clean session (the streak is intact) or the first
+  /// session not at [level] (an earlier, different weight, or one still
+  /// moving up to it). Used to flag a plateau — stuck at the same weight
+  /// across several attempts — separately from the set-by-set streak, which
+  /// a single missed set already resets.
+  static int stuckSessions(List<Session> sessions, double level) {
+    var count = 0;
+    for (final session in sessions.reversed) {
+      if (session.isEmpty || !session.every((s) => _same(s.level, level))) {
+        break;
+      }
+      if (!session.any((s) => !s.success)) break;
+      count++;
+    }
+    return count;
+  }
+
   static int _trailingAt(Session session, double level) {
     var n = 0;
     for (final set in session.reversed) {

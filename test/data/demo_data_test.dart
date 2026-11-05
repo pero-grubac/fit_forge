@@ -5,6 +5,7 @@ import 'package:fit_forge/data/demo_data.dart';
 import 'package:fit_forge/data/local/database_helper.dart';
 import 'package:fit_forge/data/providers.dart';
 import 'package:fit_forge/features/workout_log/providers/progression_provider.dart';
+import 'package:fit_forge/features/workout_log/providers/rest_timer_provider.dart';
 import 'package:fit_forge/features/workout_log/providers/streak_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -138,15 +139,10 @@ void main() {
 
   test('gives a streak to look at', () async {
     await container.read(demoDataProvider).load(today: saturday);
-    // The provider uses the real date, so compute it for the demo's today.
-    final plans = await container.read(workoutPlanRepositoryProvider).getAll();
-    final dates =
-        await container.read(workoutLogRepositoryProvider).getLoggedDates();
-    final streak = calculateStreak(
-      plannedDays: {for (final p in plans) p.dayOfWeek},
-      loggedDates: dates,
-      today: saturday,
-    );
-    expect(streak, 4 * DemoData.weeks);
+    final onSaturday = ProviderContainer(
+        overrides: [clockProvider.overrideWithValue(() => saturday)]);
+    addTearDown(onSaturday.dispose);
+    // Every past workout done in full; today's is still to do.
+    expect(await onSaturday.read(streakProvider.future), 4 * DemoData.weeks);
   });
 }

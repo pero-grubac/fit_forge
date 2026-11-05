@@ -11,6 +11,7 @@ class ProgressionInfo {
     required this.unit,
     required this.rule,
     required this.status,
+    this.stuckSessions = 0,
   });
 
   /// Off when disabled in Settings or for this exercise.
@@ -21,6 +22,11 @@ class ProgressionInfo {
   /// Where progression stands after all earlier workouts from this plan
   /// (today excluded): counting good sets, or moving up to a new level.
   final ProgressionStatus status;
+
+  /// Consecutive recent sessions stuck at the counting level (each had a
+  /// missed set). 0 while moving up to a new level. See
+  /// [SetProgression.stuckSessions].
+  final int stuckSessions;
 }
 
 /// The rule and counter for a plan exercise. The counter is kept per plan
@@ -59,16 +65,21 @@ final progressionProvider = FutureProvider.family<ProgressionInfo?, String>(
   final first = planExercise.defaultSets.firstOrNull;
   final start = byReps ? (first?.reps ?? 0).toDouble() : (first?.weight ?? 0);
 
+  final sessions = SetProgression.sessionsFromLogs(earlier, byReps: byReps);
+  final status = rule.status(
+    sessions,
+    start: start,
+    plannedSets:
+        planExercise.defaultSets.isEmpty ? 3 : planExercise.defaultSets.length,
+  );
+
   return ProgressionInfo(
     enabled: settings.autoProgression && exercise.autoProgress,
     unit: unit,
     rule: rule,
-    status: rule.status(
-      SetProgression.sessionsFromLogs(earlier, byReps: byReps),
-      start: start,
-      plannedSets: planExercise.defaultSets.isEmpty
-          ? 3
-          : planExercise.defaultSets.length,
-    ),
+    status: status,
+    stuckSessions: status.isMoving
+        ? 0
+        : SetProgression.stuckSessions(sessions, status.counting.level),
   );
 });

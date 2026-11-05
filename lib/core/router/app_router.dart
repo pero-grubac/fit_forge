@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final notifier = _RouterNotifier(ref);
+  final shellNavigatorKey = GlobalKey<NavigatorState>();
 
   return GoRouter(
     initialLocation: RouteNames.home,
@@ -29,7 +30,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const OnboardingPage(),
       ),
       ShellRoute(
-        builder: (context, state, child) => MainShell(child: child),
+        navigatorKey: shellNavigatorKey,
+        builder: (context, state, child) =>
+            MainShell(navigatorKey: shellNavigatorKey, child: child),
         routes: [
           GoRoute(
             path: RouteNames.home,
@@ -67,8 +70,11 @@ class _RouterNotifier extends ChangeNotifier {
 }
 
 class MainShell extends StatelessWidget {
-  const MainShell({required this.child, super.key});
+  const MainShell({required this.navigatorKey, required this.child, super.key});
 
+  /// The tabs' navigator. Screens such as the workout log are pushed onto it
+  /// directly, outside go_router.
+  final GlobalKey<NavigatorState> navigatorKey;
   final Widget child;
 
   @override
@@ -88,6 +94,9 @@ class MainShell extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: (index) {
+          // Pushed screens sit on top of the tab's page; going to the tab
+          // that's already current wouldn't remove them on its own.
+          navigatorKey.currentState?.popUntil((route) => route.isFirst);
           switch (index) {
             case 0:
               context.go(RouteNames.home);

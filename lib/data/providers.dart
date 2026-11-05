@@ -1,5 +1,6 @@
 import 'package:fit_forge/data/local/dao/exercise_dao.dart';
 import 'package:fit_forge/data/local/dao/plan_exercise_dao.dart';
+import 'package:fit_forge/data/local/dao/plan_reschedule_dao.dart';
 import 'package:fit_forge/data/local/dao/quote_dao.dart';
 import 'package:fit_forge/data/local/dao/workout_log_dao.dart';
 import 'package:fit_forge/data/local/dao/workout_plan_dao.dart';
@@ -8,6 +9,7 @@ import 'package:fit_forge/data/local/database_helper.dart';
 import 'package:fit_forge/data/repositories/backup_repository.dart';
 import 'package:fit_forge/data/repositories/exercise_repository.dart';
 import 'package:fit_forge/data/repositories/plan_exercise_repository.dart';
+import 'package:fit_forge/data/repositories/plan_reschedule_repository.dart';
 import 'package:fit_forge/data/repositories/quote_repository.dart';
 import 'package:fit_forge/data/repositories/workout_log_repository.dart';
 import 'package:fit_forge/data/repositories/workout_plan_repository.dart';
@@ -38,6 +40,12 @@ final workoutPlanRepositoryProvider = Provider<WorkoutPlanRepository>((ref) {
 
 final workoutLogRepositoryProvider = Provider<WorkoutLogRepository>((ref) {
   return WorkoutLogRepository(WorkoutLogDao(ref.watch(databaseHelperProvider)));
+});
+
+final planRescheduleRepositoryProvider =
+    Provider<PlanRescheduleRepository>((ref) {
+  return PlanRescheduleRepository(
+      PlanRescheduleDao(ref.watch(databaseHelperProvider)));
 });
 
 final quoteRepositoryProvider = Provider<QuoteRepository>((ref) {

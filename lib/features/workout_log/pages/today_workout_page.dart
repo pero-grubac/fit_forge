@@ -1,13 +1,16 @@
 import 'package:fit_forge/core/theme/app_colors.dart';
 import 'package:fit_forge/core/utils/l10n_extension.dart';
+import 'package:fit_forge/core/utils/plan_schedule.dart';
 import 'package:fit_forge/data/models/plan_exercise_model.dart';
-import 'package:fit_forge/data/models/workout_plan_model.dart';
+import 'package:fit_forge/data/models/plan_reschedule_model.dart';
 import 'package:fit_forge/features/settings/providers/quote_provider.dart';
 import 'package:fit_forge/features/settings/widgets/motivational_banner.dart';
 import 'package:fit_forge/features/workout_log/pages/log_session_page.dart';
 import 'package:fit_forge/features/workout_log/providers/streak_provider.dart';
 import 'package:fit_forge/features/workout_log/providers/workout_log_provider.dart';
 import 'package:fit_forge/features/workout_log/widgets/exercise_hero_card.dart';
+import 'package:fit_forge/features/workout_log/widgets/move_workout_sheet.dart';
+import 'package:fit_forge/features/workout_log/widgets/weekly_summary_card.dart';
 import 'package:fit_forge/features/workout_plan/providers/workout_plan_provider.dart';
 import 'package:fit_forge/shared/widgets/error_state.dart';
 import 'package:flutter/material.dart';
@@ -18,27 +21,43 @@ class TodayWorkoutPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final todayPlans = ref.watch(todayPlansProvider);
+    final home = ref.watch(homeScheduleProvider);
 
     return Scaffold(
       body: SafeArea(
-        child: todayPlans.when(
+        child: home.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => ErrorState(
-            onRetry: () => ref.invalidate(todayPlansProvider),
+            onRetry: () => ref.invalidate(homeScheduleProvider),
           ),
-          data: (plans) =>
-              plans.isEmpty ? _EmptyState() : _PlansContent(plans: plans),
+          data: (home) =>
+              home.plans.isEmpty ? _EmptyState() : _PlansContent(home: home),
         ),
       ),
     );
   }
 }
 
-class _PlansContent extends ConsumerWidget {
-  const _PlansContent({required this.plans});
+/// Opens the day picker for [o] and moves it to the chosen day.
+Future<void> _moveWorkout(BuildContext context, WidgetRef ref,
+    HomeSchedule home, PlanOccurrence o) async {
+  final days = home.schedule.targetDays(o, home.today);
+  if (days.isEmpty) return;
+  final to = await showMoveWorkoutSheet(
+    context,
+    planName: home.plans[o.planId]!.name,
+    occurrence: o,
+    days: days,
+    today: home.today,
+  );
+  if (to == null) return;
+  await ref.read(workoutPlanNotifierProvider.notifier).moveWorkout(o, to);
+}
 
-  final List<WorkoutPlanModel> plans;
+class _PlansContent extends ConsumerWidget {
+  const _PlansContent({required this.home});
+
+  final HomeSchedule home;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -83,11 +102,34 @@ class _PlansContent extends ConsumerWidget {
           child: MotivationBanner(),
         ),
 
-        // One section per plan
-        ...plans.map((plan) => _PlanSection(
-              planId: plan.id,
-              planName: plan.name,
-            )),
+        // This week's progress, if any
+        const SliverToBoxAdapter(
+          child: WeeklySummaryCard(),
+        ),
+
+        // One section per workout due today
+        for (final o in home.dueToday)
+          _PlanSection(
+            home: home,
+            occurrence: o,
+            planName: home.plans[o.planId]!.name,
+          ),
+
+        // Today's workouts moved to another day
+        for (final o in home.movedAway)
+          SliverToBoxAdapter(child: _MovedAwayStrip(home: home, occurrence: o)),
+
+        if (home.dueToday.isEmpty)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
+              child: Text(context.l10n.home_noplan,
+                  style: const TextStyle(fontSize: 14, color: AppColors.text2)),
+            ),
+          ),
+
+        if (home.upcoming.isNotEmpty)
+          SliverToBoxAdapter(child: _UpcomingSection(home: home)),
 
         const SliverToBoxAdapter(child: SizedBox(height: 40)),
       ],
@@ -122,10 +164,17 @@ class _PlansContent extends ConsumerWidget {
 }
 
 class _PlanSection extends ConsumerWidget {
-  const _PlanSection({required this.planId, required this.planName});
+  const _PlanSection({
+    required this.home,
+    required this.occurrence,
+    required this.planName,
+  });
 
-  final String planId;
+  final HomeSchedule home;
+  final PlanOccurrence occurrence;
   final String planName;
+
+  String get planId => occurrence.planId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -147,14 +196,14 @@ class _PlanSection extends ConsumerWidget {
           error: (e, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
           data: (completed) => SliverList(
             delegate: SliverChildListDelegate([
-              // Plan name header
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18, 8, 18, 4),
-                child: Text(planName,
-                    style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.text2)),
+              // Plan name header; started workouts can't be moved.
+              _PlanHeader(
+                planName: planName,
+                occurrence: occurrence,
+                onMove: completed.values.any((n) => n > 0) ||
+                        home.schedule.targetDays(occurrence, home.today).isEmpty
+                    ? null
+                    : () => _moveWorkout(context, ref, home, occurrence),
               ),
               ...list.map((pe) {
                 final completedSets = completed[pe.id] ?? 0;
@@ -192,6 +241,210 @@ class _PlanSection extends ConsumerWidget {
       // Home is visible again: time for a new quote.
       ref.read(quoteRotationProvider.notifier).next();
     });
+  }
+}
+
+/// "Full Body · from Thursday 5.11.  [⇄]"
+class _PlanHeader extends StatelessWidget {
+  const _PlanHeader({
+    required this.planName,
+    required this.occurrence,
+    required this.onMove,
+  });
+
+  final String planName;
+  final PlanOccurrence occurrence;
+
+  /// Null hides the move button.
+  final VoidCallback? onMove;
+
+  @override
+  Widget build(BuildContext context) {
+    final from = occurrence.regularDate;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(18, 8, onMove == null ? 18 : 6, 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text.rich(
+              TextSpan(children: [
+                TextSpan(
+                  text: planName,
+                  style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text2),
+                ),
+                if (occurrence.isMoved)
+                  TextSpan(
+                    text:
+                        '  ·  ${context.l10n.home_moved_from(weekdayKey(from), shortDate(from))}',
+                    style: const TextStyle(fontSize: 12, color: AppColors.text3),
+                  ),
+              ]),
+            ),
+          ),
+          if (onMove != null)
+            IconButton(
+              key: Key('move_${occurrence.planId}'),
+              tooltip: context.l10n.home_move,
+              onPressed: onMove,
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.swap_horiz_rounded,
+                  size: 20, color: AppColors.text2),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A workout of today moved to another day; tap to change or undo the move.
+class _MovedAwayStrip extends ConsumerWidget {
+  const _MovedAwayStrip({required this.home, required this.occurrence});
+
+  final HomeSchedule home;
+  final PlanOccurrence occurrence;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final to = occurrence.dueDate;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 4, 14, 8),
+      child: Material(
+        color: AppColors.bg2,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          key: Key('moved_away_${occurrence.planId}'),
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => _moveWorkout(context, ref, home, occurrence),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text.rich(
+                    TextSpan(children: [
+                      TextSpan(
+                        text: home.plans[occurrence.planId]!.name,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, color: AppColors.text3),
+                      ),
+                      TextSpan(
+                        text:
+                            '  ·  ${context.l10n.home_moved_to(weekdayKey(to), shortDate(to))}',
+                        style: const TextStyle(color: AppColors.text3),
+                      ),
+                    ]),
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ),
+                const Icon(Icons.swap_horiz_rounded,
+                    size: 20, color: AppColors.text3),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Workouts of the next days, each movable — e.g. to do one today.
+class _UpcomingSection extends ConsumerWidget {
+  const _UpcomingSection({required this.home});
+
+  final HomeSchedule home;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 16, 14, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+            child: Text(context.l10n.home_upcoming,
+                style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.8,
+                    color: AppColors.text3)),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.card,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              children: [
+                for (final (i, o) in home.upcoming.indexed) ...[
+                  if (i > 0) const Divider(height: 1, color: AppColors.border),
+                  _UpcomingRow(home: home, occurrence: o),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UpcomingRow extends ConsumerWidget {
+  const _UpcomingRow({required this.home, required this.occurrence});
+
+  final HomeSchedule home;
+  final PlanOccurrence occurrence;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final due = occurrence.dueDate;
+    final canMove = home.schedule.targetDays(occurrence, home.today).isNotEmpty;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(14, canMove ? 2 : 14, 4, canMove ? 2 : 14),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 128,
+            child: Text('${weekdayName(context, due)} ${shortDate(due)}',
+                style: const TextStyle(fontSize: 13, color: AppColors.text2)),
+          ),
+          Expanded(
+            child: Text.rich(
+              TextSpan(children: [
+                TextSpan(
+                  text: home.plans[occurrence.planId]!.name,
+                  style: const TextStyle(color: AppColors.text1),
+                ),
+                if (occurrence.isMoved)
+                  TextSpan(
+                    text: '  ·  ${context.l10n.home_moved_tag}',
+                    style: const TextStyle(color: AppColors.text3),
+                  ),
+              ]),
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+          if (canMove)
+            IconButton(
+              key: Key(
+                  'move_${occurrence.planId}_${dayKey(occurrence.regularDate)}'),
+              tooltip: context.l10n.home_move,
+              onPressed: () => _moveWorkout(context, ref, home, occurrence),
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.swap_horiz_rounded,
+                  size: 20, color: AppColors.text2),
+            ),
+        ],
+      ),
+    );
   }
 }
 

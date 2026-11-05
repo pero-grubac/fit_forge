@@ -21,6 +21,9 @@ class AppSettings {
   final bool devMode;
   final String locale;
 
+  /// Ask how a set felt (easy/ok/hard) each time one is ticked done.
+  final bool showSetFeeling;
+
   const AppSettings({
     this.autoProgression = true,
     this.setsToProgress = 8,
@@ -29,6 +32,7 @@ class AppSettings {
     this.isSetupDone = false,
     this.devMode = false,
     this.locale = 'en',
+    this.showSetFeeling = true,
   });
 
   AppSettings copyWith({
@@ -39,6 +43,7 @@ class AppSettings {
     bool? isSetupDone,
     bool? devMode,
     String? locale,
+    bool? showSetFeeling,
   }) {
     return AppSettings(
       autoProgression: autoProgression ?? this.autoProgression,
@@ -48,6 +53,7 @@ class AppSettings {
       isSetupDone: isSetupDone ?? this.isSetupDone,
       devMode: devMode ?? this.devMode,
       locale: locale ?? this.locale,
+      showSetFeeling: showSetFeeling ?? this.showSetFeeling,
     );
   }
 }
@@ -63,6 +69,7 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
   static const _keySetup = 'is_setup_done';
   static const _keyDevMode = 'dev_mode';
   static const _keyLocale = 'locale';
+  static const _keyShowSetFeeling = 'show_set_feeling';
 
   @override
   Future<AppSettings> build() async {
@@ -77,6 +84,7 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
       isSetupDone: prefs.getBool(_keySetup) ?? false,
       devMode: prefs.getBool(_keyDevMode) ?? false,
       locale: prefs.getString(_keyLocale) ?? 'en',
+      showSetFeeling: prefs.getBool(_keyShowSetFeeling) ?? true,
     );
   }
 
@@ -126,6 +134,12 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyLocale, locale);
     state = AsyncData(state.value!.copyWith(locale: locale));
+  }
+
+  Future<void> setShowSetFeeling(bool v) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyShowSetFeeling, v);
+    state = AsyncData(state.value!.copyWith(showSetFeeling: v));
   }
 }
 
