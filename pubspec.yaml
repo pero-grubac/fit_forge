@@ -1,6 +1,6 @@
 name: fit_forge
 description: FitForge
-version: 1.4.0+6
+version: 1.5.0+6
 publish_to: 'none'
 
 environment:
